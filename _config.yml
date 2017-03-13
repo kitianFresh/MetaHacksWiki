@@ -1,8 +1,23 @@
 # Document:
 # http://simiki.org/docs/configuration.html
 
-url: 
-title: 
-keywords: 
-description: 
-author: 
+url: wiki.hacksmeta.com
+title: MetaHacks Wiki
+keywords: wiki, simiki, computer, cognitive,
+description: my personal wiki
+author: 田奇
+
+category:
+  - name: linux  # 目录名
+    label: Linux/运维  # 目录的别名, 生成首页时可以使用
+  - name: database
+    label: 数据库
+
+default_ext: md
+pygments: true
+debug: false
+
+deploy:
+  - type: git
+    remote: origin
+    branch: gh-pages
