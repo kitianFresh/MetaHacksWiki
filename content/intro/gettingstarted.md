@@ -40,7 +40,7 @@ Simiki is short for `Simple Wiki` :)
 
 ### Create a new wiki ###
 
-	simiki new -t "Hello Simiki" -c first-catetory
+	simiki n -t 'test' -c linux
 
 ### Generate ###
 
@@ -59,6 +59,9 @@ For more information, `simiki -h` or have a look at [Simiki.org](http://simiki.o
 * Email: <me@tankywoo.com>
 * [Simiki Users](https://github.com/tankywoo/simiki/wiki/Simiki-Users)
 
+## 配置参考 ##
+ - [Configuring a publishing source for GitHub Pages](https://help.github.com/articles/configuring-a-publishing-source-for-github-pages/)
  - [单个GitHub帐号下添加多个GitHub Pages的相关问题](http://chitanda.me/2015/11/03/multiple-git-pages-in-one-github-account/)
  - [User, Organization, and Project Pages](https://help.github.com/articles/user-organization-and-project-pages/)
  - [Configuring a publishing source for GitHub Pages](https://help.github.com/articles/configuring-a-publishing-source-for-github-pages/)
+ - [使用simiki搭建个人wiki图片功能](https://www.dadclab.com/archives/6510.jiecao)
