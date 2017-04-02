@@ -26,3 +26,8 @@ font.family, 和　font.sans-serif, 并在　font.sans-serif 后面添加　`Mic
 
 ## 删除 matplotlib 字体缓存
 python2 删除　`sudo rm ~/.cache/matplotlib/fontList.cache`，python3 删除　`sudo rm ~/.cache/matplotlib/fontList.py3k.cache`
+
+
+## ipython notebook
+<shift>+<tab>可以查看docString
+或者 ?str.replace()
