@@ -6,7 +6,7 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
-    <title>Java GC内存管理 - MetaHacks Wiki</title>
+    <title>ConcurrencyModel - MetaHacks Wiki</title>
     <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
     <meta name="description" content="my personal wiki"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,17 +16,24 @@
     <div id="container">
       
 <div id="header">
-  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#java">java</a>&nbsp;&#187;&nbsp;Java GC内存管理
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;&#187;&nbsp;ConcurrencyModel
     <span class="updated">Updated&nbsp;
-      2017-03-11 00:00
+      2017-03-28 22:33
     </span></div>
 </div>
 <div class="clearfix"></div>
 
-<div class="page_title">Java GC内存管理</div>
+<div class="page_title">ConcurrencyModel</div>
 
-  <div class="toc"><span class="toctitle">Table of Contents</span><ul></ul>
-</div>
+  <h1 id="_1">并行计算</h1>
+<p>两大类并行</p>
+<h2 id="_2">多进程或多线程并行</h2>
+<p>race condition dead lock</p>
+<h2 id="_3">流水线并行</h2>
+<p>non-blocking io event-driven system</p>
+<h2 id="functional-parallelism">函数式并行(Functional Parallelism)</h2>
+<p>单个任务可以被拆分成多个部分来处理，每个部分都是一个函数，数据经过这些函数的时候是并行处理的，其实就是流水线
+mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比如 web server database server 都是不适合用函数式并行的，因为cpu本来就在处理多任务</p>
     </div>
     <div id="footer">
       <span>

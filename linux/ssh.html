@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>ssh - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#linux">linux</a>&nbsp;&#187;&nbsp;ssh
+    <span class="updated">Updated&nbsp;
+      2017-03-31 15:14
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">ssh</div>
+
+  <h1 id="ssh">ssh</h1>
+<div class="hlcode"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="n">user</span><span class="err">@</span><span class="n">host</span>
+<span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="mi">29911</span> <span class="n">root</span><span class="err">@</span><span class="n">hillsun</span><span class="p">.</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span>
+</pre></div>
+
+
+<p>密钥分发</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="o">|</span> <span class="n">ssh</span> <span class="n">kinny</span><span class="err">@</span><span class="n">ai</span><span class="p">.</span><span class="n">mc2lab</span><span class="p">.</span><span class="n">com</span> <span class="s">&quot;cat &gt;&gt;  ~/.ssh/authorized_keys&quot;</span>
+
+<span class="n">scp</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="n">kinny</span><span class="err">@</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span><span class="o">:~/</span><span class="p">.</span><span class="n">ssh</span>
+</pre></div>
+
+
+<h1 id="scpsecurity-copying">scp(Security Copying)</h1>
+<ol>
+<li>
+<p>文件从本机到服务器
+<code>scp user_item_analysis.py ustc@192.168.231.97:~/kinny/</code></p>
+</li>
+<li>
+<p>文件从服务器下载到本地
+<code>scp ustc@192.168.231.97:~/kinny/data/user_item_label_table.csv ./Study/competition/jd/JData/data</code></p>
+</li>
+<li>
+<p>目录
+加个 <code>-r</code> 参数 <code>scp -r</code> </p>
+</li>
+</ol>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-04-02 11:00:24</p>
+      </span>
+    </div>
+  </body>
+</html>
