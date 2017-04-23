@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>pandas - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#datascience">datascience</a>&nbsp;&#187;&nbsp;pandas
+    <span class="updated">Updated&nbsp;
+      2017-04-02 10:59
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">pandas</div>
+
+  <h1 id="to-select-rows-whose-column-value-equals-a-scalar-some_value-use">To select rows whose column value equals a scalar, some_value, use ==:</h1>
+<h1 id="dflocdfcolumn_name-some_value">df.loc[df['column_name'] == some_value]</h1>
+<h1 id="to-select-rows-whose-column-value-is-in-an-iterable-some_values-use-isin">To select rows whose column value is in an iterable, some_values, use isin:</h1>
+<h1 id="dflocdfcolumn_nameisinsome_values">df.loc[df['column_name'].isin(some_values)]</h1>
+<h1 id="combine-multiple-conditions-with">Combine multiple conditions with &amp;:</h1>
+<h1 id="dflocdfcolumn_name-some_value-dfother_columnisinsome_values">df.loc[(df['column_name'] == some_value) &amp; df['other_column'].isin(some_values)]</h1>
+<h1 id="to-select-rows-whose-column-value-does-not-equal-some_value-use">To select rows whose column value does not equal some_value, use !=:</h1>
+<h1 id="dflocdfcolumn_name-some_value_1">df.loc[df['column_name'] != some_value]</h1>
+<h1 id="isin-returns-a-boolean-series-so-to-select-rows-whose-value-is-not-in-some_values-negate-the-boolean-series-using">isin returns a boolean Series, so to select rows whose value is not in some_values, negate the boolean Series using ~:</h1>
+<h1 id="dflocdfcolumn_nameisinsome_values_1">df.loc[~df['column_name'].isin(some_values)]</h1>
+<p>df = pd.read_csv('similar_reduced_by_gb_name.csv')</p>
+<p>print df.head()
+print df.tail()</p>
+<h1 id="print-dfdfsimilar_names-count">print df[df['similar_names'] == '[]'].count()</h1>
+<h1 id="df-dfdfsimilar_names">df = df[df['similar_names'] != '[]']</h1>
+<h1 id="dfto_csvsimilar_reduced_by_gb_namecsv-indexfalse">df.to_csv('similar_reduced_by_gb_name.csv', index=False)</h1>
+<h1 id="valueerror-cannot-index-with-vector-containing-na-nan-values">ValueError: cannot index with vector containing NA / NaN values</h1>
+<h1 id="df_a-dflocdficd_codestrcontainsa">df_A = df.loc[df.icd_code.str.contains('A')]</h1>
+<h1 id="_1">不能进行比较大小</h1>
+<h1 id="df_a-dfdficd_codestr0-a00-dficd_codestr0-b99">df_A = df[df.icd_code.str[0] &gt;= 'A00' &amp; df.icd_code.str[0] &lt;= 'B99']</h1>
+<p>print df.dtypes</p>
+<h1 id="a00-b99-certain-infectious-and-parasitic-diseases">A00-B99  Certain infectious and parasitic diseases</h1>
+<h1 id="c00-d49-neoplasms">C00-D49  Neoplasms</h1>
+<h1 id="d50-d89-diseases-of-the-blood-and-blood-forming-organs-and-certain-disorders-involving-the-immune-mechanism">D50-D89  Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism</h1>
+<h1 id="e00-e89-endocrine-nutritional-and-metabolic-diseases">E00-E89  Endocrine, nutritional and metabolic diseases</h1>
+<h1 id="f01-f99-mental-behavioral-and-neurodevelopmental-disorders">F01-F99  Mental, Behavioral and Neurodevelopmental disorders</h1>
+<h1 id="g00-g99-diseases-of-the-nervous-system">G00-G99  Diseases of the nervous system</h1>
+<h1 id="h00-h59-diseases-of-the-eye-and-adnexa">H00-H59  Diseases of the eye and adnexa</h1>
+<h1 id="h60-h95-diseases-of-the-ear-and-mastoid-process">H60-H95  Diseases of the ear and mastoid process</h1>
+<h1 id="i00-i99-diseases-of-the-circulatory-system">I00-I99  Diseases of the circulatory system</h1>
+<h1 id="j00-j99-diseases-of-the-respiratory-system">J00-J99  Diseases of the respiratory system</h1>
+<h1 id="k00-k95-diseases-of-the-digestive-system">K00-K95  Diseases of the digestive system</h1>
+<h1 id="l00-l99-diseases-of-the-skin-and-subcutaneous-tissue">L00-L99  Diseases of the skin and subcutaneous tissue</h1>
+<h1 id="m00-m99-diseases-of-the-musculoskeletal-system-and-connective-tissue">M00-M99  Diseases of the musculoskeletal system and connective tissue</h1>
+<h1 id="n00-n99-diseases-of-the-genitourinary-system">N00-N99  Diseases of the genitourinary system</h1>
+<h1 id="o00-o9a-pregnancy-childbirth-and-the-puerperium">O00-O9A  Pregnancy, childbirth and the puerperium</h1>
+<h1 id="p00-p96-certain-conditions-originating-in-the-perinatal-period">P00-P96  Certain conditions originating in the perinatal period</h1>
+<h1 id="q00-q99-congenital-malformations-deformations-and-chromosomal-abnormalities">Q00-Q99  Congenital malformations, deformations and chromosomal abnormalities</h1>
+<h1 id="r00-r99-symptoms-signs-and-abnormal-clinical-and-laboratory-findings-not-elsewhere-classified">R00-R99  Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified</h1>
+<h1 id="s00-t88-injury-poisoning-and-certain-other-consequences-of-external-causes">S00-T88  Injury, poisoning and certain other consequences of external causes</h1>
+<h1 id="v00-y99-external-causes-of-morbidity">V00-Y99  External causes of morbidity</h1>
+<h1 id="z00-z99-factors-influencing-health-status-and-contact-with-health-services">Z00-Z99  Factors influencing health status and contact with health services</h1>
+<p>indexer = df['icd_code'].astype(str).apply(lambda x: x[0:4] &gt;= 'A00' and x[0:4] &lt;= 'B99')
+df_A = df.loc[indexer]</p>
+<h1 id="keep-hold-all-the-rows-you-want-to-keep">keep = [] #hold all the rows you want to keep</h1>
+<h1 id="for-key-in-frame_dictkeys">for key in frame_dict.keys():</h1>
+<h1 id="frame-frame_dictkey">frame = frame_dict[key]</h1>
+<h1 id="keepappend">keep.append(</h1>
+<h1 id="frameframeaastypestrstrcontainsdd02-regextruecopy">frame[frame['A'].astype(str).str.contains('^\d\d02', regex=True)].copy()</h1>
+<h1 id="append-the-rows-matching-regex-for-start-of-word-digit-d-digit-d-02">) #append the rows matching regex for start of word (^), digit (\d), digit (\d), 02</h1>
+<h1 id="final-pdconcatkeep-concatenate-the-matching-rows">final = pd.concat(keep) #concatenate the matching rows</h1>
+<p>df_A.to_csv('A_similar_by_gb_name.csv')</p>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-04-23 21:29:48</p>
+      </span>
+    </div>
+  </body>
+</html>

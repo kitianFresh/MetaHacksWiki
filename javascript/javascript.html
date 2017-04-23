@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>javascript - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#javascript">javascript</a>&nbsp;&#187;&nbsp;javascript
+    <span class="updated">Updated&nbsp;
+      2017-04-23 21:27
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">javascript</div>
+
+  <h1 id="javascript">javascript新手掉坑指南</h1>
+<h2 id="pythonhtmlhtml">Python后台如果传回HTML文本，那么HTML文本需要转义字符转义</h2>
+<div class="hlcode"><pre><span class="s">&quot;initialPreview&quot;</span><span class="o">:</span> <span class="s">&quot;&lt;img src=</span><span class="se">\&#39;</span><span class="s">/file/{0}</span><span class="se">\&#39;</span><span class="s"> class=</span><span class="se">\&#39;</span><span class="s">file-preview-image</span><span class="se">\&#39;</span><span class="s"> style=</span><span class="se">\&#39;</span><span class="s">width:100%</span><span class="se">\&#39;</span><span class="s">&gt;&quot;</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span>
+<span class="s">&quot;initialPreview&quot;</span><span class="o">:</span> <span class="s">&quot;&lt;img src=</span><span class="se">\&#39;</span><span class="s">/file/%s</span><span class="se">\&#39;</span><span class="s"> class=</span><span class="se">\&#39;</span><span class="s">file-preview-image</span><span class="se">\&#39;</span><span class="s"> style=</span><span class="se">\&#39;</span><span class="s">width:100%%</span><span class="se">\&#39;</span><span class="s">&gt;&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="jquery-elementshowcss">JQuery element.show()不起作用，和css有关</h2>
+<p><a href="http://stackoverflow.com/questions/14610412/jquery-show-for-twitter-bootstrap-css-class-hidden">jQuery show() for Twitter Bootstrap css class hidden</a></p>
+<h2 id="jquery">JQuery 表单提交后监听事件处理</h2>
+<p><a href="http://stackoverflow.com/questions/5392344/sending-multipart-formdata-with-jquery-ajax">Sending multipart/formdata with jQuery.ajax</a></p>
+<div class="hlcode"><pre><span class="err">首先对表单元素进行</span><span class="nx">submit</span><span class="err">监听，回调函数中使用</span><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="err">自己传输数据，</span>
+<span class="err">但是对要传输的数据使用</span><span class="k">new</span> <span class="nx">FromData</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;submit&#39;</span><span class="p">,</span> <span class="s2">&quot;form#data&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+            <span class="nx">url</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">),</span>
+            <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+            <span class="nx">data</span><span class="o">:</span> <span class="k">new</span> <span class="nx">FormData</span><span class="p">(</span><span class="k">this</span><span class="p">),</span>
+            <span class="nx">processData</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nx">contentType</span><span class="o">:</span> <span class="kc">false</span>
+        <span class="p">}).</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">templates</span><span class="p">);</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#filtered-image&quot;</span><span class="p">).</span><span class="nx">empty</span><span class="p">().</span><span class="nx">append</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">templates</span><span class="p">);</span>
+        <span class="p">});</span>
+
+<span class="p">});</span>
+</pre></div>
+
+
+<h2 id="jquery_1">JQuery 动态增删改除元素或内容</h2>
+<p>当select内容本身为空时，直接调用add不起作用，应该用append，因为不一定支持add方法，w3school是最权威的，里面并没有add方法，但是有的jQuery文档可能有</p>
+<div class="hlcode"><pre><span class="n">empty</span><span class="p">()</span> <span class="n">will</span> <span class="n">remove</span> <span class="n">all</span> <span class="n">the</span> <span class="n">contents</span> <span class="n">of</span> <span class="n">the</span> <span class="n">selection</span><span class="p">.</span>
+<span class="n">remove</span><span class="p">()</span> <span class="n">will</span> <span class="n">remove</span> <span class="n">the</span> <span class="n">selection</span> <span class="n">and</span> <span class="n">its</span> <span class="n">contents</span><span class="p">.</span>
+</pre></div>
+
+
+<h2 id="jquery-uncaught-syntaxerror-unexpected-token-o">JQuery “Uncaught SyntaxError: Unexpected token o”</h2>
+<p><a href="http://stackoverflow.com/questions/8081701/i-keep-getting-uncaught-syntaxerror-unexpected-token-o">i-keep-getting-uncaught-syntaxerror-unexpected-token-o</a></p>
+<div class="hlcode"><pre> <span class="n">jQuery</span> <span class="n">takes</span> <span class="n">a</span> <span class="n">guess</span> <span class="n">about</span> <span class="n">the</span> <span class="n">datatype</span><span class="p">.</span> <span class="n">It</span> <span class="n">does</span> <span class="n">the</span> <span class="n">JSON</span> <span class="n">parsing</span> <span class="n">even</span> <span class="n">though</span> <span class="n">you</span><span class="err">&#39;</span><span class="n">re</span> <span class="n">not</span> <span class="n">calling</span> <span class="n">getJSON</span><span class="p">()</span>
+<span class="n">Basically</span> <span class="k">if</span> <span class="n">the</span> <span class="n">response</span> <span class="n">header</span> <span class="n">is</span> <span class="n">text</span><span class="o">/</span><span class="n">html</span> <span class="n">you</span> <span class="n">need</span> <span class="n">to</span> <span class="n">parse</span><span class="p">,</span> <span class="n">and</span> <span class="k">if</span> <span class="n">the</span> <span class="n">response</span> <span class="n">header</span> <span class="n">is</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span> <span class="n">it</span> <span class="n">is</span> <span class="n">already</span> <span class="n">parsed</span> <span class="k">for</span> <span class="n">you</span><span class="p">.</span>
+</pre></div>
+
+
+<h2 id="vuejs-model-data">vue.js 访问model data的方式</h2>
+<div class="hlcode"><pre><span class="n">var</span> <span class="n">vm</span> <span class="o">=</span> <span class="n">new</span> <span class="n">Vue</span><span class="p">({</span>
+  <span class="nl">data:</span><span class="p">{</span>
+  <span class="nl">a:</span><span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+<span class="c1">// `vm.a` 是响应的</span>
+<span class="n">vm</span><span class="p">.</span><span class="n">b</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-04-23 21:29:48</p>
+      </span>
+    </div>
+  </body>
+</html>
