@@ -28,6 +28,8 @@ method2：
 
 #用lambda表达式来排序，更灵活：
 ```python
+# sorted(iterable, cmp=None, key=None, reverse=False) --> new sorted list
+
 sorted(dict.items(), lambda x, y: cmp(x[1], y[1]))
 #降序
 sorted(dict.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)
