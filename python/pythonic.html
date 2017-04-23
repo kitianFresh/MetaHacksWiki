@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>pythonic - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#python">python</a>&nbsp;&#187;&nbsp;pythonic
+    <span class="updated">Updated&nbsp;
+      2017-04-23 22:19
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">pythonic</div>
+
+  <h1 id="python-dictkey">python dict按照key 排序：</h1>
+<p>1、method 1.</p>
+<div class="hlcode"><pre><span class="n">items</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="n">items</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+   <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="c"># print key,dict[key]</span>
+</pre></div>
+
+
+<p>2、method 2.</p>
+<div class="hlcode"><pre><span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</pre></div>
+
+
+<h1 id="python-dictvalue">python dict按照value排序：</h1>
+<p>method 1：</p>
+<p>把dictionary中的元素分离出来放到一个list中，对list排序，从而间接实现对dictionary的排序。这个“元素”可以是key，value或者item。</p>
+<p>method2：</p>
+<h1 id="lambda">用lambda表达式来排序，更灵活：</h1>
+<div class="hlcode"><pre><span class="nb">sorted</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">cmp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="c">#降序</span>
+<span class="nb">sorted</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">cmp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict1</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict1</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-04-23 22:24:29</p>
+      </span>
+    </div>
+  </body>
+</html>
