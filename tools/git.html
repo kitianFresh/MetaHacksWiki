@@ -55,12 +55,20 @@
 <div class="hlcode"><pre><span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span>
 <span class="n">git</span> <span class="n">pull</span>
 </pre></div>
+
+
+<h2 id="http-git-push">解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题</h2>
+<p>由于实验楼git服务器使用的是http协议而不是git或者ssh协议（希望实验楼能提供ssh协议的支持吧，这7样就可以把自己的公钥上传了）导致每一次本地git push都要输入用户名和密码；可以使用git config来配置；由于这是实验楼的一个项目，所以使用local就行了；命令如下：</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">cache</span> <span class="p">(</span><span class="err">这个默认密码只保存</span><span class="mi">15</span><span class="err">分钟的</span><span class="p">)</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="err">&#39;</span><span class="n">cache</span> <span class="o">--</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600</span><span class="err">&#39;</span> <span class="p">(</span><span class="err">可以添加时间参数修改保存时间</span><span class="p">)</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">store</span> <span class="p">(</span><span class="err">长期存储密码</span><span class="p">)</span>
+</pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-04-23 22:26:18</p>
+        <p>Site Generated 2017-05-01 19:20:41</p>
       </span>
     </div>
   </body>

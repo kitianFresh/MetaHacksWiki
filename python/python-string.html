@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>python-string - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#python">python</a>&nbsp;&#187;&nbsp;python-string
+    <span class="updated">Updated&nbsp;
+      2017-04-30 11:22
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">python-string</div>
+
+  <p>格式字符串手册
+数字格式化</p>
+<p>下面的表格展示了使用Python的后起新秀str.format()格式化数字的多种方法，包含浮点数格式化与整数格式化示例。可使用 print("FORMAT".format(NUMBER)); 来运行示例，因此你可以运行： print("{:.2f}".format(3.1415926)); 来得到第一个示例的输出。</p>
+<p>数字  格式  输出  描述
+3.1415926   {:.2f}  3.14    保留小数点后两位
+3.1415926   {:+.2f} +3.14   带符号保留小数点后两位
+-1  {:+.2f} -1.00   带符号保留小数点后两位
+2.71828 {:.0f}  3   不带小数
+5   {:0&gt;2d} 05  数字补零 (填充左边, 宽度为2)
+5   {:x&lt;4d} 5xxx    数字补x (填充右边, 宽度为4)
+10  {:x&lt;4d} 10xx    数字补x (填充右边, 宽度为4)
+1000000 {:,}    1,000,000   以逗号分隔的数字格式
+0.25    {:.2%}  25.00%  百分比格式
+1000000000  {:.2e}  1.00e+09    指数记法
+13  {:10d}          13  右对齐 (默认, 宽度为10)
+13  {:&lt;10d} 13  左对齐 (宽度为10)
+13  {:^10d}     13  中间对齐 (宽度为10)</p>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-05-01 19:20:41</p>
+      </span>
+    </div>
+  </body>
+</html>
