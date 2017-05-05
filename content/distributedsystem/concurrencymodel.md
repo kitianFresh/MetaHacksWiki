@@ -279,18 +279,6 @@ Error: A fatal exception has occurred. Program will exit.
             Serialize Baseline	     781.488606	     794.344170	     761.915751	     750.881256	     746.211944	     766.968345
          Parallelize Fork/Join	     398.081041	     257.000682	     215.312012	     228.940126	     233.489181	     266.564608
 
-## 3. Amdahl's Law for $S_m$        
-$$
-S_n = \frac{1}{S+\frac{1-S}{n}}
-$$
-$$
-S_m = \frac{1}{S+\frac{1-S}{m}}
-$$
-通过消去串行部分比例 S, 可得到 
-$$
-\frac{n-1}{m-1} = \frac{(n-S_n)(m-S_m)}{S_nS_m}
-$$
-最后导出 $S_m = \frac{(m-1)(n-S_n)m}{S_n(n-1)+(m-1)(n-S_m)}$
 
 
 ## 4. PrimeNumber By Concurrency And Parallel
