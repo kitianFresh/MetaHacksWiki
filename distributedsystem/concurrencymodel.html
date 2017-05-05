@@ -411,18 +411,6 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 </pre></div>
 
 
-<h2 id="3-amdahls-law-for-s_m">3. Amdahl's Law for $S_m$</h2>
-<p>$$
-S_n = \frac{1}{S+\frac{1-S}{n}}
-$$
-$$
-S_m = \frac{1}{S+\frac{1-S}{m}}
-$$
-通过消去串行部分比例 S, 可得到 
-$$
-\frac{n-1}{m-1} = \frac{(n-S_n)(m-S_m)}{S_nS_m}
-$$
-最后导出 $S_m = \frac{(m-1)(n-S_n)m}{S_n(n-1)+(m-1)(n-S_m)}$</p>
 <h2 id="4-primenumber-by-concurrency-and-parallel">4. PrimeNumber By Concurrency And Parallel</h2>
 <h3 id="41-parallel">4.1 Parallel</h3>
 <div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrimeNumberParallel</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
@@ -553,7 +541,7 @@ $$
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-05 10:29:04</p>
+        <p>Site Generated 2017-05-05 10:35:15</p>
       </span>
     </div>
   </body>
