@@ -21,3 +21,10 @@ deploy:
   - type: git
     remote: origin
     branch: gh-pages
+
+algolia:
+  applicationID: 'MYQZ4L4RHN'
+  apiKey: '6c44fdb6e1e6fef41689fb14619b8ab2'
+  adminApiKey: '4e4ca1a90db9ad3f6ae3f3ba6fd818be'
+  indexName: 'MetaHacksBlog'
+  chunkSize: 5000
