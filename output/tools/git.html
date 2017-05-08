@@ -63,12 +63,21 @@
 <span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="err">&#39;</span><span class="n">cache</span> <span class="o">--</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600</span><span class="err">&#39;</span> <span class="p">(</span><span class="err">可以添加时间参数修改保存时间</span><span class="p">)</span>
 <span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">store</span> <span class="p">(</span><span class="err">长期存储密码</span><span class="p">)</span>
 </pre></div>
+
+
+<h2 id="git-commit">Git 切换到某一个 commit 版本</h2>
+<p>如果使用 <code>git reset --hard HEAD^</code>, 导致当前workspace 更改, 可以使用 </p>
+<div class="hlcode"><pre><span class="c1">// 先找到commit id</span>
+<span class="n">git</span> <span class="n">reflog</span>
+<span class="c1">// 切换到那个版本的workspace</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="mh">3628164</span>
+</pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-06 22:13:48</p>
+        <p>Site Generated 2017-05-08 16:56:54</p>
       </span>
     </div>
   </body>
