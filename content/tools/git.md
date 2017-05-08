@@ -42,3 +42,12 @@ git config --local credential.helper cache (这个默认密码只保存15分钟�
 git config --local credential.helper 'cache --timeout=3600' (可以添加时间参数修改保存时间)
 git config --local credential.helper store (长期存储密码)
 ```
+
+## Git 切换到某一个 commit 版本
+如果使用 `git reset --hard HEAD^`, 导致当前workspace 更改, 可以使用 
+```
+// 先找到commit id
+git reflog
+// 切换到那个版本的workspace
+git reset --hard 3628164
+``` 
