@@ -106,3 +106,94 @@ cursor = db.restaurants.find({"address.zipcode": "10075"})
 for document in cursor:
     print(document)
 ```
+
+## MongoDB 数据处理
+```
+// 分组计算个数并倒序
+db.info.aggregate([{$group:{_id:"$chinese_name", count: { $sum: 1 }}},{$sort: {count: -1}}])
+
+// 保证索引 unique 
+db.info.ensureIndex({"chinese_name": 1}, {unique:true, dropDups:true})
+{
+	"ok" : 0,
+	"errmsg" : "E11000 duplicate key error collection: JBBK.info index: chinese_name_1 dup key: { : \"B疱疹病毒感染\" }",
+	"code" : 11000
+}
+
+// 打印所有索引
+```javascript
+db.getCollectionNames().forEach(function(collection) {    indexes = db[collection].getIndexes();    print("Indexes for " + collection + ":");    printjson(indexes); });
+```
+
+// 某个 Collection的索引
+```javascript
+db.collection.getIndexes()
+```
+MongoDB 直接支持 JavaScript脚本, 因此 使用 ` mongo JBBK < remove_dups.js` 可以直接执行, 他可以用来删除 Collection 中重复的行;
+
+```javascript
+\\ remove_dups.js
+var duplicates = [];
+
+db.getCollection('info').aggregate([  
+  { $match: { 
+      chinese_name: { $ne: ''}
+  }},
+  { $group: { 
+      _id: { chinese_name: "$chinese_name"},
+      count: { $sum: 1},
+      dups: { $push: "$_id"}, 
+
+  }}, 
+  { $match: { 
+      count: { $gt: 1}
+  }}
+])               
+.forEach(function(doc) {
+    doc.dups.shift();      
+    doc.dups.forEach( function(dupId){ 
+        duplicates.push(dupId);
+        }
+    )    
+})
+
+
+db.getCollection('info').remove({_id:{$in:duplicates}})
+```
+
+
+```javascript
+db.userInfo.aggregate([
+
+    {
+
+        $group: { _id: {userName: '$userName',age: '$age'},count: {$sum: 1},dups: {$addToSet: '$_id'}}
+
+    },
+
+    {
+
+        $match: {count: {$gt: 1}}
+
+    }
+
+]).forEach(function(doc){
+
+    doc.dups.shift();
+
+    db.userInfo.remove({_id: {$in: doc.dups}});
+
+})
+
+1.根据userName和age分组并统计数量，$group只会返回参与分组的字段，使用$addToSet在返回结果数组中增加_id字段
+
+2.使用$match匹配数量大于1的数据
+
+3.doc.dups.shift();表示从数组第一个值开始删除；作用是踢除重复数据其中一个_id，让后面的删除语句不会删除所有数据
+
+4.使用forEach循环根据_id删除数据
+
+$addToSet 操作符只有在值没有存在于数组中时才会向数组中添加一个值。如果值已经存在于数组中，$addToSet返回，不会修改数组。
+```
+
+ - [从mysql迁移数据至mongoDB](https://my.oschina.net/amoszhou/blog/675766)
