@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>mysql - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#database">database</a>&nbsp;&#187;&nbsp;mysql
+    <span class="updated">Updated&nbsp;
+      2017-05-09 21:40
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">mysql</div>
+
+  <h1 id="mysql">MySQL 表定义范例</h1>
+<p>用于爬取 <a href="http://www.icd10data.com/ICD10CM/Codes">icd10data</a> 中的数据，mysql 数据库模式如下：</p>
+<div class="hlcode"><pre><span class="n">drop</span> <span class="n">database</span> <span class="k">if</span> <span class="n">exists</span> <span class="err">`</span><span class="n">icdInfo</span><span class="err">`</span><span class="p">;</span>
+<span class="n">create</span> <span class="n">database</span> <span class="err">`</span><span class="n">icdInfo</span><span class="err">`</span><span class="p">;</span>
+<span class="n">use</span> <span class="err">`</span><span class="n">icdInfo</span><span class="err">`</span><span class="p">;</span>
+
+<span class="n">drop</span> <span class="n">table</span> <span class="k">if</span> <span class="n">exists</span> <span class="err">`</span><span class="n">Tbl_ICD10CM</span><span class="err">`</span><span class="p">;</span>
+<span class="n">create</span> <span class="n">table</span> <span class="err">`</span><span class="n">Tbl_ICD10CM</span><span class="err">`</span> <span class="p">(</span>
+    <span class="err">`</span><span class="n">ClinicalId</span><span class="err">`</span> <span class="kt">int</span> <span class="kt">unsigned</span> <span class="n">auto_increment</span> <span class="n">not</span> <span class="n">null</span><span class="p">,</span>
+    <span class="err">`</span><span class="n">DiagnosisCode</span><span class="err">`</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">not</span> <span class="n">null</span> <span class="k">default</span> <span class="err">&#39;</span><span class="mo">00</span><span class="err">&#39;</span> <span class="n">comment</span> <span class="err">&#39;疾病诊断码&#39;</span><span class="p">,</span>
+    <span class="err">`</span><span class="n">DiseaseName</span><span class="err">`</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">comment</span> <span class="err">&#39;疾病名称&#39;</span><span class="p">,</span>
+    <span class="err">`</span><span class="n">ClinicalInfo</span><span class="err">`</span> <span class="n">text</span> <span class="n">comment</span> <span class="err">&#39;临床信息描述&#39;</span><span class="p">,</span>
+    <span class="err">`</span><span class="n">CodeIntervalUrl</span><span class="err">`</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">not</span> <span class="n">null</span> <span class="n">comment</span> <span class="err">&#39;抓取该信息的</span><span class="n">url</span><span class="err">&#39;</span><span class="p">,</span>
+    <span class="err">`</span><span class="n">ScrapedTime</span><span class="err">`</span> <span class="n">timestamp</span> <span class="n">not</span> <span class="n">null</span> <span class="n">comment</span> <span class="err">&#39;更新时间&#39;</span><span class="p">,</span>
+    <span class="n">primary</span> <span class="n">key</span> <span class="p">(</span><span class="err">`</span><span class="n">ClinicalId</span><span class="err">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span>
+</pre></div>
+
+
+<h1 id="mysql_1">mysql 数据库备份</h1>
+<p>备份整个数据库</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">databasename</span><span class="p">.</span><span class="n">sql</span>
+</pre></div>
+
+
+<p>备份数据库中的某些表</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename1</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dumps</span><span class="p">.</span><span class="n">sql</span>
+</pre></div>
+
+
+<p>恢复数据库</p>
+<div class="hlcode"><pre><span class="n">mysql</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">databasename</span><span class="p">.</span><span class="n">sql</span>
+</pre></div>
+
+
+<p>另一种备份方式是数据库元数据和数据表分开在不同的文件中</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">T</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">directory</span> <span class="p">[</span><span class="n">database</span><span class="p">]</span> <span class="o">--</span><span class="n">fields</span><span class="o">-</span><span class="n">enclosed</span><span class="o">-</span><span class="n">by</span><span class="o">=</span><span class="err">\</span><span class="s">&quot; --fields-terminated-by=,</span>
+</pre></div>
+
+
+<p>只获取数据库元数据备份或者表元数据备份</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">data</span> <span class="o">-</span><span class="n">u</span> <span class="n">someuser</span> <span class="o">-</span><span class="n">p</span> <span class="n">mydatabase</span>
+<span class="n">mysqldump</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">u</span> <span class="n">someuser</span> <span class="o">-</span><span class="n">p</span> <span class="n">mydatabase</span> <span class="n">table1</span> <span class="n">table2</span> <span class="n">table3</span>
+</pre></div>
+
+
+<h1 id="mysql-csv">导出 Mysql 数据 到 csv</h1>
+<p>导出到csv时，需要注意分隔符和转义字符的问题；
+ - Excel saves \r\n for line separators.
+ - Excel saves \n for newline characters within column data
+ - Have to replace \r\n inside your data first otherwise Excel will think its a start of the next line.</p>
+<div class="hlcode"><pre><span class="n">USE</span> <span class="err">`</span><span class="n">icdInfo</span><span class="err">`</span><span class="p">;</span>
+<span class="n">SELECT</span>
+<span class="n">DiagnosisCode</span><span class="p">,</span>
+<span class="n">REPLACE</span><span class="p">(</span> <span class="n">IFNULL</span><span class="p">(</span><span class="n">ClinicalInfo</span><span class="p">,</span> <span class="err">&#39;&#39;</span><span class="p">),</span> <span class="err">&#39;\</span><span class="n">r</span><span class="err">\</span><span class="n">n</span><span class="err">&#39;</span> <span class="p">,</span> <span class="sc">&#39;\n&#39;</span> <span class="p">)</span> <span class="n">AS</span> <span class="n">ClinicalInfo</span>
+<span class="n">FROM</span> <span class="n">Tbl_ICD10CM</span>
+<span class="n">INTO</span> <span class="n">OUTFILE</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mysql</span><span class="o">-</span><span class="n">files</span><span class="o">/</span><span class="n">icd</span><span class="p">.</span><span class="n">csv</span><span class="err">&#39;</span> 
+<span class="n">FIELDS</span> <span class="n">TERMINATED</span> <span class="n">BY</span> <span class="sc">&#39;,&#39;</span> <span class="n">ENCLOSED</span> <span class="n">BY</span> <span class="sc">&#39;&quot;&#39;</span> <span class="n">ESCAPED</span> <span class="n">BY</span> <span class="sc">&#39;&quot;&#39;</span>
+<span class="n">LINES</span> <span class="n">TERMINATED</span> <span class="n">BY</span> <span class="err">&#39;\</span><span class="n">r</span><span class="err">\</span><span class="n">n</span><span class="err">&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<p>出错</p>
+<div class="hlcode"><pre><span class="n">The</span> <span class="n">MySQL</span> <span class="n">server</span> <span class="n">is</span> <span class="n">running</span> <span class="n">with</span> <span class="n">the</span> <span class="o">--</span><span class="n">secure</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="n">priv</span> <span class="n">option</span> <span class="n">so</span> <span class="n">it</span> <span class="n">cannot</span> <span class="n">execute</span> <span class="n">this</span> <span class="n">statement</span>
+</pre></div>
+
+
+<p>解决办法是Mysql默认有保护措施，只能输出文件到特定目录，通过一下命令查看目录</p>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="n">SELECT</span> <span class="err">@@</span><span class="n">global</span><span class="p">.</span><span class="n">secure_file_priv</span><span class="p">;</span>
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-05-09 22:05:31</p>
+      </span>
+    </div>
+  </body>
+</html>

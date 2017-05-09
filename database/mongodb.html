@@ -198,12 +198,104 @@
     <span class="k">print</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
+
+<h2 id="mongodb_1">MongoDB 数据处理</h2>
+<div class="hlcode"><pre><span class="c1">// 分组计算个数并倒序</span>
+<span class="n">db</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">aggregate</span><span class="p">([{</span><span class="err">$</span><span class="nl">group:</span><span class="p">{</span><span class="nl">_id:</span><span class="s">&quot;$chinese_name&quot;</span><span class="p">,</span> <span class="nl">count:</span> <span class="p">{</span> <span class="err">$</span><span class="nl">sum:</span> <span class="mh">1</span> <span class="p">}}},{</span><span class="err">$</span><span class="nl">sort:</span> <span class="p">{</span><span class="nl">count:</span> <span class="o">-</span><span class="mh">1</span><span class="p">}}])</span>
+
+<span class="c1">// 保证索引 unique </span>
+<span class="n">db</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">ensureIndex</span><span class="p">({</span><span class="s">&quot;chinese_name&quot;</span><span class="o">:</span> <span class="mh">1</span><span class="p">},</span> <span class="p">{</span><span class="k">unique</span><span class="o">:</span><span class="n">true</span><span class="p">,</span> <span class="nl">dropDups:</span><span class="n">true</span><span class="p">})</span>
+<span class="p">{</span>
+    <span class="s">&quot;ok&quot;</span> <span class="o">:</span> <span class="mh">0</span><span class="p">,</span>
+    <span class="s">&quot;errmsg&quot;</span> <span class="o">:</span> <span class="s">&quot;E11000 duplicate key error collection: JBBK.info index: chinese_name_1 dup key: { : </span><span class="se">\&quot;</span><span class="s">B疱疹病毒感染</span><span class="se">\&quot;</span><span class="s"> }&quot;</span><span class="p">,</span>
+    <span class="s">&quot;code&quot;</span> <span class="o">:</span> <span class="mh">11000</span>
+<span class="p">}</span>
+
+<span class="c1">// 打印所有索引</span>
+<span class="err">``</span><span class="no">`javascript</span>
+<span class="n">db</span><span class="p">.</span><span class="n">getCollectionNames</span><span class="p">().</span><span class="n">forEach</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span> <span class="p">{</span>    <span class="n">indexes</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">collection</span><span class="p">].</span><span class="n">getIndexes</span><span class="p">();</span>    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Indexes for &quot;</span> <span class="o">+</span> <span class="n">collection</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span><span class="p">);</span>    <span class="n">printjson</span><span class="p">(</span><span class="n">indexes</span><span class="p">);</span> <span class="p">});</span>
+</pre></div>
+
+
+<p>// 某个 Collection的索引</p>
+<div class="hlcode"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">getIndexes</span><span class="p">()</span>
+</pre></div>
+
+
+<p>MongoDB 直接支持 JavaScript脚本, 因此 使用 <code>mongo JBBK &lt; remove_dups.js</code> 可以直接执行, 他可以用来删除 Collection 中重复的行;</p>
+<div class="hlcode"><pre><span class="err">\\</span> <span class="nx">remove_dups</span><span class="p">.</span><span class="nx">js</span>
+<span class="kd">var</span> <span class="nx">duplicates</span> <span class="o">=</span> <span class="p">[];</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">getCollection</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">).</span><span class="nx">aggregate</span><span class="p">([</span>  
+  <span class="p">{</span> <span class="nx">$match</span><span class="o">:</span> <span class="p">{</span> 
+      <span class="nx">chinese_name</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$ne</span><span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+  <span class="p">}},</span>
+  <span class="p">{</span> <span class="nx">$group</span><span class="o">:</span> <span class="p">{</span> 
+      <span class="nx">_id</span><span class="o">:</span> <span class="p">{</span> <span class="nx">chinese_name</span><span class="o">:</span> <span class="s2">&quot;$chinese_name&quot;</span><span class="p">},</span>
+      <span class="nx">count</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$sum</span><span class="o">:</span> <span class="mi">1</span><span class="p">},</span>
+      <span class="nx">dups</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$push</span><span class="o">:</span> <span class="s2">&quot;$_id&quot;</span><span class="p">},</span> 
+
+  <span class="p">}},</span> 
+  <span class="p">{</span> <span class="nx">$match</span><span class="o">:</span> <span class="p">{</span> 
+      <span class="nx">count</span><span class="o">:</span> <span class="p">{</span> <span class="nx">$gt</span><span class="o">:</span> <span class="mi">1</span><span class="p">}</span>
+  <span class="p">}}</span>
+<span class="p">])</span>               
+<span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">doc</span><span class="p">.</span><span class="nx">dups</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>      
+    <span class="nx">doc</span><span class="p">.</span><span class="nx">dups</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dupId</span><span class="p">){</span> 
+        <span class="nx">duplicates</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">dupId</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">)</span>    
+<span class="p">})</span>
+
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">getCollection</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">).</span><span class="nx">remove</span><span class="p">({</span><span class="nx">_id</span><span class="o">:</span><span class="p">{</span><span class="nx">$in</span><span class="o">:</span><span class="nx">duplicates</span><span class="p">}})</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">userInfo</span><span class="p">.</span><span class="nx">aggregate</span><span class="p">([</span>
+
+    <span class="p">{</span>
+
+        <span class="nx">$group</span><span class="o">:</span> <span class="p">{</span> <span class="nx">_id</span><span class="o">:</span> <span class="p">{</span><span class="nx">userName</span><span class="o">:</span> <span class="s1">&#39;$userName&#39;</span><span class="p">,</span><span class="nx">age</span><span class="o">:</span> <span class="s1">&#39;$age&#39;</span><span class="p">},</span><span class="nx">count</span><span class="o">:</span> <span class="p">{</span><span class="nx">$sum</span><span class="o">:</span> <span class="mi">1</span><span class="p">},</span><span class="nx">dups</span><span class="o">:</span> <span class="p">{</span><span class="nx">$addToSet</span><span class="o">:</span> <span class="s1">&#39;$_id&#39;</span><span class="p">}}</span>
+
+    <span class="p">},</span>
+
+    <span class="p">{</span>
+
+        <span class="nx">$match</span><span class="o">:</span> <span class="p">{</span><span class="nx">count</span><span class="o">:</span> <span class="p">{</span><span class="nx">$gt</span><span class="o">:</span> <span class="mi">1</span><span class="p">}}</span>
+
+    <span class="p">}</span>
+
+<span class="p">]).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">doc</span><span class="p">){</span>
+
+    <span class="nx">doc</span><span class="p">.</span><span class="nx">dups</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+
+    <span class="nx">db</span><span class="p">.</span><span class="nx">userInfo</span><span class="p">.</span><span class="nx">remove</span><span class="p">({</span><span class="nx">_id</span><span class="o">:</span> <span class="p">{</span><span class="nx">$in</span><span class="o">:</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">dups</span><span class="p">}});</span>
+
+<span class="p">})</span>
+
+<span class="mi">1</span><span class="p">.</span><span class="err">根据</span><span class="nx">userName</span><span class="err">和</span><span class="nx">age</span><span class="err">分组并统计数量，</span><span class="nx">$group</span><span class="err">只会返回参与分组的字段，使用</span><span class="nx">$addToSet</span><span class="err">在返回结果数组中增加</span><span class="nx">_id</span><span class="err">字段</span>
+
+<span class="mi">2</span><span class="p">.</span><span class="err">使用</span><span class="nx">$match</span><span class="err">匹配数量大于</span><span class="mi">1</span><span class="err">的数据</span>
+
+<span class="mi">3</span><span class="p">.</span><span class="nx">doc</span><span class="p">.</span><span class="nx">dups</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span><span class="err">表示从数组第一个值开始删除；作用是踢除重复数据其中一个</span><span class="nx">_id</span><span class="err">，让后面的删除语句不会删除所有数据</span>
+
+<span class="mi">4</span><span class="p">.</span><span class="err">使用</span><span class="nx">forEach</span><span class="err">循环根据</span><span class="nx">_id</span><span class="err">删除数据</span>
+
+<span class="nx">$addToSet</span> <span class="err">操作符只有在值没有存在于数组中时才会向数组中添加一个值。如果值已经存在于数组中，</span><span class="nx">$addToSet</span><span class="err">返回，不会修改数组。</span>
+</pre></div>
+
+
+<ul>
+<li><a href="https://my.oschina.net/amoszhou/blog/675766">从mysql迁移数据至mongoDB</a></li>
+</ul>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-09 21:27:33</p>
+        <p>Site Generated 2017-05-09 22:05:31</p>
       </span>
     </div>
   </body>
