@@ -37,3 +37,24 @@ sorted(dict.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)
 print sorted(dict1.items(), key=lambda d: d[0])
 print sorted(dict1.items(), key=lambda d: d[1])
 ```
+
+# Python 调用 shell 命令行程序
+
+## Python实现的文件编码转码工具
+
+```python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import glob  
+import subprocess
+
+#父目录中的.py文件  
+files = glob.iglob(r'./*.csv')
+
+for f in files:
+    subprocess.call("enca -L zh_CN " + f, shell=True)
+
+for f in files:
+    subprocess.call("enca -L zh_CN -x utf-8 " + f, shell=True)
+```
