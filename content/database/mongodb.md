@@ -31,11 +31,11 @@ sudo mongo
 
 ### Mongodb的python客户端开发
 安装[python driver](https://docs.mongodb.com/getting-started/python/client/)
-```
-pip install pymongo
-```
-fast tutorial
-```
+`pip install pymongo`
+
+### Pymongo fast tutorial
+
+```python
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -55,8 +55,6 @@ db = client.test
 # 3. access collection objects
 coll = db.restaurants
 #coll = db['restaurants']
-
-
 
 # update
 from datetime import datetime
@@ -107,8 +105,22 @@ for document in cursor:
     print(document)
 ```
 
+
 ## MongoDB 数据处理
+
+### 基本操作
+```javascript
+db.info.find({"icd_code": {$ne: null}}).count()
 ```
+### 导入导出Json
+```javascript
+mongoexport --db <database-name> --collection <collection-name> --out output.json
+
+mongoimport --db <database-name> --collection <collection-name> --file input.json
+```
+
+### 聚合删除
+```javascript
 // 分组计算个数并倒序
 db.info.aggregate([{$group:{_id:"$chinese_name", count: { $sum: 1 }}},{$sort: {count: -1}}])
 
@@ -119,8 +131,10 @@ db.info.ensureIndex({"chinese_name": 1}, {unique:true, dropDups:true})
 	"errmsg" : "E11000 duplicate key error collection: JBBK.info index: chinese_name_1 dup key: { : \"B疱疹病毒感染\" }",
 	"code" : 11000
 }
+```
 
 // 打印所有索引
+
 ```javascript
 db.getCollectionNames().forEach(function(collection) {    indexes = db[collection].getIndexes();    print("Indexes for " + collection + ":");    printjson(indexes); });
 ```

@@ -25,10 +25,63 @@
 
 <div class="page_title">java-concurrency-interview</div>
 
-  <h1 id="_1">初级主题</h1>
+  <h1 id="jvm">JVM 相关知识</h1>
+<h2 id="1-static-non-static-field">1. static 和 non-static field 区别?</h2>
+<ol>
+<li>全局唯一，任何一次的修改都是全局性的影响</li>
+<li>只加载一次，优先于非静态</li>
+<li>使用方式上不依赖于实例对象</li>
+<li>生命周期属于类级别，从JVM 加载开始到JVM卸载结束</li>
+</ol>
+<h2 id="2">2. 类加载机制?</h2>
+<p><strong>加载, 连接(验证/准备/解析), 初始化, 使用, 卸载. 初始化的时候,按照static block 和 static statement出现的顺序一次执行语句. 对于采用类加载机制的单例模式, 如果私有构造器需要对静态成员变量进行赋值, 我们一定要把 构造单列的语句放在最后面!</strong></p>
+<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">SingleTon</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">SingleTon</span> <span class="n">singleTon</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SingleTon</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">count1</span><span class="o">;</span> <span class="c1">//在准备阶段value初始值为0</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">count2</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span> <span class="c1">//在准备阶段value初始值为0</span>
+
+    <span class="c1">//private static SingleTon singleTon = new SingleTon();// 顺序不一样, 结果不一致偶! </span>
+    <span class="c1">//类的加载机制! 加载, 连接(验证/准备/解析), 初始化, 使用, 卸载. 初始化的时候,按照static block 和 static statement出现的顺序一次执行语句.</span>
+    <span class="c1">// 初始化之前, singleton = null, count1=count2=0, 这是虚拟机规范.由于是先执行 singleton = new Singleton(), 因此先执行</span>
+    <span class="c1">// 私有构造函数, 然后 count1 = 1. count2 = 1. 然后又继续执行 count1没有变化, count2 = 3. 因此最后, count1 = 1, count2 = 3;</span>
+    <span class="c1">// 对于这种形式的单例模式, 如果私有构造器需要对静态成员变量进行赋值, 我们一定要把 构造单列的语句放在最后面!</span>
+
+    <span class="kd">private</span> <span class="nf">SingleTon</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">count1</span><span class="o">++;</span>
+        <span class="n">count2</span><span class="o">++;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">SingleTon</span> <span class="nf">getInstance</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">singleTon</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Test</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">SingleTon</span> <span class="n">singleTon</span> <span class="o">=</span> <span class="n">SingleTon</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;count1=&quot;</span> <span class="o">+</span> <span class="n">singleTon</span><span class="o">.</span><span class="na">count1</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;count2=&quot;</span> <span class="o">+</span> <span class="n">singleTon</span><span class="o">.</span><span class="na">count2</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2 id="3-autoboxunbox">3. AutoBox/unbox技术?</h2>
+<div class="hlcode"><pre><span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">a2</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">a1</span> <span class="o">==</span> <span class="n">a2</span><span class="o">);</span> <span class="c1">// true</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">b1</span> <span class="o">==</span> <span class="n">b2</span><span class="o">);</span> <span class="c1">// 不设置JVM参数的情况下是 false</span>
+</pre></div>
+
+
+<p>把 <code>int</code> 和 <code>Integer</code> 之间的隐式转换其实就是 <code>Integer.valueOf(param)</code> 和 <code>Integer.intValue()</code>; 而在java中, Integer.valueOf() 方法带有缓存机制, 即默认情况下, 对于 -128~127 的整数, 返回的是同一个对象! 对于缓存的上限 128 其实可以通过设置 JVM 参数 <code>-XX:AutoBoxCacheMax=?</code> 来更改!</p>
+<h1 id="_1">多线程并发初级主题</h1>
 <h2 id="1">1. <del>什么是线程? 为何使用线程?</del></h2>
 <p>线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 一个进程内至少有一个主线程作为执行单位执行; 线程比进程更加轻量级, 创建时间更短, 资源消耗更少.</p>
-<h2 id="2">2. <del>线程和进程的区别?</del></h2>
+<h2 id="2_1">2. <del>线程和进程的区别?</del></h2>
 <p>线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 多个线程共享同一个进程内部的资源, 不同进程之间地址空间相互独立,不共享内存. 进程创建比线程更加耗费资源, 但进程通常更加稳定, Nginx 就采用了多进程的形式, 当然, 多线程环境下, 一个线程的阻塞并不会影响其他线程的执行, 提高的运行效率.</p>
 <h2 id="4-java-runable-thread">4. <del>Java 中如何实现线程? <code>Runable</code> 和 <code>Thread</code> 的区别?</del></h2>
 <p><code>Runnable</code> 是接口, <code>Thread</code> 是实现了 <code>Runnable</code> 接口的类. Java 中实现线程, 既可以 实现<code>Runnable</code> 接口, 然后讲其丢给<code>Thread</code> 启动起来, 也可以直接继承 <code>Thread</code> 类而成为一个线程类直接运行. 由于 Java 没有多重继承, 因此, 一般需要继承其他类的线程, 我们直接使用 <code>Runnable</code> 接口更好.</p>
@@ -111,7 +164,7 @@
 <h2 id="24">24. <del>线程池是什么? 为何使用线程池?</del></h2>
 <p>线程池是有一系列<strong>已经创建的线程组成, 他们内部使用一个队列来存储需要执行的任务, 然后调度线程池中的线程从队列中去任务去执行. </strong></p>
 <p>线程虽然比进程轻量, 但是<strong>创建线程还是会耗费时间和资源的, 如果任务到来的时候才创建线程, 响应时间就会边长, 另外, 线程池还可以实现线程的复用, 不用浪费资源.</strong></p>
-<h1 id="_2">高级主题</h1>
+<h1 id="_2">多线程并发高级主题</h1>
 <h2 id="25">25. 如何编写代码解决生产者消费者问题?</h2>
 <p>低级的办法是 wait/notify 方法, 高级的办法是 Semaphore 或者 BlockingQueue. <a href="http://javarevisited.blogspot.sg/2012/02/producer-consumer-design-pattern-with.html">教程</a></p>
 <h2 id="26">26. 如何避免死锁?</h2>
@@ -190,7 +243,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-09 22:05:31</p>
+        <p>Site Generated 2017-05-11 10:32:51</p>
       </span>
     </div>
   </body>
