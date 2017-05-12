@@ -58,3 +58,16 @@ for f in files:
 for f in files:
     subprocess.call("enca -L zh_CN -x utf-8 " + f, shell=True)
 ```
+
+## Python 实现解释器命令行中自动补全
+第一种方法是直接每次先执行以下语句:
+```python
+import readline, rlcompleter; readline.parse_and_bind("tab: complete")
+```
+方法二新建一个 `.pythonstartup.py` 的脚本, 然后在 `.bashrc` 中加入 `export PYTHONSTARTUP = ~/.pythonstartup.py` 
+```python
+#.pythonstartup.py
+import readline, rlcompleter 
+readline.parse_and_bind("tab: complete")
+```
+最后执行 `source .bashrc` 生效. 然后在解释器中使用 `tab` 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;

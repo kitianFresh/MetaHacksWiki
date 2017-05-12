@@ -2,6 +2,30 @@
 title: "java-concurrency-interview"
 date: 2017-05-05 20:22
 ---
+# Java Collection Framework
+## 1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?
+内部基于数组实现的集合, 理论上容量不超过 Integer.MAX_VALUE, 因为数组下标必须是 int 类型, 这些集合包括 ArrayList, ArrayQueue, EnumMap, PriorityQueue
+
+```java
+/**
+     * The maximum size of array to allocate.
+     * Some VMs reserve some header words in an array.
+     * Attempts to allocate larger arrays may result in
+     * OutOfMemoryError: Requested array size exceeds VM limit
+     */
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+``` 
+内部基于带指针数据结构实现的集合, 比如链表, 树等, 理论上容量是无限的. LinkedList, TreeSet, HashMap由于使用了链地址法避免冲突, 因此理论上也是无限的, HashSet 背后是 HashMap.
+
+## 2. add/offer, remove/poll, element/peek 区别?
+A collection designed for holding elements prior to processing. Besides basic Collection operations, queues provide additional insertion, extraction, and inspection operations. Each of these methods exists in two forms: one throws an exception if the operation fails, the other returns a special value (either null or false, depending on the operation). The latter form of the insert operation is designed specifically for use with capacity-restricted Queue implementations; in most implementations, insert operations cannot fail.
+|                   |Throws exception	|Returns special value|
+|------------------:|------------------:|--------------------:|
+|Insert	            |add(e)	            |offer(e)             |
+|Remove	            |remove()	        |poll()               |
+|Examine	        |element()	        |peek()               |
+
+
 # JVM 相关知识
 ## 1. static 和 non-static field 区别?
  1. 全局唯一，任何一次的修改都是全局性的影响
@@ -135,7 +159,7 @@ hreadLocal是Java里一种特殊的变量。每个线程都有一个ThreadLocal�
 **`interrupted()` 和 `isInterrupted()` 的主要区别是前者会将中断状态清除而后者不会。Java多线程的中断机制是用内部标识来实现的，调用Thread.interrupt()来中断一个线程就会设置中断标识为true。**当中断线程调用静态方法Thread.interrupted()来检查中断状态时，中断状态会被清零。而非静态方法isInterrupted()用来查询其它线程的中断状态且不会改变中断状态标识。简单的说就是任何抛出InterruptedException异常的方法都会将中断状态清零。无论如何，一个线程的中断状态有有可能被其它线程调用中断来改变。
 
 ## 20. 为何wait 和 notify 方法要在同步块中调用?(不熟悉)
-主要是因为Java API强制要求这样做，如果你不这么做，你的代码会抛出IllegalMonitorStateException异常。还有一个原因是为了避免wait和notify之间产生竞态条件。[Why wait notify and notifyAll called from synchronized block or method in Java](http://javarevisited.blogspot.sg/2011/05/wait-notify-and-notifyall-in-java.html)
+主要是因为**Java API强制要求这样做，如果你不这么做，你的代码会抛出IllegalMonitorStateException异常**。还有一个原因是为了**避免wait和notify之间产生竞态条件。**[Why wait notify and notifyAll called from synchronized block or method in Java](http://javarevisited.blogspot.sg/2011/05/wait-notify-and-notifyall-in-java.html)
 
 ## 21. 为什么要***在循环中而不是直接使用一个if else***检查等待条件?
  - 处于等待状态的线程可能会收到**错误警报和伪唤醒**, **如果不在循环中检查等待条件而是直接ifelse,程序就会在没有满足结束条件的情况下退出**

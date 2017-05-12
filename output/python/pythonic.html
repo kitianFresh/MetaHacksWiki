@@ -72,12 +72,28 @@
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
     <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&quot;enca -L zh_CN -x utf-8 &quot;</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
+
+
+<h2 id="python_1">Python 实现解释器命令行中自动补全</h2>
+<p>第一种方法是直接每次先执行以下语句:</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">readline</span><span class="o">,</span> <span class="nn">rlcompleter</span><span class="p">;</span> <span class="n">readline</span><span class="o">.</span><span class="n">parse_and_bind</span><span class="p">(</span><span class="s">&quot;tab: complete&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>方法二新建一个 <code>.pythonstartup.py</code> 的脚本, 然后在 <code>.bashrc</code> 中加入 <code>export PYTHONSTARTUP = ~/.pythonstartup.py</code> </p>
+<div class="hlcode"><pre><span class="c">#.pythonstartup.py</span>
+<span class="kn">import</span> <span class="nn">readline</span><span class="o">,</span> <span class="nn">rlcompleter</span> 
+<span class="n">readline</span><span class="o">.</span><span class="n">parse_and_bind</span><span class="p">(</span><span class="s">&quot;tab: complete&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>最后执行 <code>source .bashrc</code> 生效. 然后在解释器中使用 <code>tab</code> 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-11 10:35:53</p>
+        <p>Site Generated 2017-05-12 22:24:18</p>
       </span>
     </div>
   </body>

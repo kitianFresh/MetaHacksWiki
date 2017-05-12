@@ -25,7 +25,28 @@
 
 <div class="page_title">java-concurrency-interview</div>
 
-  <h1 id="jvm">JVM 相关知识</h1>
+  <h1 id="java-collection-framework">Java Collection Framework</h1>
+<h2 id="1">1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?</h2>
+<p>内部基于数组实现的集合, 理论上容量不超过 Integer.MAX_VALUE, 因为数组下标必须是 int 类型, 这些集合包括 ArrayList, ArrayQueue, EnumMap, PriorityQueue</p>
+<div class="hlcode"><pre><span class="cm">/**</span>
+<span class="cm">     * The maximum size of array to allocate.</span>
+<span class="cm">     * Some VMs reserve some header words in an array.</span>
+<span class="cm">     * Attempts to allocate larger arrays may result in</span>
+<span class="cm">     * OutOfMemoryError: Requested array size exceeds VM limit</span>
+<span class="cm">     */</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAX_ARRAY_SIZE</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">MAX_VALUE</span> <span class="o">-</span> <span class="mi">8</span><span class="o">;</span>
+</pre></div>
+
+
+<p>内部基于带指针数据结构实现的集合, 比如链表, 树等, 理论上容量是无限的. LinkedList, TreeSet, HashMap由于使用了链地址法避免冲突, 因此理论上也是无限的, HashSet 背后是 HashMap.</p>
+<h2 id="2-addoffer-removepoll-elementpeek">2. add/offer, remove/poll, element/peek 区别?</h2>
+<p>A collection designed for holding elements prior to processing. Besides basic Collection operations, queues provide additional insertion, extraction, and inspection operations. Each of these methods exists in two forms: one throws an exception if the operation fails, the other returns a special value (either null or false, depending on the operation). The latter form of the insert operation is designed specifically for use with capacity-restricted Queue implementations; in most implementations, insert operations cannot fail.
+|                   |Throws exception   |Returns special value|
+|------------------:|------------------:|--------------------:|
+|Insert             |add(e)             |offer(e)             |
+|Remove             |remove()           |poll()               |
+|Examine            |element()          |peek()               |</p>
+<h1 id="jvm">JVM 相关知识</h1>
 <h2 id="1-static-non-static-field">1. static 和 non-static field 区别?</h2>
 <ol>
 <li>全局唯一，任何一次的修改都是全局性的影响</li>
@@ -79,7 +100,7 @@
 
 <p>把 <code>int</code> 和 <code>Integer</code> 之间的隐式转换其实就是 <code>Integer.valueOf(param)</code> 和 <code>Integer.intValue()</code>; 而在java中, Integer.valueOf() 方法带有缓存机制, 即默认情况下, 对于 -128~127 的整数, 返回的是同一个对象! 对于缓存的上限 128 其实可以通过设置 JVM 参数 <code>-XX:AutoBoxCacheMax=?</code> 来更改!</p>
 <h1 id="_1">多线程并发初级主题</h1>
-<h2 id="1">1. <del>什么是线程? 为何使用线程?</del></h2>
+<h2 id="1_1">1. <del>什么是线程? 为何使用线程?</del></h2>
 <p>线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 一个进程内至少有一个主线程作为执行单位执行; 线程比进程更加轻量级, 创建时间更短, 资源消耗更少.</p>
 <h2 id="2_1">2. <del>线程和进程的区别?</del></h2>
 <p>线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 多个线程共享同一个进程内部的资源, 不同进程之间地址空间相互独立,不共享内存. 进程创建比线程更加耗费资源, 但进程通常更加稳定, Nginx 就采用了多进程的形式, 当然, 多线程环境下, 一个线程的阻塞并不会影响其他线程的执行, 提高的运行效率.</p>
@@ -143,7 +164,7 @@
 <h2 id="19-java-interrupted-isinterrupted">19. Java 中的 interrupted 和 isInterrupted 区别?(不熟悉)</h2>
 <p><strong><code>interrupted()</code> 和 <code>isInterrupted()</code> 的主要区别是前者会将中断状态清除而后者不会。Java多线程的中断机制是用内部标识来实现的，调用Thread.interrupt()来中断一个线程就会设置中断标识为true。</strong>当中断线程调用静态方法Thread.interrupted()来检查中断状态时，中断状态会被清零。而非静态方法isInterrupted()用来查询其它线程的中断状态且不会改变中断状态标识。简单的说就是任何抛出InterruptedException异常的方法都会将中断状态清零。无论如何，一个线程的中断状态有有可能被其它线程调用中断来改变。</p>
 <h2 id="20-wait-notify">20. 为何wait 和 notify 方法要在同步块中调用?(不熟悉)</h2>
-<p>主要是因为Java API强制要求这样做，如果你不这么做，你的代码会抛出IllegalMonitorStateException异常。还有一个原因是为了避免wait和notify之间产生竞态条件。<a href="http://javarevisited.blogspot.sg/2011/05/wait-notify-and-notifyall-in-java.html">Why wait notify and notifyAll called from synchronized block or method in Java</a></p>
+<p>主要是因为<strong>Java API强制要求这样做，如果你不这么做，你的代码会抛出IllegalMonitorStateException异常</strong>。还有一个原因是为了<strong>避免wait和notify之间产生竞态条件。</strong><a href="http://javarevisited.blogspot.sg/2011/05/wait-notify-and-notifyall-in-java.html">Why wait notify and notifyAll called from synchronized block or method in Java</a></p>
 <h2 id="21-if-else">21. 为什么要<strong><em>在循环中而不是直接使用一个if else</em></strong>检查等待条件?</h2>
 <ul>
 <li>处于等待状态的线程可能会收到<strong>错误警报和伪唤醒</strong>, <strong>如果不在循环中检查等待条件而是直接ifelse,程序就会在没有满足结束条件的情况下退出</strong></li>
@@ -243,7 +264,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-11 10:35:53</p>
+        <p>Site Generated 2017-05-12 22:24:18</p>
       </span>
     </div>
   </body>
