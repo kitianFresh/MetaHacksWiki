@@ -25,7 +25,27 @@
 
 <div class="page_title">java-tips</div>
 
-  <div class="hlcode"><pre><span class="o">/</span> <span class="nl">better:</span> <span class="k">do</span>
+  <h1 id="java-jar">Java 打包成 jar</h1>
+<p>注意 manifest 文件的写法, 必须是 <code>property:+space+value+\n</code>; 另外, 类名需要写全名才行!</p>
+<div class="hlcode"><pre><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
+<span class="n">Premain</span><span class="o">-</span><span class="nl">Class:</span> <span class="n">test</span><span class="o">.</span><span class="na">ObjectSizeFetcher</span>
+</pre></div>
+
+
+<h2 id="agent-jar">打包代理 agent jar</h2>
+<p>比如打包 test 包下面的 ObjectSizeFetcher 类, 需要 manifest 文件内容如下: </p>
+<div class="hlcode"><pre><span class="n">Manifest</span><span class="o">-</span><span class="n">Version</span><span class="o">:</span> <span class="mf">1.0</span>
+<span class="n">Premain</span><span class="o">-</span><span class="n">Class</span><span class="o">:</span> <span class="n">test</span><span class="p">.</span><span class="n">ObjectSizeFetcher</span>
+</pre></div>
+
+
+<p>执行 <code>java -javaagent:test/ObjectSizeFetcherAgent.jar test.ObjectSizeTest</code> 即可检查对象自身(不包含成员引用出来的对象的整个图中的对象)大小;</p>
+<h3 id="_1">参考</h3>
+<ul>
+<li><a href="http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html">Package java.lang.instrument Description</a></li>
+</ul>
+<h1 id="java-string-format">Java String Format</h1>
+<div class="hlcode"><pre><span class="o">/</span> <span class="nl">better:</span> <span class="k">do</span>
 <span class="n">SumThread</span> <span class="n">left</span>  <span class="o">=</span> <span class="err">…</span>
 <span class="n">SumThread</span> <span class="n">right</span> <span class="o">=</span> <span class="err">…</span>
 <span class="c1">// order of next 4 lines</span>
@@ -52,12 +72,67 @@
  <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">padLeft</span><span class="o">(</span><span class="s">&quot;Howto&quot;</span><span class="o">,</span> <span class="mi">20</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;*&quot;</span><span class="o">);</span>
 <span class="o">}</span>
 </pre></div>
+
+
+<h1 id="java-sorted-index">java Sorted Index</h1>
+<p>Concise way of achieving this with Java 8 Stream API,</p>
+<div class="hlcode"><pre><span class="kd">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">strArr</span> <span class="o">=</span> <span class="o">{</span><span class="s">&quot;France&quot;</span><span class="o">,</span> <span class="s">&quot;Spain&quot;</span><span class="o">,</span> <span class="s">&quot;France&quot;</span><span class="o">};</span>
+<span class="kt">int</span><span class="o">[]</span> <span class="n">sortedIndices</span> <span class="o">=</span> <span class="n">IntStream</span><span class="o">.</span><span class="na">range</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">strArr</span><span class="o">.</span><span class="na">length</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">boxed</span><span class="o">().</span><span class="na">sorted</span><span class="o">((</span><span class="n">i</span><span class="o">,</span> <span class="n">j</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">strArr</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">compareTo</span><span class="o">(</span><span class="n">strArr</span><span class="o">[</span><span class="n">j</span><span class="o">])</span> <span class="o">)</span>
+                <span class="o">.</span><span class="na">mapToInt</span><span class="o">(</span><span class="n">ele</span> <span class="o">-&gt;</span> <span class="n">ele</span><span class="o">).</span><span class="na">toArray</span><span class="o">();</span>
+</pre></div>
+
+
+<p>map</p>
+<div class="hlcode"><pre><span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;();</span>
+<span class="k">for</span><span class="o">(</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">indexes</span> <span class="o">)</span> <span class="o">{</span>
+    <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span> <span class="n">stringarray</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="n">i</span> <span class="o">);</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>comparator 交换的是索引, 但是比较标准是原数组</p>
+<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">ArrayIndexComparator</span> <span class="kd">implements</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span>
+<span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">double</span><span class="o">[]</span> <span class="n">array</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">ArrayIndexComparator</span><span class="o">(</span><span class="kt">double</span><span class="o">[]</span> <span class="n">array</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">Integer</span><span class="o">[]</span> <span class="nf">createIndexArray</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="n">Integer</span><span class="o">[]</span> <span class="n">indexes</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Integer</span><span class="o">[</span><span class="n">array</span><span class="o">.</span><span class="na">length</span><span class="o">];</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">array</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="n">indexes</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">;</span> <span class="c1">// Autoboxing</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">indexes</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">Integer</span> <span class="n">index1</span><span class="o">,</span> <span class="n">Integer</span> <span class="n">index2</span><span class="o">)</span>
+    <span class="o">{</span>
+         <span class="c1">// Autounbox from Integer to int to use as array indexes</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">array</span><span class="o">[</span><span class="n">index2</span><span class="o">])</span> <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">&gt;</span> <span class="n">array</span><span class="o">[</span><span class="n">index2</span><span class="o">])</span> <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">else</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="n">ArrayIndexComparator</span> <span class="n">arrayIndexerComparator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayIndexComparator</span><span class="o">(</span><span class="n">ratios</span><span class="o">);</span>
+<span class="n">Integer</span><span class="o">[]</span> <span class="n">indexes</span> <span class="o">=</span> <span class="n">arrayIndexerComparator</span><span class="o">.</span><span class="na">createIndexArray</span><span class="o">();</span>
+<span class="n">Arrays</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">indexes</span><span class="o">,</span> <span class="n">arrayIndexerComparator</span><span class="o">);</span>
+<span class="c1">//System.out.println(Arrays.toString(indexes));</span>
+</pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-12 22:24:18</p>
+        <p>Site Generated 2017-05-15 18:32:18</p>
       </span>
     </div>
   </body>
