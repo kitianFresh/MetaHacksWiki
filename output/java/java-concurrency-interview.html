@@ -40,12 +40,33 @@
 
 <p>内部基于带指针数据结构实现的集合, 比如链表, 树等, 理论上容量是无限的. LinkedList, TreeSet, HashMap由于使用了链地址法避免冲突, 因此理论上也是无限的, HashSet 背后是 HashMap.</p>
 <h2 id="2-addoffer-removepoll-elementpeek">2. add/offer, remove/poll, element/peek 区别?</h2>
-<p>A collection designed for holding elements prior to processing. Besides basic Collection operations, queues provide additional insertion, extraction, and inspection operations. Each of these methods exists in two forms: one throws an exception if the operation fails, the other returns a special value (either null or false, depending on the operation). The latter form of the insert operation is designed specifically for use with capacity-restricted Queue implementations; in most implementations, insert operations cannot fail.
-|                   |Throws exception   |Returns special value|
-|------------------:|------------------:|--------------------:|
-|Insert             |add(e)             |offer(e)             |
-|Remove             |remove()           |poll()               |
-|Examine            |element()          |peek()               |</p>
+<p>A collection designed for holding elements prior to processing. Besides basic Collection operations, queues provide additional insertion, extraction, and inspection operations. Each of these methods exists in two forms: one throws an exception if the operation fails, the other returns a special value (either null or false, depending on the operation). The latter form of the insert operation is designed specifically for use with capacity-restricted Queue implementations; in most implementations, insert operations cannot fail.</p>
+<table>
+<thead>
+<tr>
+<th align="right">Operations\Type</th>
+<th align="right">Throws exception</th>
+<th align="right">Returns special value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">Insert</td>
+<td align="right">add(e)</td>
+<td align="right">offer(e)</td>
+</tr>
+<tr>
+<td align="right">Remove</td>
+<td align="right">remove()</td>
+<td align="right">poll()</td>
+</tr>
+<tr>
+<td align="right">Examine</td>
+<td align="right">element()</td>
+<td align="right">peek()</td>
+</tr>
+</tbody>
+</table>
 <h1 id="jvm">JVM 相关知识</h1>
 <h2 id="1-static-non-static-field">1. static 和 non-static field 区别?</h2>
 <ol>
@@ -264,7 +285,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-15 18:32:18</p>
+        <p>Site Generated 2017-05-16 22:19:21</p>
       </span>
     </div>
   </body>

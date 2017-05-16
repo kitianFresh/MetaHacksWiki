@@ -19,7 +19,8 @@ date: 2017-05-05 20:22
 
 ## 2. add/offer, remove/poll, element/peek 区别?
 A collection designed for holding elements prior to processing. Besides basic Collection operations, queues provide additional insertion, extraction, and inspection operations. Each of these methods exists in two forms: one throws an exception if the operation fails, the other returns a special value (either null or false, depending on the operation). The latter form of the insert operation is designed specifically for use with capacity-restricted Queue implementations; in most implementations, insert operations cannot fail.
-|                   |Throws exception	|Returns special value|
+
+| Operations\Type   |Throws exception	|Returns special value|
 |------------------:|------------------:|--------------------:|
 |Insert	            |add(e)	            |offer(e)             |
 |Remove	            |remove()	        |poll()               |
