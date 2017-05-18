@@ -113,3 +113,9 @@ Integer[] indexes = arrayIndexerComparator.createIndexArray();
 Arrays.sort(indexes, arrayIndexerComparator);
 //System.out.println(Arrays.toString(indexes));
 ```
+
+# Java 线程CPU占用率
+查看线程cpu核占用率
+```
+top -H -p [pid]
+```
