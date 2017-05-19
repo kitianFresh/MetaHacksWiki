@@ -79,9 +79,29 @@ The MySQL server is running with the --secure-file-priv option so it cannot exec
 mysql> SELECT @@global.secure_file_priv;
 ```
 
-# MySQL大数据统计
+# MySQL大数据统计Case Study
+```sql
+drop database if exists `StudentManager`;
+create database `StudentManager`;
+use `StudentManager`;
+
+drop table if exists `students`;
+create table `students` (
+    `Id` int unsigned auto_increment not null,
+    `Name` varchar(255) not null,
+    `Class` int unsigned,
+    `Age` int unsigned,
+    `Sex` varchar(255),
+    `Math` int,
+    `Computer` int,
+    `Physics` int,
+    `Registry` timestamp not null,
+    primary key (`Id`)
+)
+```
+
 ## MySQL 聚合函数
-[MySQL 聚合函数](https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html)可以理解成 `Map/Reduce` 中的　`reduce` 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，方差等．这些函数SQL 直接提供的．
+[MySQL 聚合函数](https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html)可以理解成 `Map/Reduce` 中的　`reduce` 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．[Statistical functions in MySQL](http://www.xarg.org/2012/07/statistical-functions-in-mysql/)
 
  - COUNT()/COUNT(DISTINCT)
  - SUM()/SUM(DISTINCT)
@@ -109,8 +129,30 @@ mysql> SELECT Class, SUM(DISTINCT Age) FROM students GROUP BY Class;
 mysql> SELECT Class, AVG(DISTINCT Age) FROM students GROUP BY Class;
 
 ```
-**中位数Mode**, 需要我们做更复杂的操作，
 
+ - 均值
+ - 中位数  --将数据按大小顺序排列后处于中间位置的数。当中间剩余为2个数字时，取其算数平均数。
+ - 众数    --数据中出现次数最多的数（所占比例最大的数），一组数据中，可能存在多个众数，也可能不存在众数。
+ - 极差　--最大值和最小值的差，衡量数据范围
+ - 标准差　-- 距离平均数的距离，数据分布距离均值的带宽
+ - 方差　-- 标准差的平方
+ - 偏度
+ - 峰度
+
+
+优缺点
+
+||含义|优点|	缺点|
+|--:|--:|--:|--:|
+|均值|AVG|充分利用所有数据，适用性强|容易受到极端值影响|
+|中位数|MEDIUM|不受极端值影响	       |缺乏敏感性      |
+|众数|MODE|当数据具有明显的集中趋势时，代表性好；不受极端值影响|缺乏唯一性：可能有一个，可能有两个，可能一个都没有|
+
+**众数Mode**, 需要我们做更复杂的操作，寻找某一个组的众数．
+```sql
+
+SELECT * FROM (SELECT Class, Age, COUNT(Age) As Count FROM students WHERE Class = 1 GROUP BY Age) AS temp WHERE Count IN (SELECT MAX(Count) FROM (SELECT Class, Age, COUNT(Age) As Count FROM students WHERE Class = 1 GROUP BY Age) AS temp);
+```
 聚合函数运用在一个集合数据上，因此对于查询出来的表或者分组都可用的，运用特别多的就是和　GROUP BY 一起使用．因为 GROUP BY 是无法打印出来每一个组的所有记录的！此时还有一个聚合函数　`GROUP_CONCAT()`;此函数可以将每一组的某个字段值连接成一个字符串字段；
 ```sql
 GROUP_CONCAT([DISTINCT] expr [,expr ...]
@@ -236,12 +278,15 @@ mysql> SELECT * FROM students ORDER BY Registry DESC LIMIT 20, 10;
 
 ```
 
-## MySQL 
+## MySQL列运算操作
 
 ```sql
 select isnull(item1,0)+isnull(item2,0)+isnull(item3,0) as itemAdd, usr from usr_table
 select sum(isnull(item1,0)+isnull(item2,0)+isnull(item3,0))as itemSum  from usr_table
 ```
-
-
-
+## MySQL 索引优化
+ 1. 最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(>、<、between、like)就停止匹配，比如a = 1 and b = 2 and c > 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。
+ 2. =和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式
+ 3. 尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录
+ 4. 索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);
+ 5. 尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可
