@@ -97,9 +97,29 @@
 </pre></div>
 
 
-<h1 id="mysql_2">MySQL大数据统计</h1>
-<h2 id="mysql_3">MySQL 聚合函数</h2>
-<p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，方差等．这些函数SQL 直接提供的．</p>
+<h1 id="mysqlcase-study">MySQL大数据统计Case Study</h1>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+<span class="n">use</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+
+<span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span> <span class="p">(</span>
+    <span class="o">`</span><span class="n">Id</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span> <span class="n">auto_increment</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="k">Class</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Age</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Sex</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">Math</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Computer</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Physics</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Registry</span><span class="o">`</span> <span class="k">timestamp</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="k">primary</span> <span class="k">key</span> <span class="p">(</span><span class="o">`</span><span class="n">Id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<h2 id="mysql_2">MySQL 聚合函数</h2>
+<p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
 <ul>
 <li>COUNT()/COUNT(DISTINCT)</li>
 <li>SUM()/SUM(DISTINCT)</li>
@@ -127,7 +147,52 @@
 </pre></div>
 
 
-<p><strong>中位数Mode</strong>, 需要我们做更复杂的操作，</p>
+<ul>
+<li>均值</li>
+<li>中位数  --将数据按大小顺序排列后处于中间位置的数。当中间剩余为2个数字时，取其算数平均数。</li>
+<li>众数    --数据中出现次数最多的数（所占比例最大的数），一组数据中，可能存在多个众数，也可能不存在众数。</li>
+<li>极差　--最大值和最小值的差，衡量数据范围</li>
+<li>标准差　-- 距离平均数的距离，数据分布距离均值的带宽</li>
+<li>方差　-- 标准差的平方</li>
+<li>偏度</li>
+<li>峰度</li>
+</ul>
+<p>优缺点</p>
+<table>
+<thead>
+<tr>
+<th align="right"></th>
+<th align="right">含义</th>
+<th align="right">优点</th>
+<th align="right">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">均值</td>
+<td align="right">AVG</td>
+<td align="right">充分利用所有数据，适用性强</td>
+<td align="right">容易受到极端值影响</td>
+</tr>
+<tr>
+<td align="right">中位数</td>
+<td align="right">MEDIUM</td>
+<td align="right">不受极端值影响</td>
+<td align="right">缺乏敏感性</td>
+</tr>
+<tr>
+<td align="right">众数</td>
+<td align="right">MODE</td>
+<td align="right">当数据具有明显的集中趋势时，代表性好；不受极端值影响</td>
+<td align="right">缺乏唯一性：可能有一个，可能有两个，可能一个都没有</td>
+</tr>
+</tbody>
+</table>
+<p><strong>众数Mode</strong>, 需要我们做更复杂的操作，寻找某一个组的众数．</p>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span> <span class="k">WHERE</span> <span class="k">Count</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">MAX</span><span class="p">(</span><span class="k">Count</span><span class="p">)</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span><span class="p">);</span>
+</pre></div>
+
+
 <p>聚合函数运用在一个集合数据上，因此对于查询出来的表或者分组都可用的，运用特别多的就是和　GROUP BY 一起使用．因为 GROUP BY 是无法打印出来每一个组的所有记录的！此时还有一个聚合函数　<code>GROUP_CONCAT()</code>;此函数可以将每一组的某个字段值连接成一个字符串字段；</p>
 <div class="hlcode"><pre><span class="n">GROUP_CONCAT</span><span class="p">([</span><span class="k">DISTINCT</span><span class="p">]</span> <span class="n">expr</span> <span class="p">[,</span><span class="n">expr</span> <span class="p">...]</span>
              <span class="p">[</span><span class="k">ORDER</span> <span class="k">BY</span> <span class="err">{</span><span class="n">unsigned_integer</span> <span class="o">|</span> <span class="n">col_name</span> <span class="o">|</span> <span class="n">expr</span><span class="err">}</span>
@@ -249,16 +314,26 @@
 </pre></div>
 
 
-<h2 id="mysql_4">MySQL</h2>
+<h2 id="mysql_3">MySQL列运算操作</h2>
 <div class="hlcode"><pre><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
 <span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
 </pre></div>
+
+
+<h2 id="mysql_4">MySQL 索引优化</h2>
+<ol>
+<li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
+<li>=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</li>
+<li>尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录</li>
+<li>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</li>
+<li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
+</ol>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-18 22:53:29</p>
+        <p>Site Generated 2017-05-19 21:12:49</p>
       </span>
     </div>
   </body>
