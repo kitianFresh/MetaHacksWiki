@@ -25,7 +25,63 @@
 
 <div class="page_title">java-concurrency-interview</div>
 
-  <h1 id="java-collection-framework">Java Collection Framework</h1>
+  <h1 id="java-basics">Java Basics</h1>
+<h2 id="equalshashcode">equals/'=='/hashCode()</h2>
+<p><strong><code>==</code> 其实是真正比较等式两边的值，值无非就是基本数据类型，或者是指针即引用．</strong>使用 <code>==</code> 比较对象引用其实就是比较的对象地址，因此两个不同的对象　<code>==</code> 必定为false;</p>
+<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------string--------------&quot;</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;abc&quot;</span><span class="o">;</span>
+<span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;abc&quot;</span><span class="o">;</span>
+<span class="n">String</span> <span class="n">s3</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">s4</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">s5</span> <span class="o">=</span> <span class="n">s4</span><span class="o">.</span><span class="na">intern</span><span class="o">();</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s1</span> <span class="o">==</span> <span class="n">s2</span><span class="o">);</span> <span class="c1">// true</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s1</span> <span class="o">==</span> <span class="n">s3</span><span class="o">);</span> <span class="c1">// false</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s3</span> <span class="o">==</span> <span class="n">s4</span><span class="o">);</span> <span class="c1">// false</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s4</span> <span class="o">==</span> <span class="n">s5</span><span class="o">);</span> <span class="c1">// false</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s1</span> <span class="o">==</span> <span class="n">s5</span><span class="o">);</span> <span class="c1">// true</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">hashCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">s4</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span> <span class="c1">// true</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">).</span><span class="na">hashCode</span><span class="o">()</span> <span class="o">==</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">).</span><span class="na">hashCode</span><span class="o">());</span> <span class="c1">// true</span>
+</pre></div>
+
+
+<p><code>o1.equals(o2)</code> 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．
+由于 java 对于一些基础类重写，因此有些类使用的时候就不是比较地址了，比如 <strong>String 类，基本数据类型对应的类Byte/Character/Short/Integer/Long/Float/Double 都重写了 <code>equals</code></strong></p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="o">(</span><span class="k">this</span> <span class="o">==</span> <span class="n">obj</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span> <span class="c1">//true</span>
+</pre></div>
+
+
+<p><strong><code>hashCode()</code> 方法和<code>equals</code>一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, <code>equals()</code> 和　<code>hashCode()</code> 必须要保持一致性，因此重写　equals 的必须重写　hashCode().</strong>
+String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,
+才确定key是否相同.</strong></p>
+<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------integer--------------&quot;</span><span class="o">);</span>
+<span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">a2</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">a1</span> <span class="o">==</span> <span class="n">a2</span><span class="o">);</span> <span class="c1">// true</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">b1</span> <span class="o">==</span> <span class="n">b2</span><span class="o">);</span> <span class="c1">// false</span>
+<span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">maps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;();</span>
+<span class="n">Integer</span> <span class="n">i1</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">2048</span><span class="o">;</span>
+<span class="n">Integer</span> <span class="n">i3</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="n">maps</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">i1</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+<span class="n">maps</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
+<span class="n">maps</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">2048</span><span class="o">,</span> <span class="mi">2048</span><span class="o">);</span> <span class="c1">//　Integer 的　hashCode 就返回的是里面的 intValue, equals 方法当然也比较的是 intValue</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">maps</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i1</span><span class="o">));</span> <span class="c1">// 1</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">maps</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i2</span><span class="o">));</span> <span class="c1">// 2048</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">maps</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i3</span><span class="o">));</span> <span class="c1">// 2</span>
+</pre></div>
+
+
+<h1 id="java-collection-framework">Java Collection Framework</h1>
 <h2 id="1">1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?</h2>
 <p>内部基于数组实现的集合, 理论上容量不超过 Integer.MAX_VALUE, 因为数组下标必须是 int 类型, 这些集合包括 ArrayList, ArrayQueue, EnumMap, PriorityQueue</p>
 <div class="hlcode"><pre><span class="cm">/**</span>
@@ -285,7 +341,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-19 21:12:49</p>
+        <p>Site Generated 2017-05-20 13:16:10</p>
       </span>
     </div>
   </body>
