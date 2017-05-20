@@ -2,6 +2,63 @@
 title: "java-concurrency-interview"
 date: 2017-05-05 20:22
 ---
+# Java Basics
+## equals/'=='/hashCode()
+**`==` 其实是真正比较等式两边的值，值无非就是基本数据类型，或者是指针即引用．**使用 `==` 比较对象引用其实就是比较的对象地址，因此两个不同的对象　`==` 必定为false;
+
+```java
+System.out.println("------------------string--------------");
+String s1 = "abc";
+String s2 = "abc";
+String s3 = new String("abc");
+String s4 = new String("abc");
+String s5 = s4.intern();
+
+System.out.println(s1 == s2); // true
+System.out.println(s1 == s3); // false
+System.out.println(s3 == s4); // false
+System.out.println(s4 == s5); // false
+System.out.println(s1 == s5); // true
+System.out.println(s3.hashCode() == s4.hashCode()); // true
+System.out.println(new String("abc").hashCode() == new String("abc").hashCode()); // true
+```
+`o1.equals(o2)` 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．
+由于 java 对于一些基础类重写，因此有些类使用的时候就不是比较地址了，比如 **String 类，基本数据类型对应的类Byte/Character/Short/Integer/Long/Float/Double 都重写了 `equals`**
+
+```java
+public boolean equals(Object obj) {
+	return (this == obj);
+}
+```
+```java
+System.out.println(s3.equals(s4)); //true
+```
+**`hashCode()` 方法和`equals`一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, `equals()` 和　`hashCode()` 必须要保持一致性，因此重写　equals 的必须重写　hashCode().**
+String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． **hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,
+才确定key是否相同.**
+
+```java
+System.out.println("------------------integer--------------");
+Integer a1 = 10;
+Integer a2 = 10;
+Integer b1 = 128;
+Integer b2 = 128;
+
+System.out.println(a1 == a2); // true
+System.out.println(b1 == b2); // false
+HashMap<Integer, Integer> maps = new HashMap<Integer, Integer>();
+Integer i1 = 1;
+Integer i2 = 2048;
+Integer i3 = 2;
+maps.put(i1, 1);
+maps.put(2, 2);
+maps.put(2048, 2048); //　Integer 的　hashCode 就返回的是里面的 intValue, equals 方法当然也比较的是 intValue
+System.out.println(maps.get(i1)); // 1
+System.out.println(maps.get(i2)); // 2048
+System.out.println(maps.get(i3)); // 2
+```
+
+
 # Java Collection Framework
 ## 1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?
 内部基于数组实现的集合, 理论上容量不超过 Integer.MAX_VALUE, 因为数组下标必须是 int 类型, 这些集合包括 ArrayList, ArrayQueue, EnumMap, PriorityQueue
