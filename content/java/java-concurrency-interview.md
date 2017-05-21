@@ -332,6 +332,139 @@ Volatile变量可以确保先行关系，即写操作会发生在后续的读操
 ## 48. Java中的fork join框架是什么？
 fork join框架是JDK7中出现的一款高效的工具，Java开发人员可以通过它充分利用现代服务器上的多处理器。**它是专门为了那些可以递归划分, 分治并行成许多子模块设计的，目的是将所有可用的处理能力用来提升程序的性能。**fork join框架一个巨大的优势是它使用了工作窃取算法，可以完成更多任务的工作线程可以从其它线程中窃取任务来执行。
 
-# 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del>
+#＃ 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del>
 Java程序中wait 和 sleep都会造成某种形式的暂停，它们可以满足不同的需要。**wait()方法用于线程间通信，如果等待条件为真且其它线程被唤醒时它会释放锁**，而**sleep()方法仅仅释放CPU资源或者让当前线程停止执行一段时间，但不会释放锁.**
+
+## 补充知识资深话题
+java 现在的并发实现互斥和同步的机制对新手来说看起来非常混乱！新手大多知道 `synchronized/volatile` 关键字可以实现互斥，再辅以　`wait/notify/notifyAll` 就可以实现同步．以上可以认为是JVM内置的原生互斥同步实现．但是在　JDK 5以后，java.util.concurrent 包里面又实现了很多额外的机制，比如 Lock(ReentrantLock/ReentrantReadWriteLock),Semaphore,CountDownLatch, AtomicInteger等，其实这个并发包并不是替代内置枷锁的方法，而是当内置枷锁方法不使用的时候，作为一种可选择的高级功能．
+
+## Locks
+
+```java
+public class Counter{
+
+  private int count = 0;
+
+  public int inc(){
+    synchronized(this){
+      return ++count;
+    }
+  }
+}
+```
+```java
+
+  private Lock lock = new Lock();
+  private int count = 0;
+
+  public int inc(){
+    lock.lock();
+    int newCount = ++count;
+    lock.unlock();
+    return newCount;
+  }
+}
+```
+并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？
+
+>Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.
+
+```java
+public class Lock{
+
+  private boolean isLocked = false;
+
+  public synchronized void lock()
+  throws InterruptedException{
+    while(isLocked){
+      wait();
+    }
+    isLocked = true;
+  }
+
+  public synchronized void unlock(){
+    isLocked = false;
+    notify();
+  }
+}
+```
+这是一个自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug. 
+
+>For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.
+
+其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 `while() wait; notify;`,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
+
+
+### Semaphore
+>A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.
+
+信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.
+简单版本的 Semaphore
+```java
+public class Semaphore {
+  private boolean signal = false;
+
+  public synchronized void take() {
+    this.signal = true;
+    this.notify();
+  }
+
+  public synchronized void release() throws InterruptedException{
+    while(!this.signal) wait();
+    this.signal = false;
+  }
+
+}
+``` 
+可以记录信号发送的信号个数(Counting Semaphore)
+```java
+public class CountingSemaphore {
+  private int signals = 0;
+
+  public synchronized void take() {
+    this.signals++;
+    this.notify();
+  }
+
+  public synchronized void release() throws InterruptedException{
+    while(this.signals == 0) wait();
+    this.signals--;
+  }
+```
+带上界的(Bounded Semaphore)
+
+```java
+public class BoundedSemaphore {
+  private int signals = 0;
+  private int bound   = 0;
+
+  public BoundedSemaphore(int upperBound){
+    this.bound = upperBound;
+  }
+
+  public synchronized void take() throws InterruptedException{
+    while(this.signals == bound) wait();
+    this.signals++;
+    this.notify();
+  }
+
+  public synchronized void release() throws InterruptedException{
+    while(this.signals == 0) wait();
+    this.signals--;
+    this.notify();
+  }
+}
+```
+PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以take,当到达bound的时候,后续take会被阻塞.当有线程release的时候,剩余资源又有了,又可以take了.
+
+这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号.
+
+[Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
+
+
+
+### 生产者消费者模型(synchronized/notify实现)
+
+### AtomicInteger
+AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS
 

@@ -334,14 +334,141 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </ul>
 <h2 id="48-javafork-join">48. Java中的fork join框架是什么？</h2>
 <p>fork join框架是JDK7中出现的一款高效的工具，Java开发人员可以通过它充分利用现代服务器上的多处理器。<strong>它是专门为了那些可以递归划分, 分治并行成许多子模块设计的，目的是将所有可用的处理能力用来提升程序的性能。</strong>fork join框架一个巨大的优势是它使用了工作窃取算法，可以完成更多任务的工作线程可以从其它线程中窃取任务来执行。</p>
-<h1 id="49-javawait-sleep">49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del></h1>
+<h1 id="49-javawait-sleep">＃ 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del></h1>
 <p>Java程序中wait 和 sleep都会造成某种形式的暂停，它们可以满足不同的需要。<strong>wait()方法用于线程间通信，如果等待条件为真且其它线程被唤醒时它会释放锁</strong>，而<strong>sleep()方法仅仅释放CPU资源或者让当前线程停止执行一段时间，但不会释放锁.</strong></p>
+<h2 id="_3">补充知识资深话题</h2>
+<p>java 现在的并发实现互斥和同步的机制对新手来说看起来非常混乱！新手大多知道 <code>synchronized/volatile</code> 关键字可以实现互斥，再辅以　<code>wait/notify/notifyAll</code> 就可以实现同步．以上可以认为是JVM内置的原生互斥同步实现．但是在　JDK 5以后，java.util.concurrent 包里面又实现了很多额外的机制，比如 Lock(ReentrantLock/ReentrantReadWriteLock),Semaphore,CountDownLatch, AtomicInteger等，其实这个并发包并不是替代内置枷锁的方法，而是当内置枷锁方法不使用的时候，作为一种可选择的高级功能．</p>
+<h2 id="locks">Locks</h2>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Counter</span><span class="o">{</span>
+
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">inc</span><span class="o">(){</span>
+    <span class="kd">synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">){</span>
+      <span class="k">return</span> <span class="o">++</span><span class="n">count</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre>  <span class="kd">private</span> <span class="n">Lock</span> <span class="n">lock</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Lock</span><span class="o">();</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">inc</span><span class="o">(){</span>
+    <span class="n">lock</span><span class="o">.</span><span class="na">lock</span><span class="o">();</span>
+    <span class="kt">int</span> <span class="n">newCount</span> <span class="o">=</span> <span class="o">++</span><span class="n">count</span><span class="o">;</span>
+    <span class="n">lock</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
+    <span class="k">return</span> <span class="n">newCount</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？</p>
+<blockquote>
+<p>Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.</p>
+</blockquote>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Lock</span><span class="o">{</span>
+
+  <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">lock</span><span class="o">()</span>
+  <span class="kd">throws</span> <span class="n">InterruptedException</span><span class="o">{</span>
+    <span class="k">while</span><span class="o">(</span><span class="n">isLocked</span><span class="o">){</span>
+      <span class="n">wait</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">unlock</span><span class="o">(){</span>
+    <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="n">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>这是一个自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug. </p>
+<blockquote>
+<p>For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.</p>
+</blockquote>
+<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！</p>
+<h3 id="semaphore">Semaphore</h3>
+<blockquote>
+<p>A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.</p>
+</blockquote>
+<p>信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.
+简单版本的 Semaphore</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Semaphore</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">signal</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">take</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signal</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">release</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span><span class="o">{</span>
+    <span class="k">while</span><span class="o">(!</span><span class="k">this</span><span class="o">.</span><span class="na">signal</span><span class="o">)</span> <span class="n">wait</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signal</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+
+<p>可以记录信号发送的信号个数(Counting Semaphore)</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CountingSemaphore</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">signals</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">take</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signals</span><span class="o">++;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">release</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span><span class="o">{</span>
+    <span class="k">while</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">signals</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="n">wait</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signals</span><span class="o">--;</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>带上界的(Bounded Semaphore)</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BoundedSemaphore</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">signals</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">bound</span>   <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">BoundedSemaphore</span><span class="o">(</span><span class="kt">int</span> <span class="n">upperBound</span><span class="o">){</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">bound</span> <span class="o">=</span> <span class="n">upperBound</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">take</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span><span class="o">{</span>
+    <span class="k">while</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">signals</span> <span class="o">==</span> <span class="n">bound</span><span class="o">)</span> <span class="n">wait</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signals</span><span class="o">++;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">release</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span><span class="o">{</span>
+    <span class="k">while</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">signals</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="n">wait</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">signals</span><span class="o">--;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以take,当到达bound的时候,后续take会被阻塞.当有线程release的时候,剩余资源又有了,又可以take了.</p>
+<p>这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号.</p>
+<p><a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
+<h3 id="synchronizednotify">生产者消费者模型(synchronized/notify实现)</h3>
+<h3 id="atomicinteger">AtomicInteger</h3>
+<p>AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-20 13:16:10</p>
+        <p>Site Generated 2017-05-21 23:36:55</p>
       </span>
     </div>
   </body>
