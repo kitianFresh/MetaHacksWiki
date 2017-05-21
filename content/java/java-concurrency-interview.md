@@ -365,7 +365,7 @@ public class Counter{
   }
 }
 ```
-并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？
+**并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？**
 
 >Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.
 
@@ -388,18 +388,19 @@ public class Lock{
   }
 }
 ```
-这是一个自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug. 
+这是一个**自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug.** 
 
 >For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.
 
 其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 `while() wait; notify;`,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
-
+[Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
 
 ### Semaphore
 >A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.
 
 信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.
 简单版本的 Semaphore
+
 ```java
 public class Semaphore {
   private boolean signal = false;
@@ -417,6 +418,7 @@ public class Semaphore {
 }
 ``` 
 可以记录信号发送的信号个数(Counting Semaphore)
+
 ```java
 public class CountingSemaphore {
   private int signals = 0;
@@ -455,11 +457,13 @@ public class BoundedSemaphore {
   }
 }
 ```
+
 PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以take,当到达bound的时候,后续take会被阻塞.当有线程release的时候,剩余资源又有了,又可以take了.
 
 这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号.
 
-[Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
+[Semaphores](http://tutorials.jenkov.com/java-concurrency/semaphores.html#counting)
+
 
 
 

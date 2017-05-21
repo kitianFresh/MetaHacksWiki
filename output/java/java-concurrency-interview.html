@@ -365,7 +365,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </pre></div>
 
 
-<p>并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？</p>
+<p><strong>并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？</strong></p>
 <blockquote>
 <p>Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.</p>
 </blockquote>
@@ -389,11 +389,12 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </pre></div>
 
 
-<p>这是一个自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug. </p>
+<p>这是一个<strong>自旋锁的实现！其实就是因为原来程序员直接使用 synchronized/wait/notify 自己实现锁，很容易出bug,并且JVM还有伪唤醒的bug(即在没有调用notify/notifyAll的情况下，wait线程也可能被唤醒，因此必须使用 while 而不是简单的一次 if判断),　自旋锁可以避免这种bug.</strong> </p>
 <blockquote>
 <p>For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.</p>
 </blockquote>
-<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！</p>
+<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
+<a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
 <h3 id="semaphore">Semaphore</h3>
 <blockquote>
 <p>A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.</p>
@@ -459,7 +460,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 <p>PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以take,当到达bound的时候,后续take会被阻塞.当有线程release的时候,剩余资源又有了,又可以take了.</p>
 <p>这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号.</p>
-<p><a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
+<p><a href="http://tutorials.jenkov.com/java-concurrency/semaphores.html#counting">Semaphores</a></p>
 <h3 id="synchronizednotify">生产者消费者模型(synchronized/notify实现)</h3>
 <h3 id="atomicinteger">AtomicInteger</h3>
 <p>AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS</p>
@@ -468,7 +469,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-21 23:36:55</p>
+        <p>Site Generated 2017-05-21 23:47:51</p>
       </span>
     </div>
   </body>
