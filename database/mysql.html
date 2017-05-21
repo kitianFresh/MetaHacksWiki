@@ -260,7 +260,7 @@
 </pre></div>
 
 
-<p>以上查询的意思就是，对于 students 表中的每一个学生，看他是不是改组的 TOP 5, 其实就是看有多少个和 s.Class 相同的学生他的年龄比　s.Age 大，如果个数小于 N 个，　就表明这个学生是　TOP N 中的，　因为　TOP N 中的记录，比他还大的必定少于 N 个；　但是这个版本的缺陷可以从结果看出来，　他无法正确统计值相同的情况！</p>
+<p>以上查询的意思就是，对于 students 表中的每一个学生，看他是不是该组的 TOP 5, 其实就是看有多少个和 s.Class 相同的学生他的年龄比　s.Age 大，如果个数小于 N 个，　就表明这个学生是　TOP N 中的，　因为　TOP N 中的记录，比他还大的必定少于 N 个；　但是这个版本的缺陷可以从结果看出来，　他无法正确统计值相同的情况！</p>
 <h3 id="union">UNION 集合并</h3>
 <div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
     <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
@@ -333,7 +333,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-20 13:16:10</p>
+        <p>Site Generated 2017-05-21 23:36:55</p>
       </span>
     </div>
   </body>
