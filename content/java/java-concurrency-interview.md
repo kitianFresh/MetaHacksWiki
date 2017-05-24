@@ -58,6 +58,12 @@ System.out.println(maps.get(i2)); // 2048
 System.out.println(maps.get(i3)); // 2
 ```
 
+## compareble 和 comparator 区别
+Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。
+而Comparator是比较器；我们若需要控制某个类的次序，可以建立一个“该类的比较器”来进行排序。
+
+我们不难发现：Comparable相当于“内部比较器”，而Comparator相当于“外部比较器”。
+
 
 # Java Collection Framework
 ## 1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?
@@ -365,7 +371,16 @@ public class Counter{
   }
 }
 ```
-**并发包里的锁实际上还是离不开 synchronized/wait/notify. 还是通过这种形式实现的！那这和直接用 synchronized/wait/notify有什么区别？**
+**并发包里的锁实际上可以通过 synchronized/wait/notify 来模拟实现同样的功能. 那这和直接用 synchronized/wait/notify有什么区别？**
+synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你必须控制到代码块的枷锁粒度,并不是非常灵活,而且采用 synchronized 必定会造成阻塞, 因为JVM会把 synchronized 关键字翻译成也不能设置超时. 
+
+Lock 就是更加灵活的选择, 他的实现在JDK中是通过 CAS 来做的, CAS 是cpu原语指令, 他是不需要经过操作系统去调度阻塞的,即 CAS 可以实现非阻塞的锁.
+
+1. The use of synchronized methods or statements provides access to the **implicit monitor lock associated with every object, but forces all lock acquisition and release to occur in a block-structured way**
+
+2. Lock implementations provide additional functionality over the use of synchronized methods and statements by providing a **non-blocking attempt to acquire a lock (tryLock()), an attempt to acquire the lock that can be interrupted (lockInterruptibly(), and an attempt to acquire the lock that can timeout (tryLock(long, TimeUnit)).**
+
+3. A Lock class can also provide behavior and semantics that is quite different from that of the implicit monitor lock, such as **guaranteed ordering, non-reentrant usage, or deadlock detection**
 
 >Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.
 
@@ -472,3 +487,42 @@ PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以t
 ### AtomicInteger
 AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS
 
+```java
+//使用volatile关键字保证线程可见性
+private volatile int value;
+public final int get(){
+    return value;
+}
+
+public final int incrementAndGet(){
+    for (; ; ) {
+        int current = get();
+        int next = current + 1;
+        if (compareAndSet(current, next))
+            return next;
+    }
+}
+```
+CAS模拟
+```java
+
+public class SimulatedCAS {
+    private int value;
+
+    public synchronized int get(){
+        return value;
+    }
+
+    public synchronized int compareAndSwap(int expectedValue, int newValue){
+        int oldValue = value;
+        if (oldValue == expectedValue){
+            value = newValue;
+        }
+        return oldValue;
+    }
+
+    public synchronized boolean compareAndSet(int expectedValue, int newValue){
+        return (expectedValue == compareAndSwap(expectedValue,newValue));
+    }
+}
+```
