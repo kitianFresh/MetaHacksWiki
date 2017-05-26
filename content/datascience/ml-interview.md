@@ -151,3 +151,4 @@ One-vs-All k 概率最大的那个
 
 ## 资源
  - [机器学习常见算法个人总结（面试用)](http://kubicode.me/2015/08/16/Machine%20Learning/Algorithm-Summary-for-Interview/)
+ - [数据挖掘岗面试总结](http://blog.csdn.net/bryan__/article/details/52672912)
