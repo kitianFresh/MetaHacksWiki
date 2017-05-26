@@ -28,7 +28,37 @@
   <h2 id="linux-javapython">Linux下查看 Java/Python 进程线程</h2>
 <p>先使用 <code>ps -ef | grep [processname]</code> 查看进程id</p>
 <h3 id="proc">进程文件proc</h3>
-<p>查看status文件</p>
+<p>查看status文件; <code>cat /proc/[pid]/status</code>;</p>
+<h3 id="pstree">pstree</h3>
+<p><code>pstree -p 7604</code></p>
+<div class="hlcode"><pre><span class="n">java</span><span class="p">(</span><span class="mi">7604</span><span class="p">)</span><span class="err">─┬─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7605</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7606</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7607</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7608</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7609</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7610</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7611</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7612</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7613</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7614</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7615</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7616</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7617</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7618</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7619</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7620</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7621</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7622</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7623</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7624</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7625</span><span class="p">)</span>
+           <span class="err">└─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7626</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="top">top</h3>
+<h3 id="ps">ps</h3>
+<p><code>ps -eo ruser,pid,ppid,lwp,psr,args -L | grep java</code></p>
 <h2 id="java">Java 进程线程堆栈分析工具</h2>
 <h3 id="jps-jstack">jps &amp; jstack</h3>
 <p><code>jps</code> 一般可以直接用来获取 java 进程 id; 比如我运行了一个8线程的java程序;jps命令格式 <code>jps [ options ] [ hostid ]</code>
@@ -258,7 +288,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-05-24 22:37:15</p>
+        <p>Site Generated 2017-05-26 18:21:29</p>
       </span>
     </div>
   </body>

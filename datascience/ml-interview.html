@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>ml-interview - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#datascience">datascience</a>&nbsp;&#187;&nbsp;ml-interview
+    <span class="updated">Updated&nbsp;
+      2017-05-26 12:53
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">ml-interview</div>
+
+  <h1 id="_1">机器学习</h1>
+<h2 id="_2">系统结构</h2>
+<p>系统认识, 机器学习就是 模型 + 策略 + 算法.
+- 模型 
+  - 就是是用什么模型来建模实际问题,比如线性,非线性,概率,图等;生成模型还是判别模型;决策函数;模型假设;模型复杂度.</p>
+<ul>
+<li>策略</li>
+<li>更多可以理解为损失函数;损失函数一般又是一个优化理论问题; </li>
+<li>策略选取的目的是使得结构化风险最小;结构化风险=经验风险+lambda*正则. </li>
+<li>
+<p>lambda用于权衡模型复杂度和经验风险, 往往模型复杂度和经验风险同时都小的时候,模型泛华能力就比较强.即对训练集和未知的测试数据预测都较好.</p>
+</li>
+<li>
+<p>算法</p>
+</li>
+<li>对于建立的模型和评估模型好坏的策略, 需要我们找到一种算法, 得到最优解,或者近似最优解,局部或者全局的.</li>
+<li>比如, 同样一个极小化损失函数, 你可以选取不同的方法来求解, 梯度下降(BGD,SGD,mini_BGD) 可以得到局部最优. 也可以采用QP二次规划求解, 甚至对于线性回归问题,可以直接用非奇异矩阵解线性方程组.</li>
+<li>SVM 求解方法就是采用了拉格朗日乘子法和对偶问题,使用 KTT 条件去解支撑向量点. 以及采用SMO算法优化.</li>
+<li>算法,主要考虑数学上,模型收敛性,是否最优解等, 从计算机运行角度讲, 内存,计算量,快慢, 并行化等.</li>
+</ul>
+<p>对于一个模型, 除了数学上的建模,优化外, 计算机角度来看,还需要考虑模型实现难度,学习算法的时间空间复杂度等.</p>
+<p>学习的目的就是最小化期望风险, 即 最小化结构化风险=经验风险+lambda*正则. lambda就是经验风险和模型复杂度的权衡, 最终目的就是两者都尽可能小.</p>
+<blockquote>
+<p>为什么朴素贝叶斯做了条件独立性假设之后, 模型效果还是很不错呢?</p>
+</blockquote>
+<p>个人认为有两点, 第一是虽然条件变量之间的确不独立, 但是变量之间的相关性往往也没有我们想象的那么大; 
+第二, 如果假设不独立, 反而会让模型变得更加复杂, 更简单的模型相当于加入正则的经验风险, 模型泛化能力可能更好, 考虑过多相关性反而会出现过拟合.</p>
+<h2 id="_3">策略选取(损失函数, 决策树并没有直接的损失函数,它是一种按照最大信息增益的标准做贪心选取算法)</h2>
+<ul>
+<li>0-1 损失 (朴素贝叶斯)</li>
+<li>平方损失MSE (线性回归)</li>
+<li>绝对值损失</li>
+<li>对数损失(Logistic Regression): -Sigma(Yi * log H(Xi) + (1-Yi) * log (1 - H(Xi)); 正确肯定没有损失,情况下,假设是1, 那么就只有前面一项, 那么H(Xi) 的概率越大, 损失反而越小. 假设不正确,本来是1,预测0, 那么 H(Xi) 很小, 损失反而很大. </li>
+<li>Hinge 损失(SVM): 先斜线,后直线. 就是在个阈值之后, 损失都没有. 因为远离超平面的点没有影响.</li>
+<li>KL 散度</li>
+</ul>
+<h2 id="_4">模型评估方法</h2>
+<p>方差(Variances)/偏差(Biases)度量:
+混淆矩阵:</p>
+<p>精确率Precision:
+召回率Recall:
+正确率Accuracy:
+F1-Score: P 和 R 的调和平均
+ROC/AUC: Y轴-TPR[正样本召回率], X轴-FPR=(1-TNR)[1-负样本召回率], 两个同时都大,那么 AUC(ROC曲线下的面积)就大.模型越稳定,效果越好.</p>
+<h2 id="_5">模型优化</h2>
+<h3 id="_6">过拟合</h3>
+<p>过拟合是在训练集非常好, 测试集不好. 这时从数据量,数据特征和模型本身考虑;</p>
+<ol>
+<li>数据过少</li>
+<li>增大数据量</li>
+<li>特征过多</li>
+<li>去掉冗余特征, 做特征选取</li>
+<li>模型太复杂</li>
+<li>选择更加简单的模型, 或者加入正则, DropOut</li>
+<li>训练时间提前结束</li>
+<li>模型融合</li>
+<li>Bagging</li>
+<li>Boosting</li>
+<li>利用贝叶斯</li>
+</ol>
+<blockquote>
+<p>哪些模型如果不做修改直接用,很容易过拟合?</p>
+</blockquote>
+<p>决策树就容易过拟合, 解决方法是剪枝,控制深度,叶子节点个数等.</p>
+<h3 id="_7">欠拟合</h3>
+<ol>
+<li>特征太少了</li>
+<li>增加特征, 多项式特征等</li>
+<li>模型太简单了</li>
+<li>减少正则数量.</li>
+</ol>
+<h3 id="_8">数据量</h3>
+<p>剔除噪声点,数据样本不均衡问题</p>
+<h3 id="_9">数据特征</h3>
+<blockquote>
+<p>为什么要做特征工程?
+训练数据往往并不是所有数据的代表, 一方面含有噪声. 另一方面,特征过多, 训练时间过长,模型维度更大,更加复杂.
+特征选择能剔除不相关(irrelevant)或亢余(redundant )的特征，从而达到减少特征个数，提高模型精确度，减少运行时间的目的。另一方面，选取出真正相关的特征简化了模型.</p>
+<p>什么时候需要减少特征,什么时候需要增加特征?</p>
+</blockquote>
+<p>噪声,特征升维, 特生抽取. 那些特征可以使用,人口统计学特征,时间,行为,点击,浏览,扫描.....</p>
+<blockquote>
+<p>如何选取特征?
+统计学相关性分析, 计算距离, 信息增益.
+决策树</p>
+</blockquote>
+<ul>
+<li><a href="http://blog.csdn.net/dream_angel_z/article/details/49388733">机器学习之特征工程</a></li>
+</ul>
+<h3 id="_10">数据量和特征维度对模型选取的影响</h3>
+<p>先用简单模型,
+SVM一般做到几十万的数据量就会变得很慢了.SVM对数据范围敏感,需要归一化.</p>
+<h3 id="_11">样本不均衡问题</h3>
+<p>数据采样.</p>
+<h3 id="softmax-sigmoid">softmax 和 sigmoid 区别</h3>
+<p>softmax 是直接可以做多分类的, 因为计算结果的每一个score都指数化之后除以他们的加和, 最终对每一类的预测就是基于概率模型的.</p>
+<p>sigmoid 直接使用的时候其实就只能做二分, 现将 决策函数算出来的 score 通过 sigmoid 映射到 0 - 1, 然后设置一个概率阈值,决定二分类问题.</p>
+<h3 id="_12">模型本身复杂度</h3>
+<p>加入正则. 正则区别L0, L1, L2. 为了降低模型复杂度, 防止模型将某些不重要的特征也学习出一个较高的权重, 在训练数据集上过拟合, 我们需要找出哪些特征是不重要甚至是无用的, 即L0 正则. 但是这是 NP 问题, 很难求解. </p>
+<p>L1 正则, L1 正则是 在 0 处不可导, 这个特性使得在求解最小化结构风险函数的时候, L1 正则学习出来的参数倾向于稀疏, 有些地方就直接是 0 了. 因此可以做特征抽取和降维. 典型的是 Lasso 线性回归.</p>
+<p>L2 正则处处可导, 学习出来的参数也是比较平滑的,他可以保证所有的特征不会出现一些权重很大的, 可以防止过拟合. 典型的是 Rindge 线性回归.</p>
+<p>另外, L1 和 L2 使用梯度下降求解的时候, 收敛速度也不一样. 对于 L1 最后权重更新公式其实是每一次都做在原来权重基础上先做一个减法减少权重, 因此在权重较小的时候他下降的比较快,但是权重还很大的时候下降比较慢; 
+而 L2 正则导数之后, 梯度更新公式每一次先在原来权重基础上成比例减小, 对于大权重的时候, 收敛下降就快.</p>
+<h3 id="ensembling">ensembling</h3>
+<p>Bagging:
+ - RandomForest
+  - 数据采样,特征采样, 稳定性,数据多样性复杂也适用</p>
+<p>Boosting:
+ - AdaBoost(加权投票机制)
+  - 每一课树其实是可用的.
+ - Gradient Boosting Decision Tree(基于梯度提升)
+  - 当前的树学习的是前面累计模型的残差, 因此只有组合起来才可用.
+ - Xgboost
+  - 利用二阶导, 能够更快的在训练集上收敛, 并在实现上充分利用了多核并行计算.</p>
+<h2 id="_13">模型分类</h2>
+<h3 id="_14">监督学习可以分为生成模型还是判别模型</h3>
+<p>生成模型: 可以还原输入变量和输出变量的联合概率分布P(X, Y), 收敛速度快, 存在隐变量也可以使用,但判别模型不能 
+ - 朴素贝叶斯</p>
+<p>判别模型: 不能还原联合概率,学习的是条件概率P(Y|X)或者决策函数f(X).含有隐变量时不能使用. 
+ - K近邻法(KNN), 感知机(Perceptron), 决策树(Decision Tree), 逻辑斯特回归(Logistic Regression), 最大熵模型, 支持向量机(SVM), 提升方法(Boosting), 条件随机场(CRF)</p>
+<h3 id="_15">线性模型还是非线性模型</h3>
+<p>主要是决策函数部分决定的, 比如 Linear Regression, Logistic Regression, Linear Kernel SVM, 感知器 都是线性模型.
+Decsion Tree, Naive Bayes, AdaBoost, GBDT, SVM(非线性核), KNN(K近邻)都是非线性模型.</p>
+<h3 id="_16">监督还是无监督还是半监督</h3>
+<p>带标签,不带标签.</p>
+<h3 id="_17">二分类模型如何延展做多分的</h3>
+<p>One-Vs-One k*(k-1)/2 投票</p>
+<p>One-vs-All k 概率最大的那个</p>
+<p>决策树中, 回归就取叶子中所有值的均值,或者继续加一个LinearModel. 多分类就做投票.</p>
+<h2 id="_18">资源</h2>
+<ul>
+<li><a href="http://kubicode.me/2015/08/16/Machine%20Learning/Algorithm-Summary-for-Interview/">机器学习常见算法个人总结（面试用)</a></li>
+</ul>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-05-26 18:21:29</p>
+      </span>
+    </div>
+  </body>
+</html>
