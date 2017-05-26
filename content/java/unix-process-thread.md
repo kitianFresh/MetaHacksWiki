@@ -6,8 +6,38 @@ date: 2017-05-24 16:51
 ## Linux下查看 Java/Python 进程线程
 先使用 `ps -ef | grep [processname]` 查看进程id
 ### 进程文件proc
-查看status文件
+查看status文件; `cat /proc/[pid]/status`;
 
+### pstree
+`pstree -p 7604`
+```
+java(7604)─┬─{java}(7605)
+           ├─{java}(7606)
+           ├─{java}(7607)
+           ├─{java}(7608)
+           ├─{java}(7609)
+           ├─{java}(7610)
+           ├─{java}(7611)
+           ├─{java}(7612)
+           ├─{java}(7613)
+           ├─{java}(7614)
+           ├─{java}(7615)
+           ├─{java}(7616)
+           ├─{java}(7617)
+           ├─{java}(7618)
+           ├─{java}(7619)
+           ├─{java}(7620)
+           ├─{java}(7621)
+           ├─{java}(7622)
+           ├─{java}(7623)
+           ├─{java}(7624)
+           ├─{java}(7625)
+           └─{java}(7626)
+```
+### top
+
+### ps
+`ps -eo ruser,pid,ppid,lwp,psr,args -L | grep java`
 
 ## Java 进程线程堆栈分析工具
 ### jps & jstack

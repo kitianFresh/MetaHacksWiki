@@ -120,3 +120,222 @@ Arrays.sort(indexes, arrayIndexerComparator);
 top -H -p [pid]
 ```
 
+## Java Exception
+三种类型的 exceptions
+
+ 1. checked exception: Catch or Specify Requirement
+ 2. unchecked exception
+  - Errors:
+  - Runtime Exception: 一般不捕获处理, 因为属于程序逻辑错误.所以最好不要抛出继承自 RuntimeException 的异常.
+
+### 使用异常的好处
+
+ 1. 分离错误处理代码和正常的逻辑代码;
+```java
+ readFile {
+    open the file;
+    determine its size;
+    allocate that much memory;
+    read the file into memory;
+    close the file;
+}
+```
+```java
+errorCodeType readFile {
+    initialize errorCode = 0;
+    
+    open the file;
+    if (theFileIsOpen) {
+        determine the length of the file;
+        if (gotTheFileLength) {
+            allocate that much memory;
+            if (gotEnoughMemory) {
+                read the file into memory;
+                if (readFailed) {
+                    errorCode = -1;
+                }
+            } else {
+                errorCode = -2;
+            }
+        } else {
+            errorCode = -3;
+        }
+        close the file;
+        if (theFileDidntClose && errorCode == 0) {
+            errorCode = -4;
+        } else {
+            errorCode = errorCode and -4;
+        }
+    } else {
+        errorCode = -5;
+    }
+    return errorCode;
+}
+```
+```java
+readFile {
+    try {
+        open the file;
+        determine its size;
+        allocate that much memory;
+        read the file into memory;
+        close the file;
+    } catch (fileOpenFailed) {
+       doSomething;
+    } catch (sizeDeterminationFailed) {
+        doSomething;
+    } catch (memoryAllocationFailed) {
+        doSomething;
+    } catch (readFailed) {
+        doSomething;
+    } catch (fileCloseFailed) {
+        doSomething;
+    }
+}
+```
+ 2. 通过调用栈传递错误异常
+```
+method1 {
+    call method2;
+}
+
+method2 {
+    call method3;
+}
+
+method3 {
+    call readFile;
+}
+
+// if else
+method1 {
+    errorCodeType error;
+    error = call method2;
+    if (error)
+        doErrorProcessing;
+    else
+        proceed;
+}
+
+errorCodeType method2 {
+    errorCodeType error;
+    error = call method3;
+    if (error)
+        return error;
+    else
+        proceed;
+}
+
+errorCodeType method3 {
+    errorCodeType error;
+    error = call readFile;
+    if (error)
+        return error;
+    else
+        proceed;
+}
+
+// try catch
+method1 {
+    try {
+        call method2;
+    } catch (exception e) {
+        doErrorProcessing;
+    }
+}
+
+method2 throws exception {
+    call method3;
+}
+
+method3 throws exception {
+    call readFile;
+}
+```
+ - [Advantages of Exceptions](http://docs.oracle.com/javase/tutorial/essential/exceptions/advantages.html)
+
+### catch 捕获异常
+
+```java
+try {
+
+} catch (IndexOutOfBoundsException e) {
+    System.err.println("IndexOutOfBoundsException: " + e.getMessage());
+} catch (IOException e) {
+    System.err.println("Caught IOException: " + e.getMessage());
+}
+```
+JDK1.7 映引入, 一个 catch 可以传入多种 Exception
+```java
+catch (IOException|SQLException ex) {
+    logger.log(ex);
+    throw ex;
+}
+```
+Finally 不管异常是否发生,都会执行!一下最后返回2; 前一个return 的值被后面的覆盖了!
+
+```java
+    public static int get() {
+		try {
+			return 1;
+		} finally {
+			return 2;
+		}
+	}
+```
+### 例子
+```java
+public void writeList() {
+    PrintWriter out = null;
+
+    try {
+        System.out.println("Entering" + " try statement");
+
+        out = new PrintWriter(new FileWriter("OutFile.txt"));
+        for (int i = 0; i < SIZE; i++) {
+            out.println("Value at: " + i + " = " + list.get(i));
+        }
+    } catch (IndexOutOfBoundsException e) {
+        System.err.println("Caught IndexOutOfBoundsException: "
+                           +  e.getMessage());
+                                 
+    } catch (IOException e) {
+        System.err.println("Caught IOException: " +  e.getMessage());
+                                 
+    } finally {
+        if (out != null) {
+            System.out.println("Closing PrintWriter");
+            out.close();
+        } 
+        else {
+            System.out.println("PrintWriter not open");
+        }
+    }
+}
+```
+
+### specify 申明某函数会抛出异常
+```java
+public void writeList() throws IOException, IndexOutOfBoundsException {
+
+//Remember that IndexOutOfBoundsException is an unchecked exception; including it in the throws clause is not mandatory. You could just write the following.
+
+public void writeList() throws IOException {
+```
+
+### chained exceptions
+
+
+访问栈调用轨迹
+
+```java
+catch (Exception cause) {
+    StackTraceElement elements[] = cause.getStackTrace();
+    for (int i = 0, n = elements.length; i < n; i++) {       
+        System.err.println(elements[i].getFileName()
+            + ":" + elements[i].getLineNumber() 
+            + ">> "
+            + elements[i].getMethodName() + "()");
+    }
+}
+```
