@@ -3,7 +3,7 @@ title: "java-concurrency-interview"
 date: 2017-05-05 20:22
 ---
 # Java Basics
-## equals/'=='/hashCode()
+## 1. equals/'=='/hashCode()
 **`==` 其实是真正比较等式两边的值，值无非就是基本数据类型，或者是指针即引用．**使用 `==` 比较对象引用其实就是比较的对象地址，因此两个不同的对象　`==` 必定为false;
 
 ```java
@@ -58,11 +58,93 @@ System.out.println(maps.get(i2)); // 2048
 System.out.println(maps.get(i3)); // 2
 ```
 
-## compareble 和 comparator 区别
+## 2. compareble 和 comparator 区别
 Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。
 而Comparator是比较器；我们若需要控制某个类的次序，可以建立一个“该类的比较器”来进行排序。
 
 我们不难发现：Comparable相当于“内部比较器”，而Comparator相当于“外部比较器”。
+
+## 3. 深度拷贝和浅层拷贝
+深度拷贝: 指的是对象中成员变量引用的对象也拷贝一份新的.
+浅层拷贝: 指的是只拷贝对象的第一层次的数据, 对象中成员变量引用的对象不做拷贝, Java 中基类Object的 clone 默认就是浅层拷贝, 并且这是一个本地方法.
+```java
+protected native Object clone() throws CloneNotSupportedException;
+```
+并且, 一个对象要想进行clone, 必须申明实现 Cloneable 接口, 否则会抛出异常. `First, if the class of this object does not implement the interface Cloneable, then a CloneNotSupportedException is thrown.`
+```java
+class Student implements Cloneable {
+ public Object clone() {
+	    	Object o = null;
+	    	try {
+				o = super.clone();
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	return o;
+	}
+}
+```
+### Java中实现深度拷贝的两种方式: 
+改写clone, 递归的进行浅层次复制. Cloneable 接口也是个空接口. 
+```java
+class Student implements Cloneable {
+	    private String name;
+	    private int age;
+	    private Professor pro;
+	    public Student(){}
+	    public Student(String name,int age,Professor pro){
+	        this.name=name;
+	        this.age=age;
+	        this.pro=pro;
+	    }
+	    public Object clone(){
+	        Student o=null;
+	        try {
+	            //Object中的clone()识别出你要复制的是哪一个对象。
+	            o=(Student)super.clone();
+	        } catch (CloneNotSupportedException e) {
+	            System.out.println(e.toString());
+	        }
+	        o.pro = (Professor)pro.clone();
+	        return o;
+	    }
+}
+```
+使用 Serializable 进行. Java 中 Serialization 和 Deserialization 会默认进行深层拷贝, 只要对象申明实现 Serializable 接口, 这个接口是个空接口, 没有实现. 主要通过 Object Stream 中的 `writeObject()` 和 `readObject()` 改写.
+```java
+class Student implements Serializable {
+    private String name;
+    private int age;
+    Professor pro;
+    public Student(){}
+    public Student(String name,int age,Professor pro){
+        this.name=name;
+        this.age=age;
+        this.pro=pro;
+    }
+    public Object deepClone() throws IOException, ClassNotFoundException{
+        //将对象写到流中
+        ByteArrayOutputStream bo=new ByteArrayOutputStream();
+        ObjectOutputStream oo=new ObjectOutputStream(bo);
+        oo.writeObject(this);
+        //从流中读出来
+        ByteArrayInputStream bi=new ByteArrayInputStream(bo.toByteArray());
+        ObjectInputStream oi=new ObjectInputStream(bi);
+        return oi.readObject();
+    }
+}
+
+class Professor implements Serializable{
+    private String name;
+    private int age;
+}
+```
+对象并不用实现 Serializable 接口中任何方法, 因为这是一个空接口, 但是如果需要序列化, 必须申明实现该接口. 原因就是 `readObject()` 和 `writeObject()` 需要对象支持该接口. 如果想要改变 序列化 时的默认行为, 也必须改写这两个方法.
+
+在Java语言里深层复制一个对象，常常可以先使对象实现`Serializable`接口(或者其子接口如 `Externalizable`)，然后把对象（实际上只是对象的一个拷贝）写到一个流中，再从流中读出来，便可以重建对象。
+
+这样做的前提是对象以及对象内部所有引用到的对象都是可串行化的，否则，就需要仔细考察那些不可串行化的对象是否设成transient，从而将之排除在复制过程之外.另外, 静态成员是属于类的,不可串行化.
 
 
 # Java Collection Framework
