@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>linux-ops - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#linux">linux</a>&nbsp;&#187;&nbsp;linux-ops
+    <span class="updated">Updated&nbsp;
+      2017-07-02 22:39
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">linux-ops</div>
+
+  <h1 id="linux">Linux 软件源更新</h1>
+<p>更改之前注意备份: <code>sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup</code></p>
+<div class="hlcode"><pre><span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-updates</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-backports</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c">##测试版源</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-proposed</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c"># 源码</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-updates</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-backports</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c">##测试版源</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-proposed</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+</pre></div>
+
+
+<p>更改的话, 第一个是更改地址, 如阿里云的,  第二个是更改代号即版本, 如 willy(15.10) 修改成 xenial(16.04); </p>
+<p><a href="http://wiki.ubuntu.org.cn/%E6%BA%90%E5%88%97%E8%A1%A8">参考</a></p>
+<h1 id="openstack">OpenStack 安装问题</h1>
+<ol>
+<li><code>generate-subunit: command not found</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">os</span><span class="o">-</span><span class="n">testr</span>
+</pre></div>
+
+
+<ol>
+<li><code>/bin/sh: 1: brctl: not found</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">bridge</span><span class="o">-</span><span class="n">utils</span>
+</pre></div>
+
+
+<ol>
+<li></li>
+</ol>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">url</span><span class="p">.</span><span class="s">&quot;https://&quot;</span><span class="p">.</span><span class="n">insteadOf</span> <span class="n">git</span><span class="o">:</span><span class="c1">//</span>
+</pre></div>
+
+
+<ul>
+<li><a href="http://docs.python-guide.org/en/latest/">The Hitchhiker’s Guide to Python!</a></li>
+<li><a href="https://www.ustack.com/blog/openstack_hacker/#i">OpenStack Hacker养成指南</a></li>
+<li><a href="http://www.ganecheng.tech/blog/53538203.html">用DevStack安装OpenStack(单机)</a></li>
+<li><a href="http://chbrian.github.io/cloud/2014/02/22/devstack-/">devstack 安装教程</a></li>
+<li><a href="https://docs.openstack.org/mitaka/zh_CN/install-guide-ubuntu/environment.html">openstack</a></li>
+</ul>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-07-02 23:49:40</p>
+      </span>
+    </div>
+  </body>
+</html>
