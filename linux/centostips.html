@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>CentosTips - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#linux">linux</a>&nbsp;&#187;&nbsp;CentosTips
+    <span class="updated">Updated&nbsp;
+      2017-07-29 18:36
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">CentosTips</div>
+
+  <h1 id="sudo">配置 sudo 用户.</h1>
+<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.<br />
+然后 使用 <code>visudo</code> 自动打开 <code>/etc/sudoers</code> 配置文件，在文件加入sudo权限，配置如下：</p>
+<div class="hlcode"><pre><span></span>tianqi05    ALL=(ALL)    ALL
+‘不要密码
+tianqi05    ALL=(ALL)    NOPASSWD:ALL
+</pre></div>
+
+
+<p>最后切换用户<br />
+sudo -iu tianqi05</p>
+<h1 id="rpm">rpm删除安装</h1>
+<div class="hlcode"><pre><span></span>rpm -qal | grep 
+sudo rpm -e xx.rpm
+sudo rpm -ivh XX.rpm
+</pre></div>
+
+
+<p>系统中的awk命令到底是执行哪个可以执行文件呢？</p>
+<div class="hlcode"><pre><span></span>$ readlink /usr/bin/awk  
+/etc/alternatives/awk  ----&gt; 其实这个还是一个符号连接  
+$ readlink /etc/alternatives/awk  
+/usr/bin/gawk  ----&gt; 这个才是真正的可执行文件  
+-f 选项：
+-f 选项可以递归跟随给出文件名的所有符号链接以标准化，除最后一个外所有组件必须存在。
+简单地说，就是一直跟随符号链接，直到直到非符号链接的文件位置，限制是最后必须存在一个非符号链接的文件。
+$ readlink -f /usr/bin/awk  
+/usr/bin/gawk  
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
+      </span>
+    </div>
+  </body>
+</html>

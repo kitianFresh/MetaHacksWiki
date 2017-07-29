@@ -32,49 +32,49 @@
 <h2 id="_3">流水线并行</h2>
 <p>non-blocking io event-driven system</p>
 <h2 id="functional-parallelism">函数式并行(Functional Parallelism)</h2>
-<p>单个任务可以被拆分成多个部分来处理，每个部分都是一个函数，数据经过这些函数的时候是并行处理的，其实就是流水线
+<p>单个任务可以被拆分成多个部分来处理，每个部分都是一个函数，数据经过这些函数的时候是并行处理的，其实就是流水线<br />
 mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比如 web server database server 都是不适合用函数式并行的，因为cpu本来就在处理多任务</p>
 <h1 id="asignment1">Asignment1</h1>
 <h2 id="1-sum-an-array-by-multi-threads">1. Sum An Array By Multi-Threads</h2>
 <p>数组求和实验, 采用串行和多线程的形式进行比较.实验的测试代码:</p>
-<div class="hlcode"><pre>    <span class="n">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">400000</span><span class="p">;</span>
-        <span class="kt">int</span><span class="p">[]</span> <span class="n">a</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">size</span><span class="p">];</span>
-        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
-        <span class="p">}</span>
+<div class="hlcode"><pre><span></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">400000</span><span class="o">;</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">a</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">size</span><span class="o">];</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="n">a</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">;</span>
+        <span class="o">}</span>
 
-        <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="kt">double</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="kt">long</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">;</span>
-        <span class="kt">int</span> <span class="n">loops</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
-        <span class="kt">int</span> <span class="n">cpus</span> <span class="o">=</span> <span class="n">Runtime</span><span class="p">.</span><span class="n">getRuntime</span><span class="p">().</span><span class="n">availableProcessors</span><span class="p">();</span>
-        <span class="kt">int</span><span class="p">[]</span> <span class="n">threads</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">int</span><span class="p">[]{</span><span class="n">cpus</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="n">cpus</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">cpus</span><span class="p">,</span> <span class="n">cpus</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cpus</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">cpus</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">cpus</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">cpus</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="o">*</span><span class="n">cpus</span><span class="p">};</span>
-        <span class="kt">double</span><span class="p">[]</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">double</span><span class="p">[</span><span class="n">loops</span><span class="p">];</span>
-        <span class="n">String</span> <span class="n">str0</span> <span class="o">=</span> <span class="n">String</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%20s</span><span class="se">\t</span><span class="s">%15d</span><span class="se">\t</span><span class="s">%15d</span><span class="se">\t</span><span class="s">%15d</span><span class="se">\t</span><span class="s">%15d</span><span class="se">\t</span><span class="s">%15d</span><span class="se">\t</span><span class="s">%15s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;Threads</span><span class="se">\\</span><span class="s">Loops&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="s">&quot;Average(ms)&quot;</span><span class="p">);</span>
-        <span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">str0</span><span class="p">);</span>
-        <span class="n">try</span> <span class="p">{</span>
-            <span class="k">for</span> <span class="p">(</span><span class="n">Integer</span> <span class="n">cores</span> <span class="o">:</span> <span class="n">threads</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">loops</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">();</span>
-                    <span class="n">sum</span> <span class="o">=</span> <span class="n">ArraySumer</span><span class="p">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cores</span><span class="p">);</span>
-                    <span class="n">end</span> <span class="o">=</span> <span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">();</span>
-                    <span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">;</span>
-                    <span class="n">t</span> <span class="o">+=</span> <span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="kt">double</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="kt">long</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">loops</span> <span class="o">=</span> <span class="mi">5</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">cpus</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">().</span><span class="na">availableProcessors</span><span class="o">();</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">threads</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[]{</span><span class="n">cpus</span><span class="o">/</span><span class="mi">4</span><span class="o">,</span> <span class="n">cpus</span><span class="o">/</span><span class="mi">2</span><span class="o">,</span> <span class="n">cpus</span><span class="o">,</span> <span class="n">cpus</span> <span class="o">+</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cpus</span><span class="o">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">cpus</span><span class="o">+</span><span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">cpus</span><span class="o">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">cpus</span> <span class="o">+</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">4</span><span class="o">*</span><span class="n">cpus</span><span class="o">};</span>
+        <span class="kt">double</span><span class="o">[]</span> <span class="n">ts</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">double</span><span class="o">[</span><span class="n">loops</span><span class="o">];</span>
+        <span class="n">String</span> <span class="n">str0</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;%20s\t%15d\t%15d\t%15d\t%15d\t%15d\t%15s\n&quot;</span><span class="o">,</span> <span class="s">&quot;Threads\\Loops&quot;</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">,</span><span class="mi">4</span><span class="o">,</span><span class="mi">5</span><span class="o">,</span><span class="s">&quot;Average(ms)&quot;</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str0</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="k">for</span> <span class="o">(</span><span class="n">Integer</span> <span class="n">cores</span> <span class="o">:</span> <span class="n">threads</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">loops</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+                    <span class="n">sum</span> <span class="o">=</span> <span class="n">ArraySumer</span><span class="o">.</span><span class="na">sum</span><span class="o">(</span><span class="n">a</span><span class="o">,</span> <span class="n">cores</span><span class="o">);</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+                    <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="o">;</span>
+                    <span class="n">t</span> <span class="o">+=</span> <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
 
-                <span class="p">}</span>
-                <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">loops</span><span class="p">;</span>
-                <span class="n">String</span> <span class="n">str1</span> <span class="o">=</span> <span class="n">String</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%20s</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\t</span><span class="s">%15f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">cores</span><span class="o">+</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">ts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ts</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">ts</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">ts</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">t</span><span class="p">);</span>
-                <span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">str1</span><span class="p">);</span>
-            <span class="p">}</span>
+                <span class="o">}</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">loops</span><span class="o">;</span>
+                <span class="n">String</span> <span class="n">str1</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;%20s\t%15f\t%15f\t%15f\t%15f\t%15f\t%15f\n&quot;</span><span class="o">,</span> <span class="n">cores</span><span class="o">+</span><span class="s">&quot;&quot;</span><span class="o">,</span> <span class="n">ts</span><span class="o">[</span><span class="mi">0</span><span class="o">],</span> <span class="n">ts</span><span class="o">[</span><span class="mi">1</span><span class="o">],</span> <span class="n">ts</span><span class="o">[</span><span class="mi">2</span><span class="o">],</span> <span class="n">ts</span><span class="o">[</span><span class="mi">3</span><span class="o">],</span> <span class="n">ts</span><span class="o">[</span><span class="mi">4</span><span class="o">],</span> <span class="n">t</span><span class="o">);</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str1</span><span class="o">);</span>
+            <span class="o">}</span>
 
 
-        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
             <span class="c1">// TODO Auto-generated catch block</span>
-            <span class="n">e</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">();</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
 </pre></div>
 
 
@@ -181,7 +181,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 <p>从以上实验结果可以看出, <strong>对于多线程求和, 线程数目并不是越多性能越好, 一般设置为可用处理器个数或者可用处理器个数的2倍性能最佳!</strong></p>
 <h3 id="13-shared-and-local-memory-in-my-code">1.3 shared and local memory in my code</h3>
 <p>以下是实验中使用的  <code>ArraySumer</code> 类的代码.</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ArraySumer</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ArraySumer</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
     <span class="kd">public</span> <span class="kt">int</span><span class="o">[]</span> <span class="n">a</span><span class="o">;</span>
     <span class="kd">public</span> <span class="kt">int</span> <span class="n">low</span><span class="o">;</span>
     <span class="kd">public</span> <span class="kt">int</span> <span class="n">high</span><span class="o">;</span>
@@ -219,7 +219,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 <p>采用分治法计算数组的最大(最小)数, 分治思想: 主线程将任务分解成两个子任务, 左子线程寻找左半边数组的最大值, 右子线程寻找右半边数组的最大值, 当左右任务完成之后, 主线程合并左右结果(比较左右结果的较大者返回), 左右线程进行同样的递归分解操作, 分解终止的条件由 <code>SEQUENTIAL_CUTOFF</code> 来控制.</p>
 <h3 id="21-startrun-method">2.1 start/run method</h3>
 <p>根据分治思想, 代码如下:</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MaxNumber</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MaxNumber</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
     <span class="kt">int</span> <span class="n">low</span><span class="o">;</span>
     <span class="kt">int</span> <span class="n">high</span><span class="o">;</span>
     <span class="kt">int</span> <span class="n">max</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
@@ -266,7 +266,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 
 
 <p>采用覆盖<code>run()</code> 方法的缺陷就是无法返回一个值, 只能通过成员变量的形式存储. 另外, 由于每一次递归创建子任务的时候, 主线程没有做任何计算任务, 必须要等待左右都完成之后,才开始计算, 这是一种资源的浪费, 因此一种形式的优化是,让主线程来做右子树的任务! 这样线程数目可以减少一般!</p>
-<div class="hlcode"><pre><span class="kt">int</span> <span class="n">mid</span> <span class="o">=</span> <span class="o">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
+<div class="hlcode"><pre><span></span><span class="kt">int</span> <span class="n">mid</span> <span class="o">=</span> <span class="o">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
 <span class="n">MaxNumber</span> <span class="n">left</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MaxNumber</span><span class="o">(</span><span class="n">numbers</span><span class="o">,</span> <span class="n">low</span><span class="o">,</span> <span class="n">mid</span><span class="o">,</span> <span class="n">SEQUENTIAL_CUTOFF</span><span class="o">);</span>
 <span class="n">MaxNumber</span> <span class="n">right</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MaxNumber</span><span class="o">(</span><span class="n">numbers</span><span class="o">,</span> <span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="o">,</span> <span class="n">high</span><span class="o">,</span> <span class="n">SEQUENTIAL_CUTOFF</span><span class="o">);</span>
 <span class="n">left</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
@@ -285,7 +285,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 
 <h3 id="22-forkjoin-framework">2.2 Fork/Join framework</h3>
 <p>以下是改用fork/join framework 的代码:</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MaxNumberForkJoin</span> <span class="kd">extends</span> <span class="n">RecursiveTask</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MaxNumberForkJoin</span> <span class="kd">extends</span> <span class="n">RecursiveTask</span> <span class="o">{</span>
     <span class="kt">int</span> <span class="n">low</span><span class="o">;</span>
     <span class="kt">int</span> <span class="n">high</span><span class="o">;</span>
     <span class="kt">int</span><span class="o">[]</span> <span class="n">numbers</span><span class="o">;</span>
@@ -330,9 +330,9 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 
 <h3 id="23-sequential-checker">2.3 sequential checker</h3>
 <p>以下是串行运算的部分代码:</p>
-<div class="hlcode"><pre><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">max</span> <span class="o">=</span> <span class="n">Math</span><span class="p">.</span><span class="n">max</span><span class="p">(</span><span class="n">max</span><span class="p">,</span> <span class="n">numbers</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-<span class="p">}</span>
+<div class="hlcode"><pre><span></span>for (int i = 0; i &lt; size; i++) {
+    max = Math.max(max, numbers[i]);
+}
 </pre></div>
 
 
@@ -383,37 +383,37 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 <p>对于2^26 次方的时候, Start/Run 模式会出现 <code>Exception in thread "Thread-28661" java.lang.OutOfMemoryError: unable to create new native thread</code> 这种 <code>OutOfMemory</code> 的错误. 但是 Fork/Join 可以轻松应对! </p>
 <p><strong>猜测 Fork/Join framework 内部实现了线程池, 因此可以保证不会因为创建过多线程而导致 JVM 爆出内存错误. 因为每一个线程都有私有线程栈, 线程创建的越多, 需要的内存就越多, 当内存不够的时候, 就无法再创建线程了! </strong></p>
 <p>这里<strong>要么设置更小的线程栈以争取创建更多线程的可能, 要么扩充JVM内存.</strong> 但是栈大小本身 JVM 也是有限制的, 设置过小, JVM 就无法启动而报错!</p>
-<div class="hlcode"><pre><span class="n">The</span> <span class="n">stack</span> <span class="n">size</span> <span class="n">specified</span> <span class="n">is</span> <span class="n">too</span> <span class="n">small</span><span class="p">,</span> <span class="n">Specify</span> <span class="n">at</span> <span class="n">least</span> <span class="mi">228</span><span class="n">k</span>
-<span class="nl">Error:</span> <span class="n">Could</span> <span class="n">not</span> <span class="n">create</span> <span class="n">the</span> <span class="n">Java</span> <span class="n">Virtual</span> <span class="n">Machine</span><span class="p">.</span>
-<span class="nl">Error:</span> <span class="n">A</span> <span class="n">fatal</span> <span class="n">exception</span> <span class="n">has</span> <span class="n">occurred</span><span class="p">.</span> <span class="n">Program</span> <span class="n">will</span> <span class="n">exit</span><span class="p">.</span>
+<div class="hlcode"><pre><span></span>The stack size specified is too small, Specify at least 228k
+Error: Could not create the Java Virtual Machine.
+Error: A fatal exception has occurred. Program will exit.
 </pre></div>
 
 
 <p><strong>但是当线程数数目达到一定程度的时候, 创建线程的开销反而大于任务本身了, 这是适得其反的! 另外, 线程栈过小的话, 如果有递归, 这里分治法就是递归, 压栈就不可能很深, 就会限制递归的深度, 限制递归的深度就会限制能解决问题的规模数目!</strong></p>
 <p>去掉 Start/Run 方法之后, 我们设置数组规模到JVM堆可以容纳的最大值, <strong>运行的时候你可以设置JVM 的运行参数 <code>-Xmx4096M -Xms2000M -Xmn500M</code>, 因为JVM默认最大堆内存是机器物理内存的 1/4, 而我机器内存8G, 也就是最大是2G, 但是JVM最大堆内存的限制实际上取决于操作系统和物理内存空间, 我的机器最大堆内存可以设置到8G. </strong></p>
-<div class="hlcode"><pre>             <span class="n">Pattern</span><span class="err">\</span><span class="n">Loops</span>                <span class="mi">1</span>               <span class="mi">2</span>               <span class="mi">3</span>               <span class="mi">4</span>               <span class="mi">5</span>     <span class="n">Average</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
-        <span class="n">Serialize</span> <span class="n">Baseline</span>       <span class="mf">188.076303</span>      <span class="mf">206.252412</span>      <span class="mf">208.105703</span>      <span class="mf">203.449220</span>      <span class="mf">203.056148</span>      <span class="mf">201.787957</span>
-     <span class="n">Parallelize</span> <span class="n">Fork</span><span class="o">/</span><span class="n">Join</span>       <span class="mf">145.812311</span>       <span class="mf">85.910176</span>       <span class="mf">85.791367</span>       <span class="mf">90.719006</span>       <span class="mf">81.187196</span>       <span class="mf">97.884011</span>
+<div class="hlcode"><pre><span></span>             Pattern\Loops                1               2               3               4               5     Average(ms)
+        Serialize Baseline       188.076303      206.252412      208.105703      203.449220      203.056148      201.787957
+     Parallelize Fork/Join       145.812311       85.910176       85.791367       90.719006       81.187196       97.884011
 </pre></div>
 
 
 <p>但是<strong>你最好不要设置成最大内存 8G, 除非你的服务器只运行一个 JAVA 程序, 如果你设置成最大物理内存8 G, 然后申请 1&lt;&lt;30 个int整形数组,也即是占用 4G 内存, 然后运行程序,机器会非常卡, 因为处理器和内存资源全部都给 JAVA 程序了, 其他进程就无法很愉快的运行和响应了! 如果设置的 <code>SEQUENTIAL_CUTOFF</code> 和数组规模以及处理器个数不太符合的话,由于线程数目过多, Fork/Join 的性能就比不上 Serialize 了.</strong> <code>SEQUENTIAL_CUTOFF = 1&lt;&lt;11</code>, 将得到一下结果;</p>
-<div class="hlcode"><pre>             <span class="n">Pattern</span><span class="err">\</span><span class="n">Loops</span>                <span class="mi">1</span>               <span class="mi">2</span>               <span class="mi">3</span>               <span class="mi">4</span>               <span class="mi">5</span>     <span class="n">Average</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
-        <span class="n">Serialize</span> <span class="n">Baseline</span>       <span class="mf">952.887980</span>     <span class="mf">1345.387388</span>      <span class="mf">777.596211</span>      <span class="mf">773.802849</span>      <span class="mf">774.879831</span>      <span class="mf">924.910852</span>
-     <span class="n">Parallelize</span> <span class="n">Fork</span><span class="o">/</span><span class="n">Join</span>      <span class="mf">3157.547799</span>     <span class="mf">1058.703371</span>     <span class="mf">2999.615653</span>      <span class="mf">274.054247</span>      <span class="mf">245.031633</span>     <span class="mf">1546.990541</span>
+<div class="hlcode"><pre><span></span>             Pattern\Loops                1               2               3               4               5     Average(ms)
+        Serialize Baseline       952.887980     1345.387388      777.596211      773.802849      774.879831      924.910852
+     Parallelize Fork/Join      3157.547799     1058.703371     2999.615653      274.054247      245.031633     1546.990541
 </pre></div>
 
 
 <p>因此, 我再次提升 <code>SEQUENTIAL_CUTOFF = 1&lt;&lt;15</code>, 此时 Fork/Join 的性能将会更好.</p>
-<div class="hlcode"><pre>             <span class="n">Pattern</span><span class="err">\</span><span class="n">Loops</span>                <span class="mi">1</span>               <span class="mi">2</span>               <span class="mi">3</span>               <span class="mi">4</span>               <span class="mi">5</span>     <span class="n">Average</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
-        <span class="n">Serialize</span> <span class="n">Baseline</span>       <span class="mf">781.488606</span>      <span class="mf">794.344170</span>      <span class="mf">761.915751</span>      <span class="mf">750.881256</span>      <span class="mf">746.211944</span>      <span class="mf">766.968345</span>
-     <span class="n">Parallelize</span> <span class="n">Fork</span><span class="o">/</span><span class="n">Join</span>       <span class="mf">398.081041</span>      <span class="mf">257.000682</span>      <span class="mf">215.312012</span>      <span class="mf">228.940126</span>      <span class="mf">233.489181</span>      <span class="mf">266.564608</span>
+<div class="hlcode"><pre><span></span>             Pattern\Loops                1               2               3               4               5     Average(ms)
+        Serialize Baseline       781.488606      794.344170      761.915751      750.881256      746.211944      766.968345
+     Parallelize Fork/Join       398.081041      257.000682      215.312012      228.940126      233.489181      266.564608
 </pre></div>
 
 
 <h2 id="4-primenumber-by-concurrency-and-parallel">4. PrimeNumber By Concurrency And Parallel</h2>
 <h3 id="41-parallel">4.1 Parallel</h3>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrimeNumberParallel</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrimeNumberParallel</span> <span class="kd">extends</span> <span class="n">Thread</span><span class="o">{</span>
     <span class="kt">int</span> <span class="n">low</span><span class="o">;</span>
     <span class="kt">int</span> <span class="n">high</span><span class="o">;</span>
     <span class="n">List</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">primes</span><span class="o">;</span> <span class="c1">// 使用 vector 线程安全的</span>
@@ -460,7 +460,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 
 
 <h3 id="42-concurrency">4.2 Concurrency</h3>
-<div class="hlcode"><pre><span class="c1">// concurrency for prime</span>
+<div class="hlcode"><pre><span></span><span class="c1">// concurrency for prime</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrimeNumberConcurrency</span> <span class="kd">extends</span> <span class="n">Thread</span> <span class="o">{</span>
 
     <span class="n">Counter</span> <span class="n">counter</span><span class="o">;</span>
@@ -509,7 +509,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 
 
 <h3 id="43-primenumber-concurrency-and-parallel-perfomance-comparison">4.3 PrimeNumber concurrency and parallel perfomance comparison</h3>
-<div class="hlcode"><pre><span class="o">/</span> <span class="nl">better:</span> <span class="k">do</span>
+<div class="hlcode"><pre><span></span><span class="o">/</span> <span class="n">better</span><span class="o">:</span> <span class="k">do</span>
 <span class="n">SumThread</span> <span class="n">left</span>  <span class="o">=</span> <span class="err">…</span>
 <span class="n">SumThread</span> <span class="n">right</span> <span class="o">=</span> <span class="err">…</span>
 <span class="c1">// order of next 4 lines</span>
@@ -521,7 +521,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">padRight</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">padRight</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
      <span class="k">return</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;%1$-&quot;</span> <span class="o">+</span> <span class="n">n</span> <span class="o">+</span> <span class="s">&quot;s&quot;</span><span class="o">,</span> <span class="n">s</span><span class="o">);</span>  
 <span class="o">}</span>
 
@@ -541,7 +541,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>

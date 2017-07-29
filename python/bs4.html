@@ -26,77 +26,77 @@
 <div class="page_title">bs4</div>
 
   <p>beautifulsoup 根据 text 找 tag的问题</p>
-<div class="hlcode"><pre><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;contentBlurb&quot;</span><span class="nt">&gt;</span>
+<div class="hlcode"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;contentBlurb&quot;</span><span class="p">&gt;</span>
        Clinical Information
-       <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">&quot;definitionList&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
+       <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;definitionList&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
          Acute diarrheal disease endemic in India and southeast Asia whose causative agent is vibrio cholerae; can lead to severe dehydration in a matter of hours unless quickly treated.
-        <span class="nt">&lt;/li&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
          An acute diarrheal disease endemic in India and southeast Asia whose causative agent is vibrio cholerae. This condition can lead to severe dehydration in a matter of hours unless quickly treated.
-        <span class="nt">&lt;/li&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
          Cholera is a bacterial infection that causes diarrhea. The cholera bacterium is usually found in water or food contaminated by feces . Cholera is rare in the United States. You may get it if you travel to parts of the world with inadequate water treatment and poor sanitation, and lack of sewage treatment. Outbreaks can also happen after disasters. The disease is not likely to spread directly from one person to another. Often the infection is mild or without symptoms, but sometimes it can be severe. Severe symptoms include profuse watery diarrhea, vomiting, and leg cramps. In severe cases, rapid loss of body fluids leads to dehydration and shock. Without treatment, death can occur within hours. Doctors diagnose cholera with a stool sample or rectal swab. Treatment includes replacing fluid and salts and sometimes antibiotics. Anyone who thinks they may have cholera should seek medical attention immediately. Dehydration can be rapid so fluid replacement is essential. Centers for Disease Control and Prevention.
-        <span class="nt">&lt;/li&gt;</span>
-       <span class="nt">&lt;/ul&gt;</span>
-<span class="nt">&lt;/div&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+       <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
 </pre></div>
 
 
 <p><code>bsObj.findAll("div", attrs={'class' : 'contentBlurb'}, text=re.compile(".*Clinical.*"))</code>无法查到该div，因为默认只查找tag里面只包含文本的，而不是tag里面又含有tag的； 只能先查找到所有的div， 然后检查每一个div是否含有text；</p>
-<div class="hlcode"><pre><span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">bsObj</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s">&quot;div&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;class&#39;</span> <span class="p">:</span> <span class="s">&#39;contentBlurb&#39;</span><span class="p">}):</span>
-        <span class="c"># print div </span>
-        <span class="k">if</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;Clinical Information&quot;</span><span class="p">)):</span>  
-            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">div</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s">&#39;li&#39;</span><span class="p">):</span>
-                <span class="n">clinical_info</span> <span class="o">+=</span> <span class="n">l</span><span class="o">.</span><span class="n">string</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+<div class="hlcode"><pre><span></span><span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">bsObj</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span> <span class="p">:</span> <span class="s1">&#39;contentBlurb&#39;</span><span class="p">}):</span>
+        <span class="c1"># print div </span>
+        <span class="k">if</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;Clinical Information&quot;</span><span class="p">)):</span>  
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">div</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">):</span>
+                <span class="n">clinical_info</span> <span class="o">+=</span> <span class="n">l</span><span class="o">.</span><span class="n">string</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="k">print</span> <span class="n">clinical_info</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;contentBlurb&quot;</span><span class="nt">&gt;</span>
+<div class="hlcode"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;contentBlurb&quot;</span><span class="p">&gt;</span>
        Clinical Information
-       <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">&quot;definitionList&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
-         <span class="nt">&lt;em&gt;</span>
+       <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;definitionList&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
+         <span class="p">&lt;</span><span class="nt">em</span><span class="p">&gt;</span>
           salmonella
-         <span class="nt">&lt;/em&gt;</span>
+         <span class="p">&lt;/</span><span class="nt">em</span><span class="p">&gt;</span>
          is the name of a group of bacteria. In the United States, it is the most common cause of foodborne illness.
-         <span class="nt">&lt;em&gt;</span>
+         <span class="p">&lt;</span><span class="nt">em</span><span class="p">&gt;</span>
           salmonella
-         <span class="nt">&lt;/em&gt;</span>
+         <span class="p">&lt;/</span><span class="nt">em</span><span class="p">&gt;</span>
          occurs in raw poultry, eggs, beef, and sometimes on unwashed fruit and vegetables. Symptoms include fever, diarrhea, abdominal cramps and headache. Symptoms usually last 4 - 7 days. Most people get better without treatment. It can be more serious in the elderly, infants and people with chronic conditions. If
-         <span class="nt">&lt;em&gt;</span>
+         <span class="p">&lt;</span><span class="nt">em</span><span class="p">&gt;</span>
           salmonella
-         <span class="nt">&lt;/em&gt;</span>
+         <span class="p">&lt;/</span><span class="nt">em</span><span class="p">&gt;</span>
          gets into the bloodstream, it can be serious, or even life-threatening. The usual treatment is antibiotics. You also can get a salmonella infection after handling pets, particularly reptiles like snakes, turtles and lizards. Typhoid fever, a more serious disease caused by
-         <span class="nt">&lt;em&gt;</span>
+         <span class="p">&lt;</span><span class="nt">em</span><span class="p">&gt;</span>
           salmonella
-         <span class="nt">&lt;/em&gt;</span>
+         <span class="p">&lt;/</span><span class="nt">em</span><span class="p">&gt;</span>
          , frequently occurs in developing countries.
-        <span class="nt">&lt;/li&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
          Infections with bacteria of the genus salmonella.
-        <span class="nt">&lt;/li&gt;</span>
-        <span class="nt">&lt;li&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>
          Infekce bakteriemi rodu salmonella.
-        <span class="nt">&lt;/li&gt;</span>
-       <span class="nt">&lt;/ul&gt;</span>
-      <span class="nt">&lt;/div&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+       <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
 </pre></div>
 
 
-<p>此时 <code>l.string</code> 为空，因为里面又出现了tag；这里使用 <code>l.get_text()</code> 更加有效；
+<p>此时 <code>l.string</code> 为空，因为里面又出现了tag；这里使用 <code>l.get_text()</code> 更加有效；<br />
  -<a href="http://stackoverflow.com/questions/31958637/beautifulsoup-search-by-text-inside-a-tag">beautifulsoup-search-by-text-inside-a-tag</a></p>
 <p>后台部署,<code>nohup</code> 可以忽略终端控制信号</p>
-<div class="hlcode"><pre><span class="n">nohup</span> <span class="n">python</span> <span class="n">DataCrawler4</span><span class="p">.</span><span class="n">py</span> <span class="o">&amp;</span>
-<span class="n">ps</span> <span class="o">-</span><span class="n">ef</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">pid</span>
+<div class="hlcode"><pre><span></span>nohup python DataCrawler4.py &amp;
+ps -ef | grep pid
 </pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>

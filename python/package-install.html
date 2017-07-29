@@ -26,41 +26,41 @@
 <div class="page_title">package-install</div>
 
   <h2 id="_1">安装图像处理模块</h2>
-<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">Pillow</span>
-<span class="c1">//tesseract-ocr库</span>
+<div class="hlcode"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">Pillow</span>
+<span class="o">//</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="err">库</span>
 <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span>
-<span class="c1">// tesseract-ocr pthon wrapper</span>
+<span class="o">//</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span> <span class="n">pthon</span> <span class="n">wrapper</span>
 <span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pytesseract</span>
 
-<span class="c1">//tesseract-ocr默认没有中文字符集，下载中文字符集</span>
-<span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/tesseract-ocr/tessdata/raw/master/chi_sim.traineddata</span>
+<span class="o">//</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="err">默认没有中文字符集，下载中文字符集</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span><span class="n">raw</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">chi_sim</span><span class="o">.</span><span class="n">traineddata</span>
 
-<span class="c1">//然后copy到目录/usr/share/tesseract-ocr/tessdata/</span>
-<span class="n">sudo</span> <span class="n">cp</span> <span class="n">chi_sim</span><span class="p">.</span><span class="n">traineddata</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
+<span class="o">//</span><span class="err">然后</span><span class="n">copy</span><span class="err">到目录</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
+<span class="n">sudo</span> <span class="n">cp</span> <span class="n">chi_sim</span><span class="o">.</span><span class="n">traineddata</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
 
-<span class="c1">//example</span>
-<span class="n">from</span> <span class="n">PIL</span> <span class="n">import</span> <span class="n">Image</span>
-<span class="n">import</span> <span class="n">pytesseract</span>
-<span class="n">print</span><span class="p">(</span><span class="n">pytesseract</span><span class="p">.</span><span class="n">image_to_string</span><span class="p">(</span><span class="n">Image</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="err">&#39;血常规</span><span class="p">.</span><span class="n">jpg</span><span class="err">&#39;</span><span class="p">),</span> <span class="n">lang</span><span class="o">=</span><span class="err">&#39;</span><span class="n">chi_sim</span><span class="err">&#39;</span><span class="p">))</span>
+<span class="o">//</span><span class="n">example</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">pytesseract</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pytesseract</span><span class="o">.</span><span class="n">image_to_string</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;血常规.jpg&#39;</span><span class="p">),</span> <span class="n">lang</span><span class="o">=</span><span class="s1">&#39;chi_sim&#39;</span><span class="p">))</span>
 </pre></div>
 
 
 <h2 id="pythonpcv">安装Python机器视觉编程<a href="http://programmingcomputervision.com/">英文</a><a href="http://yongyuan.name/pcvwithpython/">中文</a>中PCV库</h2>
 <p>依赖</p>
-<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">numpy</span>
-<span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">matplotlib</span>
-<span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span>
+<div class="hlcode"><pre><span></span>sudo pip install numpy
+sudo pip install matplotlib
+sudo pip install scipy
 </pre></div>
 
 
 <p><a href="https://github.com/jesolem/PCV/zipball/master">下载库到本地</a></p>
-<div class="hlcode"><pre><span class="n">cd</span> <span class="n">jesolem</span><span class="o">-</span><span class="n">PCV</span><span class="o">-</span><span class="mi">376</span><span class="n">d597</span><span class="o">/</span>
-<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="p">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="hlcode"><pre><span></span><span class="n">cd</span> <span class="n">jesolem</span><span class="o">-</span><span class="n">PCV</span><span class="o">-</span><span class="mi">376</span><span class="n">d597</span><span class="o">/</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 
-<span class="c1">//以下命令可以用来确定Ubuntu系统拥有的字体和位置</span>
-<span class="n">fc</span><span class="o">-</span><span class="n">list</span> <span class="o">:</span><span class="n">lang</span><span class="o">=</span><span class="n">zh</span> 
+<span class="o">//</span><span class="err">以下命令可以用来确定</span><span class="n">Ubuntu</span><span class="err">系统拥有的字体和位置</span>
+<span class="n">fc</span><span class="o">-</span><span class="nb">list</span> <span class="p">:</span><span class="n">lang</span><span class="o">=</span><span class="n">zh</span> 
 
-<span class="n">import</span> <span class="n">PCV</span>
+<span class="kn">import</span> <span class="nn">PCV</span>
 </pre></div>
 
 
@@ -69,19 +69,19 @@
 <li><a href="https://testerhome.com/topics/4615">基本的图像处理与 OCR 文字识别工具总结 (Python)</a></li>
 </ul>
 <h1 id="tensorflowmemoryerror">低配机器安装tensorflow出现MemoryError</h1>
-<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误
-操作系统    Ubuntu Server 16.04.1 LTS 64位
-CPU 1核
-内存  1GB
-系统盘 20GB(云硬盘)   disk-qy4kp18l
+<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误<br />
+操作系统    Ubuntu Server 16.04.1 LTS 64位<br />
+CPU 1核<br />
+内存  1GB<br />
+系统盘 20GB(云硬盘)   disk-qy4kp18l<br />
 公网带宽    1Mbps</p>
-<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span>  <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">dir</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">https</span><span class="o">:</span><span class="c1">//storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl</span>
+<div class="hlcode"><pre><span></span>sudo pip  --no-cache-dir install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl
 </pre></div>
 
 
 <p>以下两者的区别，在翻墙的时候表现的就尤其明显，前者会非常慢，这里就是因为 后者 是package 安装形式，主要是从Ubuntu的软件源找包并安装，国内都会有相应的镜像，速度不慢，但是前者就会直接到Python的package站点下载，非常慢，基本下不动</p>
-<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">numpy</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span>
+<div class="hlcode"><pre><span></span>sudo pip install numpy
+sudo apt-get install python-numpy
 </pre></div>
 
 
@@ -91,7 +91,7 @@ CPU 1核
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>

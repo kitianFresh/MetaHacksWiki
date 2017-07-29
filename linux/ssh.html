@@ -25,31 +25,41 @@
 
 <div class="page_title">ssh</div>
 
-  <h1 id="ssh">ssh</h1>
-<div class="hlcode"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="n">user</span><span class="err">@</span><span class="n">host</span>
-<span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="mi">29911</span> <span class="n">root</span><span class="err">@</span><span class="n">hillsun</span><span class="p">.</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span>
+  <h1 id="_1">端口转发映射</h1>
+<p>第二种：使用SSH协议转发</p>
+<p>ssh的三个强大的端口转发命令：</p>
+<ol>
+<li>转发到远端：<code>ssh -C -f -N -g -L 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
+<li>转发到本地：<code>ssh -C -f -N -g –R 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
+<li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code><br />
+ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98<br />
+端口转发 ssh -p 44392 root@10.4.225.98</li>
+</ol>
+<h1 id="ssh">ssh</h1>
+<div class="hlcode"><pre><span></span>ssh -p user@host
+ssh -p 29911 root@hillsun.hacksmeta.com
 </pre></div>
 
 
 <p>密钥分发</p>
-<div class="hlcode"><pre><span class="n">cat</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="o">|</span> <span class="n">ssh</span> <span class="n">kinny</span><span class="err">@</span><span class="n">ai</span><span class="p">.</span><span class="n">mc2lab</span><span class="p">.</span><span class="n">com</span> <span class="s">&quot;cat &gt;&gt;  ~/.ssh/authorized_keys&quot;</span>
+<div class="hlcode"><pre><span></span>cat id_rsa.pub.bak | ssh kinny@ai.mc2lab.com &quot;cat &gt;&gt;  ~/.ssh/authorized_keys&quot;
 
-<span class="n">scp</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="n">kinny</span><span class="err">@</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span><span class="o">:~/</span><span class="p">.</span><span class="n">ssh</span>
+scp id_rsa.pub.bak kinny@hacksmeta.com:~/.ssh
 </pre></div>
 
 
 <h1 id="scpsecurity-copying">scp(Security Copying)</h1>
 <ol>
 <li>
-<p>文件从本机到服务器
+<p>文件从本机到服务器<br />
 <code>scp user_item_analysis.py ustc@192.168.231.97:~/kinny/</code></p>
 </li>
 <li>
-<p>文件从服务器下载到本地
+<p>文件从服务器下载到本地<br />
 <code>scp ustc@192.168.231.97:~/kinny/data/user_item_label_table.csv ./Study/competition/jd/JData/data</code></p>
 </li>
 <li>
-<p>目录
+<p>目录<br />
 加个 <code>-r</code> 参数 <code>scp -r</code> </p>
 </li>
 </ol>
@@ -58,7 +68,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>

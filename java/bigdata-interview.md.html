@@ -25,7 +25,7 @@
 
 <div class="page_title">bigdata-interview.md</div>
 
-  <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
+  <div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">heapq</span>
@@ -37,20 +37,20 @@
 <span class="sd">3. merging files using heap queue algorithm.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">datadir</span>  <span class="o">=</span> <span class="s">&quot;d:/querysort/data/&quot;</span>
-<span class="n">tempdir</span>  <span class="o">=</span> <span class="s">&quot;d:/querysort/temp/&quot;</span>
-<span class="n">destfile</span> <span class="o">=</span> <span class="s">&quot;d:/querysort/sorted.txt&quot;</span>
+<span class="n">datadir</span>  <span class="o">=</span> <span class="s2">&quot;d:/querysort/data/&quot;</span>
+<span class="n">tempdir</span>  <span class="o">=</span> <span class="s2">&quot;d:/querysort/temp/&quot;</span>
+<span class="n">destfile</span> <span class="o">=</span> <span class="s2">&quot;d:/querysort/sorted.txt&quot;</span>
 
 <span class="k">def</span> <span class="nf">hashfiles</span><span class="p">():</span>
     <span class="n">fs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">tempdir</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">))</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">datadir</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">fs</span><span class="p">[</span><span class="nb">hash</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">%</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>          
@@ -64,7 +64,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
         <span class="k">return</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;r+&#39;</span><span class="p">))</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s1">&#39;r+&#39;</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
         <span class="n">D</span> <span class="o">=</span> <span class="p">{}</span>
@@ -77,14 +77,14 @@
         <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">truncate</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sorted_D</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">decorated_file</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Yields an easily sortable tuple. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">count</span><span class="p">,</span> <span class="n">query</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">count</span><span class="p">,</span> <span class="n">query</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">yield</span> <span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">),</span> <span class="n">query</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">mergefiles</span><span class="p">():</span>
@@ -92,8 +92,8 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
         <span class="k">return</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;r+&#39;</span><span class="p">))</span>
-    <span class="n">f_dest</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">destfile</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s1">&#39;r+&#39;</span><span class="p">))</span>
+    <span class="n">f_dest</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">destfile</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
     <span class="n">lines_written</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">heapq</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">decorated_file</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">]):</span>
         <span class="n">f_dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -101,17 +101,17 @@
     <span class="k">return</span> <span class="n">lines_written</span>
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">hashfiles</span><span class="p">()</span>
     <span class="n">sortqueryinfile</span><span class="p">()</span>
-    <span class="k">print</span> <span class="s">&quot;sorting completed, total queries: &quot;</span><span class="p">,</span> <span class="n">mergefiles</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s2">&quot;sorting completed, total queries: &quot;</span><span class="p">,</span> <span class="n">mergefiles</span><span class="p">()</span>
 </pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>
