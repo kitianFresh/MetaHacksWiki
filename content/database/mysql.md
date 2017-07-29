@@ -2,6 +2,37 @@
 title: "mysql"
 date: 2017-05-09 21:40
 ---
+# 在centos上安装MySQL
+```
+sudo yum install Percona-Server-server-55.x86_64
+sudo service mysql start
+sudo chkconfig --level 2345 mysql on
+mysql_secure_installation
+```
+
+# 重置MySQL root 密码
+1. 停止MySQL服务 `sudo service mysql stop`
+
+2. 设置MySQL安全模式 `sudo mysqld_safe --skip-grant-tables --skip-networking &`
+
+3. 无密码进入MySQL `mysql -u root`
+
+4. 重置密码
+```sql
+mysql> use mysql;  
+mysql> update user set password=PASSWORD("mynewpassword") where User='root';  
+mysql> flush privileges; 
+```
+如果 update 不成功，比如报错说没有 password 字段，看看自己的MYSQL版本，新版本 5.7 密码字段叫 `authentication_string`
+```sql
+UPDATE user SET authentication_string=PASSWORD("NEWPASSWORD") WHERE User='root';
+```
+5. 重启MySQL服务 `sudo service mysql restart`
+
+6. 苹果上重启后可能还遇到问题`ERROR 1820 (HY000): You must reset your password using ALTER USER statement before executing this statement.`
+```sql
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourNewPass';
+```
 
 # MySQL 表定义范例
 用于爬取 [icd10data](http://www.icd10data.com/ICD10CM/Codes) 中的数据，mysql 数据库模式如下：

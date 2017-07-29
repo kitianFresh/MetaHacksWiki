@@ -32,52 +32,153 @@
 <li><a href="https://help.github.com/articles/creating-a-pull-request/">creating-a-pull-request</a></li>
 </ul>
 <h2 id="gitmergepull">Git出现merge或者pull与本地工作区状态冲突</h2>
-<div class="hlcode"><pre><span class="n">Updating</span> <span class="n">c5ba2bc</span><span class="p">..</span><span class="n">ad63656</span>
-<span class="nl">error:</span> <span class="n">Your</span> <span class="n">local</span> <span class="n">changes</span> <span class="n">to</span> <span class="n">the</span> <span class="n">following</span> <span class="n">files</span> <span class="n">would</span> <span class="n">be</span> <span class="n">overwritten</span> <span class="n">by</span> <span class="n">merge</span><span class="o">:</span>
-    <span class="n">BloodTestReportOCR</span><span class="o">/</span><span class="k">static</span><span class="o">/</span><span class="n">index</span><span class="p">.</span><span class="n">html</span>
-    <span class="n">BloodTestReportOCR</span><span class="o">/</span><span class="n">view</span><span class="p">.</span><span class="n">py</span>
-<span class="n">Please</span><span class="p">,</span> <span class="n">commit</span> <span class="n">your</span> <span class="n">changes</span> <span class="n">or</span> <span class="n">stash</span> <span class="n">them</span> <span class="n">before</span> <span class="n">you</span> <span class="n">can</span> <span class="n">merge</span><span class="p">.</span>
-<span class="n">Aborting</span>
+<div class="hlcode"><pre><span></span>Updating c5ba2bc..ad63656
+error: Your local changes to the following files would be overwritten by merge:
+    BloodTestReportOCR/static/index.html
+    BloodTestReportOCR/view.py
+Please, commit your changes or stash them before you can merge.
+Aborting
 </pre></div>
 
 
 <p>方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">stash</span>
-<span class="n">git</span> <span class="n">merge</span>
+<div class="hlcode"><pre><span></span>git stash
+git merge
 
-<span class="n">git</span> <span class="n">stash</span> <span class="n">list</span><span class="err">：</span> <span class="err">所有保存的</span><span class="n">git</span><span class="err">栈内的备份</span>
-<span class="n">git</span> <span class="n">stash</span> <span class="n">pop</span><span class="err">：</span> <span class="err">弹出栈顶内容</span>
-<span class="n">git</span> <span class="n">stash</span> <span class="n">clear</span><span class="err">：</span> <span class="err">清空</span><span class="n">Git</span><span class="err">栈</span>
+git stash list： 所有保存的git栈内的备份
+git stash pop： 弹出栈顶内容
+git stash clear： 清空Git栈
 </pre></div>
 
 
 <p>方案2：放弃本地修改就可以了</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span>
-<span class="n">git</span> <span class="n">pull</span>
+<div class="hlcode"><pre><span></span>git reset --hard
+git pull
 </pre></div>
 
 
 <h2 id="http-git-push">解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题</h2>
 <p>由于实验楼git服务器使用的是http协议而不是git或者ssh协议（希望实验楼能提供ssh协议的支持吧，这7样就可以把自己的公钥上传了）导致每一次本地git push都要输入用户名和密码；可以使用git config来配置；由于这是实验楼的一个项目，所以使用local就行了；命令如下：</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">cache</span> <span class="p">(</span><span class="err">这个默认密码只保存</span><span class="mi">15</span><span class="err">分钟的</span><span class="p">)</span>
-<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="err">&#39;</span><span class="n">cache</span> <span class="o">--</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600</span><span class="err">&#39;</span> <span class="p">(</span><span class="err">可以添加时间参数修改保存时间</span><span class="p">)</span>
-<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">store</span> <span class="p">(</span><span class="err">长期存储密码</span><span class="p">)</span>
+<div class="hlcode"><pre><span></span>git config --local credential.helper cache (这个默认密码只保存15分钟的)
+git config --local credential.helper &#39;cache --timeout=3600&#39; (可以添加时间参数修改保存时间)
+git config --local credential.helper store (长期存储密码)
 </pre></div>
 
 
 <h2 id="git-commit">Git 切换到某一个 commit 版本</h2>
 <p>如果使用 <code>git reset --hard HEAD^</code>, 导致当前workspace 更改, 可以使用 </p>
-<div class="hlcode"><pre><span class="c1">// 先找到commit id</span>
-<span class="n">git</span> <span class="n">reflog</span>
-<span class="c1">// 切换到那个版本的workspace</span>
-<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="mh">3628164</span>
+<div class="hlcode"><pre><span></span>// 先找到commit id
+git reflog
+// 切换到那个版本的workspace
+git reset --hard 3628164
 </pre></div>
+
+
+<h2 id="git">git 相关操作</h2>
+<p>做merge、pull之前一定要先把自己的更改备份，可以使用以下方法<br />
+git checkout -b tianqi05/deploy-binary-1.2.3<br />
+git reset --hard origin/release/1.2.3<br />
+git diff &gt;&gt; a.diff<br />
+git apply a.diff</p>
+<h3 id="rebase">rebase操作做合并</h3>
+<div class="hlcode"><pre><span></span>git checkout experiment
+git rebase master
+</pre></div>
+
+
+<p>假设master 和 experiment的公共祖先节点是 a， 以上两句是将 experiment 分支首先 git diff 保存从 a 开始的 变化，然后重置到 a， 执行master从a开始的变化，最后apply diff。</p>
+<div class="hlcode"><pre><span></span>git checkout master
+git merge experiment
+</pre></div>
+
+
+<p>切回主分支，执行合并操作，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。</p>
+<p>remote repo name/branch name</p>
+<p>pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好<br />
+git pull = git fetch + git merge<br />
+git pull origin master<br />
+git pull team1 dev</p>
+<p>默认推送当前名字叫 master 的本地分支到 origin/master<br />
+git push origin master<br />
+git push origin tracking:upstream</p>
+<p>git track<br />
+本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）<br />
+git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master<br />
+跟踪方法：<br />
+1. 新建一个新的本地分支跟踪一个远程分支<br />
+<code>git branch -b localbranchname origin/dev</code><br />
+2. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)<br />
+<code>git branch --set-upstream-to=origin/branch currentbranch</code><br />
+3. 删除远程分支<br />
+<code>git push origin --delete branchname</code><br />
+4. 展示分支详细信息<br />
+<code>git branch -vv</code></p>
+<p>支持通配符<br />
+git diff --cached origin<br />
+git diff --*.m</p>
+<p>sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试</p>
+<div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">action</span><span class="o">=</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="s2">&quot;upload&quot;</span><span class="si">}</span>
+
+<span class="nb">declare</span> -A hosts
+<span class="nv">hosts</span><span class="o">=(</span>
+
+<span class="c1"># 网络测试环境</span>
+<span class="o">[</span><span class="s2">&quot;yf-cloud-netctr03&quot;</span><span class="o">]=</span><span class="s2">&quot;10.4.225.98&quot;</span>
+<span class="c1">#[&quot;yf-mos-test-net09&quot;]=&quot;10.4.253.23&quot;</span>
+<span class="c1">#[&quot;yf-mos-corp-host47&quot;]=&quot;10.4.250.37&quot;</span>
+
+<span class="o">)</span>
+
+
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;upload&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> host in <span class="s2">&quot;</span><span class="si">${</span><span class="p">!hosts[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="k">do</span>
+        <span class="nv">prompt</span><span class="o">+=</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2"> &quot;</span>
+    <span class="k">done</span>
+    <span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;The hosts you are going to deploy are:\033[32m </span><span class="nv">$prompt</span><span class="s2"> \033[0m&quot;</span>
+    <span class="nb">echo</span> -e <span class="nv">$prompt</span>
+    <span class="nb">read</span> -p <span class="s2">&quot;Continue (y/n)&quot;</span> answer
+    <span class="k">if</span> <span class="o">[[</span> ! <span class="nv">$answer</span> <span class="o">=</span>~ ^<span class="o">(</span>y<span class="p">|</span>Y<span class="o">)</span>$ <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">exit</span> <span class="m">1</span>
+    <span class="k">fi</span>
+    <span class="k">for</span> host in <span class="s2">&quot;</span><span class="si">${</span><span class="p">!hosts[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="k">do</span>
+        <span class="nb">echo</span> <span class="nv">$host</span> <span class="si">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2">&quot;</span><span class="p">]</span><span class="si">}</span>
+        rsync -av -e <span class="s1">&#39;ssh -p 44392&#39;</span> --exclude <span class="s1">&#39;*.pyc&#39;</span>  --exclude <span class="s1">&#39;contrib&#39;</span> --exclude <span class="s1">&#39;workspace/*&#39;</span> --exclude <span class="s1">&#39;.git/*&#39;</span> --exclude <span class="s1">&#39;backup&#39;</span>  . tianqi05@<span class="si">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2">&quot;</span><span class="p">]</span><span class="si">}</span>:/data/cloud
+        <span class="c1">#rsync -av -e &#39;ssh -p 44392&#39; --exclude &#39;*.pyc&#39; ./contrib/glance sankuai@${hosts[&quot;$host&quot;]}:/opt/cloud/contrib/</span>
+    <span class="k">done</span>
+<span class="k">elif</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;download&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    ::
+<span class="k">fi</span>
+</pre></div>
+
+
+<h2 id="_1">代码风格检查</h2>
+<p>这个可以不用设置，要不然 git commit 的时候对于不严格的风格会失败。在 <code>.git/hooks/</code> 目录下加入<code>pre-commit</code>文件内容如下，需要事先安装好 flake8 和 pep8 两个包。</p>
+<div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="k">function</span> python_style_check<span class="o">()</span> <span class="o">{</span>
+    <span class="c1">#check python code in a git repo</span>
+    <span class="nv">root</span><span class="o">=</span><span class="sb">`</span>git rev-parse --show-toplevel<span class="sb">`</span>
+    <span class="nv">exit</span><span class="o">=</span><span class="m">0</span>
+    <span class="k">for</span> file in <span class="sb">`</span>git diff --name-only --cached --diff-filter<span class="o">=</span>ACMRTUXB HEAD<span class="p">|</span>grep <span class="s1">&#39;\.py$&#39;</span><span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+        flake8 --config<span class="o">=</span><span class="nv">$root</span>/.flake8 <span class="nv">$root</span>/<span class="nv">$file</span>
+        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -ne <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+            <span class="nb">let</span> <span class="nv">exit</span><span class="o">=</span><span class="m">1</span>
+        <span class="k">fi</span>
+    <span class="k">done</span>
+    <span class="nb">exit</span> <span class="nv">$exit</span>
+<span class="o">}</span>
+python_style_check
+</pre></div>
+
+
+<p>不设置的话，直接去掉这个文件即可。</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-02 23:49:40</p>
+        <p>Site Generated 2017-07-29 18:48:41</p>
       </span>
     </div>
   </body>

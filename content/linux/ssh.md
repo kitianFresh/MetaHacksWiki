@@ -2,6 +2,16 @@
 title: "ssh"
 date: 2017-03-31 15:14
 ---
+# 端口转发映射
+第二种：使用SSH协议转发
+
+ssh的三个强大的端口转发命令：
+
+1. 转发到远端：`ssh -C -f -N -g -L 本地端口:目标IP:目标端口 用户名@目标IP`
+2. 转发到本地：`ssh -C -f -N -g –R 本地端口:目标IP:目标端口 用户名@目标IP`
+3. `ssh -C -f -N -g -D listen_port user@Tunnel_Host`
+ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98
+端口转发 ssh -p 44392 root@10.4.225.98
 
 # ssh
 ```
