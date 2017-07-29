@@ -55,10 +55,12 @@ git reset --hard 3628164
 
 ## git 相关操作
 做merge、pull之前一定要先把自己的更改备份，可以使用以下方法
+```
 git checkout -b tianqi05/deploy-binary-1.2.3
 git reset --hard origin/release/1.2.3
 git diff >> a.diff
 git apply a.diff
+```
 
 ### rebase操作做合并
 ```
@@ -73,34 +75,41 @@ git merge experiment
 ```
 切回主分支，执行合并操作，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。
 
-remote repo name/branch name
-
 pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好
+```
 git pull = git fetch + git merge
 git pull origin master
 git pull team1 dev
+```
 
 默认推送当前名字叫 master 的本地分支到 origin/master
+```
 git push origin master
 git push origin tracking:upstream
+```
 
-git track
+### git track
 本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）
 git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master
 跟踪方法：
-1. 新建一个新的本地分支跟踪一个远程分支
+1. 首先拉取远程分支信息
+`git fetch`
+2. 新建一个新的本地分支跟踪一个远程分支
 `git branch -b localbranchname origin/dev`
-2. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)
+3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)
 `git branch --set-upstream-to=origin/branch currentbranch`
-3. 删除远程分支
+4. 删除远程分支
 `git push origin --delete branchname`
-4. 展示分支详细信息
+5. 展示分支详细信息
 `git branch -vv`
 
-支持通配符
+### git diff 支持通配符
+```
 git diff --cached origin
 git diff --*.m
+```
 
+### 本地编辑代码直接推送到服务器上调试（ssh & rsync）
 sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试
 ```bash
 #!/bin/bash

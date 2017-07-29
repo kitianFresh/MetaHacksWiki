@@ -75,11 +75,14 @@ git reset --hard 3628164
 
 
 <h2 id="git">git 相关操作</h2>
-<p>做merge、pull之前一定要先把自己的更改备份，可以使用以下方法<br />
-git checkout -b tianqi05/deploy-binary-1.2.3<br />
-git reset --hard origin/release/1.2.3<br />
-git diff &gt;&gt; a.diff<br />
-git apply a.diff</p>
+<p>做merge、pull之前一定要先把自己的更改备份，可以使用以下方法</p>
+<div class="hlcode"><pre><span></span>git checkout -b tianqi05/deploy-binary-1.2.3
+git reset --hard origin/release/1.2.3
+git diff &gt;&gt; a.diff
+git apply a.diff
+</pre></div>
+
+
 <h3 id="rebase">rebase操作做合并</h3>
 <div class="hlcode"><pre><span></span>git checkout experiment
 git rebase master
@@ -93,29 +96,40 @@ git merge experiment
 
 
 <p>切回主分支，执行合并操作，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。</p>
-<p>remote repo name/branch name</p>
-<p>pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好<br />
-git pull = git fetch + git merge<br />
-git pull origin master<br />
-git pull team1 dev</p>
-<p>默认推送当前名字叫 master 的本地分支到 origin/master<br />
-git push origin master<br />
-git push origin tracking:upstream</p>
-<p>git track<br />
-本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）<br />
+<p>pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好</p>
+<div class="hlcode"><pre><span></span>git pull = git fetch + git merge
+git pull origin master
+git pull team1 dev
+</pre></div>
+
+
+<p>默认推送当前名字叫 master 的本地分支到 origin/master</p>
+<div class="hlcode"><pre><span></span>git push origin master
+git push origin tracking:upstream
+</pre></div>
+
+
+<h3 id="git-track">git track</h3>
+<p>本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）<br />
 git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master<br />
 跟踪方法：<br />
-1. 新建一个新的本地分支跟踪一个远程分支<br />
+1. 首先拉取远程分支信息<br />
+<code>git fetch</code><br />
+2. 新建一个新的本地分支跟踪一个远程分支<br />
 <code>git branch -b localbranchname origin/dev</code><br />
-2. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)<br />
+3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)<br />
 <code>git branch --set-upstream-to=origin/branch currentbranch</code><br />
-3. 删除远程分支<br />
+4. 删除远程分支<br />
 <code>git push origin --delete branchname</code><br />
-4. 展示分支详细信息<br />
+5. 展示分支详细信息<br />
 <code>git branch -vv</code></p>
-<p>支持通配符<br />
-git diff --cached origin<br />
-git diff --*.m</p>
+<h3 id="git-diff">git diff 支持通配符</h3>
+<div class="hlcode"><pre><span></span>git diff --cached origin
+git diff --*.m
+</pre></div>
+
+
+<h3 id="ssh-rsync">本地编辑代码直接推送到服务器上调试（ssh &amp; rsync）</h3>
 <p>sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试</p>
 <div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
 <span class="nv">action</span><span class="o">=</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="s2">&quot;upload&quot;</span><span class="si">}</span>
@@ -178,7 +192,7 @@ python_style_check
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-29 18:48:41</p>
+        <p>Site Generated 2017-07-29 19:02:45</p>
       </span>
     </div>
   </body>
