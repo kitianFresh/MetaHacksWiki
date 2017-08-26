@@ -71,7 +71,22 @@ mysql_secure_installation
 </pre></div>
 
 
-<h1 id="mysql">MySQL 表定义范例</h1>
+<h1 id="mysql">MYSQL 创建用户并授权</h1>
+<p>创建</p>
+<div class="hlcode"><pre><span></span><span class="k">insert</span> <span class="k">into</span> <span class="n">mysql</span><span class="p">.</span><span class="k">user</span><span class="p">(</span><span class="k">Host</span><span class="p">,</span><span class="k">User</span><span class="p">,</span><span class="n">Password</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="ss">&quot;localhost&quot;</span><span class="p">,</span><span class="ss">&quot;cron&quot;</span><span class="p">,</span><span class="n">password</span><span class="p">(</span><span class="ss">&quot;cron&quot;</span><span class="p">));</span>
+<span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
+</pre></div>
+
+
+<p>授权</p>
+<div class="hlcode"><pre><span></span><span class="k">create</span> <span class="k">database</span> <span class="n">cron</span><span class="p">;</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron&#39;</span><span class="p">;</span>
+<span class="o">#</span> <span class="k">grant</span> <span class="k">select</span><span class="p">,</span><span class="k">update</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="n">xxx</span><span class="p">,</span> <span class="n">cron</span><span class="p">.</span><span class="n">yyy</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron(password)&#39;</span><span class="p">;</span>
+<span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
+</pre></div>
+
+
+<h1 id="mysql_1">MySQL 表定义范例</h1>
 <p>用于爬取 <a href="http://www.icd10data.com/ICD10CM/Codes">icd10data</a> 中的数据，mysql 数据库模式如下：</p>
 <div class="hlcode"><pre><span></span><span class="k">drop</span> <span class="k">database</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
@@ -90,7 +105,7 @@ mysql_secure_installation
 </pre></div>
 
 
-<h1 id="mysql_1">mysql 数据库备份</h1>
+<h1 id="mysql_2">mysql 数据库备份</h1>
 <p>备份整个数据库</p>
 <div class="hlcode"><pre><span></span><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
 </pre></div>
@@ -164,7 +179,7 @@ mysql_secure_installation
 </pre></div>
 
 
-<h2 id="mysql_2">MySQL 聚合函数</h2>
+<h2 id="mysql_3">MySQL 聚合函数</h2>
 <p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
 <ul>
 <li>COUNT()/COUNT(DISTINCT)</li>
@@ -360,13 +375,13 @@ mysql_secure_installation
 </pre></div>
 
 
-<h2 id="mysql_3">MySQL列运算操作</h2>
+<h2 id="mysql_4">MySQL列运算操作</h2>
 <div class="hlcode"><pre><span></span><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
 <span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
 </pre></div>
 
 
-<h2 id="mysql_4">MySQL 索引优化</h2>
+<h2 id="mysql_5">MySQL 索引优化</h2>
 <ol>
 <li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
 <li>=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</li>
@@ -379,7 +394,7 @@ mysql_secure_installation
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-29 19:02:45</p>
+        <p>Site Generated 2017-08-26 18:52:40</p>
       </span>
     </div>
   </body>

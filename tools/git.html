@@ -83,6 +83,8 @@ git apply a.diff
 </pre></div>
 
 
+<h3 id="git-blame">git blame</h3>
+<p><code>git blame meituan/server/clouds/common/macutils.py</code></p>
 <h3 id="rebase">rebase操作做合并</h3>
 <div class="hlcode"><pre><span></span>git checkout experiment
 git rebase master
@@ -129,6 +131,9 @@ git diff --*.m
 </pre></div>
 
 
+<p>git apply -v changes.diff 失败<br />
+可以patch成功的，失败的手动改<br />
+git apply --reject --whitespace=fix mypatch.patch</p>
 <h3 id="ssh-rsync">本地编辑代码直接推送到服务器上调试（ssh &amp; rsync）</h3>
 <p>sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试</p>
 <div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
@@ -192,7 +197,7 @@ python_style_check
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-07-29 19:02:45</p>
+        <p>Site Generated 2017-08-26 18:52:40</p>
       </span>
     </div>
   </body>
