@@ -52,7 +52,6 @@ git reflog
 git reset --hard 3628164
 ``` 
 
-
 ## git 相关操作
 做merge、pull之前一定要先把自己的更改备份，可以使用以下方法
 ```
@@ -61,6 +60,8 @@ git reset --hard origin/release/1.2.3
 git diff >> a.diff
 git apply a.diff
 ```
+### git blame
+`git blame meituan/server/clouds/common/macutils.py`
 
 ### rebase操作做合并
 ```
@@ -108,6 +109,9 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 git diff --cached origin
 git diff --*.m
 ```
+git apply -v changes.diff 失败
+可以patch成功的，失败的手动改
+git apply --reject --whitespace=fix mypatch.patch
 
 ### 本地编辑代码直接推送到服务器上调试（ssh & rsync）
 sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试

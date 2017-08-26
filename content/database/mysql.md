@@ -34,6 +34,20 @@ UPDATE user SET authentication_string=PASSWORD("NEWPASSWORD") WHERE User='root';
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourNewPass';
 ```
 
+# MYSQL 创建用户并授权
+创建
+```sql
+insert into mysql.user(Host,User,Password) values("localhost","cron",password("cron"));
+flush privileges;
+```
+授权
+```sql
+create database cron;
+grant all privileges on cron.* to cron@localhost identified by 'cron';
+# grant select,update on cron.xxx, cron.yyy to cron@localhost identified by 'cron(password)';
+flush privileges;
+```
+
 # MySQL 表定义范例
 用于爬取 [icd10data](http://www.icd10data.com/ICD10CM/Codes) 中的数据，mysql 数据库模式如下：
 ```sql
