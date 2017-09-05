@@ -88,6 +88,10 @@ git pull team1 dev
 git push origin master
 git push origin tracking:upstream
 ```
+## git rebase & squash 重演合并多个commit信息成为一个commit信息
+```
+git rebase -i 2323123
+```
 
 ### git track
 本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）
@@ -96,7 +100,7 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 1. 首先拉取远程分支信息
 `git fetch`
 2. 新建一个新的本地分支跟踪一个远程分支
-`git branch -b localbranchname origin/dev`
+`git checkout -b localbranchname origin/dev`
 3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)
 `git branch --set-upstream-to=origin/branch currentbranch`
 4. 删除远程分支
