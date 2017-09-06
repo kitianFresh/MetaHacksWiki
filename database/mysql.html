@@ -389,12 +389,19 @@ mysql_secure_installation
 <li>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</li>
 <li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
 </ol>
+<h2 id="mysql_6">MySQL 事务和锁</h2>
+<ul>
+<li><a href="http://www.cnblogs.com/chenqionghe/p/4845693.html">MySQL中的锁（表锁、行锁）</a></li>
+<li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">how-to-do-distributed-locking</a></li>
+<li><a href="https://www.alibabacloud.com/forum/read-453">Questions about distributed locks</a></li>
+<li><a href="http://www.scs.stanford.edu/14au-cs244b/labs/projects/pu_gao_qu.pdf"> a simple distributed lock service</a></li>
+</ul>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-09-05 21:00:05</p>
+        <p>Site Generated 2017-09-06 21:32:29</p>
       </span>
     </div>
   </body>
