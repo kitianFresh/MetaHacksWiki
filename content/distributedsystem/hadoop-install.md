@@ -82,10 +82,10 @@ mv ./etc/hadoop/mapred-site.xml.template ./etc/hadoop/mapred-site.xml
 ./sbin/stop-yarn.sh
 ./sbin/mr-jobhistory-daemon.sh stop historyserver
 ```
-# cankao
+# 参考
  - [Hadoop: Setting up a Single Node Cluster.](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SingleCluster.html)
 
-### cuowu
+# 错误
 Library you are using is compiled for 32 bit and you are using 64 bit version. so open your .bashrc file where configuration for hadoop exists. Go to this line
 
 export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"

@@ -608,3 +608,9 @@ public class SimulatedCAS {
     }
 }
 ```
+
+### CountDownLatch 和 CyclicBarrier
+
+- [Java concurrency – CountDownLatch Example](https://howtodoinjava.com/core-java/multi-threading/when-to-use-countdownlatch-java-concurrency-example-tutorial/)
+- [CountDownLatch](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html)
+- [CyclicBarrier](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CyclicBarrier.html)
