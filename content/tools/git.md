@@ -70,11 +70,12 @@ git rebase master
 ```
 
 假设master 和 experiment的公共祖先节点是 a， 以上两句是将 experiment 分支首先 git diff 保存从 a 开始的 变化，然后重置到 a， 执行master从a开始的变化，最后apply diff。
+
 ```
 git checkout master
 git merge experiment
 ```
-切回主分支，执行合并操作，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。
+切回主分支，执行合并操作，将开发分支合并到主分支，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。
 
 pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好
 ```
@@ -88,7 +89,7 @@ git pull team1 dev
 git push origin master
 git push origin tracking:upstream
 ```
-## git rebase & squash 重演合并多个commit信息成为一个commit信息
+## git rebase -i & squash 重演合并多个commit信息成为一个commit信息
 ```
 git rebase -i 2323123
 ```

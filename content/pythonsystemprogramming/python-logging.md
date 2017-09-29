@@ -91,7 +91,7 @@ def enable_pretty_logging(options=None, logger=None):
         logger.addHandler(channel)
 ```
 
-但是这个函数只是注册了一个回调函数；`enable_pretty_logging`，回调函数被触发调用是在 tornado.options 中通过一个参数被触发的；并且这两个函数是通过外部调用的，也就是说用户决定是否触发；另外 tornado.options 模块中的 options 变量是一个全局变量；
+但是这个函数只是注册了一个回调函数；`enable_pretty_logging`，回调函数被触发调用是在 tornado.options 中通过一个参数被触发的；并且这两个函数是通过外部调用的，也就是说用户决定是否触发；另外 tornado.options 模块中的 options 变量是一个全局变量；可以看到如果 `enable_pretty_logging` 如果被调用，就会通过 `options.log_file_prefix` 参数来设置logging(其实这里是root Logger) handler 为日志文件处理handler。这个就让系统logging可以把日志输出到`log_file_prefix`文件中; 并且此时还会决定是否设置一个控制台输出，这里没有给出 `log_to_stderr` 并且logger 的handler已经不是0了，因为不会设置；那么为什么logging还可以输出到控制台？ 因为在还没使用tornado.options 来设置日志的时候，logging 就被调用了，一旦调用，默认root 首次调用就会调用 basicConfig 来初始化handler，这个handler就是控制台的 logging.StreamHandler; 这里用户使用的 `logging.info('Use config file: %s' % conf_file)` 就是；
 ```python
 
 options = OptionParser()

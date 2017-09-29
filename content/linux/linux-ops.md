@@ -111,3 +111,13 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 
  解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 wget http://[IP]:[port]/[path\_to\_file]
 
+
+
+## ifconfig VS ip
+
+ - [ifconfig vs ip: What’s Difference and Comparing Network Configuration](https://www.tecmint.com/ifconfig-vs-ip-command-comparing-network-configuration/)
+
+
+
+ ## 查看进程所暂用的资源
+ 首先找到进程 `ps aux|grep XXX`, 然后使用 `sudo lsof -p [pid]` 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， `lsof [filename]` 可以看到进程pid， 拿到pid 之后可以使用`ps aux|grep [pid]` 查看是什么进程；
