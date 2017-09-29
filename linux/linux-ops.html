@@ -145,12 +145,18 @@ Remove dead screens with &#39;screen -wipe&#39;.
 <p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
 <h2 id="_1">局域网下互传大文件</h2>
 <p>解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 wget http://[IP]:[port]/[path_to_file]</p>
+<h2 id="ifconfig-vs-ip">ifconfig VS ip</h2>
+<ul>
+<li><a href="https://www.tecmint.com/ifconfig-vs-ip-command-comparing-network-configuration/">ifconfig vs ip: What’s Difference and Comparing Network Configuration</a></li>
+</ul>
+<p>## 查看进程所暂用的资源<br />
+ 首先找到进程 <code>ps aux|grep XXX</code>, 然后使用 <code>sudo lsof -p [pid]</code> 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， <code>lsof [filename]</code> 可以看到进程pid， 拿到pid 之后可以使用<code>ps aux|grep [pid]</code> 查看是什么进程；</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-09-06 21:32:29</p>
+        <p>Site Generated 2017-09-29 20:16:31</p>
       </span>
     </div>
   </body>

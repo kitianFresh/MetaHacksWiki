@@ -113,7 +113,7 @@
 </pre></div>
 
 
-<p>但是这个函数只是注册了一个回调函数；<code>enable_pretty_logging</code>，回调函数被触发调用是在 tornado.options 中通过一个参数被触发的；并且这两个函数是通过外部调用的，也就是说用户决定是否触发；另外 tornado.options 模块中的 options 变量是一个全局变量；</p>
+<p>但是这个函数只是注册了一个回调函数；<code>enable_pretty_logging</code>，回调函数被触发调用是在 tornado.options 中通过一个参数被触发的；并且这两个函数是通过外部调用的，也就是说用户决定是否触发；另外 tornado.options 模块中的 options 变量是一个全局变量；可以看到如果 <code>enable_pretty_logging</code> 如果被调用，就会通过 <code>options.log_file_prefix</code> 参数来设置logging(其实这里是root Logger) handler 为日志文件处理handler。这个就让系统logging可以把日志输出到<code>log_file_prefix</code>文件中; 并且此时还会决定是否设置一个控制台输出，这里没有给出 <code>log_to_stderr</code> 并且logger 的handler已经不是0了，因为不会设置；那么为什么logging还可以输出到控制台？ 因为在还没使用tornado.options 来设置日志的时候，logging 就被调用了，一旦调用，默认root 首次调用就会调用 basicConfig 来初始化handler，这个handler就是控制台的 logging.StreamHandler; 这里用户使用的 <code>logging.info('Use config file: %s' % conf_file)</code> 就是；</p>
 <div class="hlcode"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">OptionParser</span><span class="p">()</span>
 <span class="sd">&quot;&quot;&quot;Global options object.</span>
 
@@ -611,7 +611,7 @@ Formatter: 日志格式器，决定发送给 Handler 的 LogRecord 以什么样�
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-09-06 21:32:29</p>
+        <p>Site Generated 2017-09-29 20:16:31</p>
       </span>
     </div>
   </body>

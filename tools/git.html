@@ -97,7 +97,7 @@ git merge experiment
 </pre></div>
 
 
-<p>切回主分支，执行合并操作，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。</p>
+<p>切回主分支，执行合并操作，将开发分支合并到主分支，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。</p>
 <p>pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好</p>
 <div class="hlcode"><pre><span></span>git pull = git fetch + git merge
 git pull origin master
@@ -111,7 +111,7 @@ git push origin tracking:upstream
 </pre></div>
 
 
-<h2 id="git-rebase-squash-commitcommit">git rebase &amp; squash 重演合并多个commit信息成为一个commit信息</h2>
+<h2 id="git-rebase-i-squash-commitcommit">git rebase -i &amp; squash 重演合并多个commit信息成为一个commit信息</h2>
 <div class="hlcode"><pre><span></span>git rebase -i 2323123
 </pre></div>
 
@@ -202,7 +202,7 @@ python_style_check
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-09-06 21:32:29</p>
+        <p>Site Generated 2017-09-29 20:16:31</p>
       </span>
     </div>
   </body>
