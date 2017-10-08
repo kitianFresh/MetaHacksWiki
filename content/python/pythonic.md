@@ -455,3 +455,109 @@ import readline, rlcompleter
 readline.parse_and_bind("tab: complete")
 ```
 最后执行 `source .bashrc` 生效. 然后在解释器中使用 `tab` 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;
+
+
+## Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性
+之前一直有一个误解，以为 Python 中的 func body 里面的 self.member_vars 对应的就是Java中的对象属性属于每一个对象，而在 class body 里面的成员就是 java 中的 静态成员变量属于类；在Python非类方法是无法修改静态成员的，这点在Java(this.XXX)是可行的，但是Python不能,这个时候 Python 会在 对象的 `object.__dict__` 中产生一个新的 XXX，初始值来自 类的XXX， 而且此时不再和类的XXX 产生联系。正确的做法是使用 ClassName.XXX 来访问。
+
+```python
+
+class Task(object):
+    count = 7
+    def __init__(self, id, *args, **kwargs):
+        self.id = id
+        print args, kwargs
+
+    def execute(self, *args, **kwargs):
+        self.count -= 1
+        print args, kwargs, self.count
+        return self.count
+    
+    def execute2(self, *args, **kwargs):
+        Task.count -= 1
+        print args, kwargs, Task.count
+        return Task.count
+    
+    @classmethod
+    def do(cls, *args, **kwargs):
+        cls.count -= 1
+        print args, kwargs, cls.count
+        return cls.count
+```
+以下是查看对象和类的词典的变化，很明显，对象通过复制一份类变量XXX的形式将其复制给了 self.XXX
+```python
+from tasks import Task
+t1 = Task(1)
+t1.do()
+print(t1.__dict__)
+
+t1.execute()
+print(Task.count)
+print(t1.__dict__)
+
+print(Task.__dict__)
+Task.do()
+print(Task.__dict__)
+
+t1.execute2()
+print(Task.count)
+print(t1.__dict__)
+print(Task.__dict__)
+
+'''
+() {} 6
+{'id': 1}
+() {} 5
+6
+{'count': 5, 'id': 1}
+{'count': 6, 'do': <classmethod object at 0x10b6200c0>, '__module__': 'tasks', 'execute2': <function execute2 at 0x10b60d500>, '__dict__': <attribute '__dict__' of 'Task' objects>, '__weakref__': <attribute '__weakref__' of 'Task' objects>, 'execute': <function execute at 0x10b60d398>, '__init__': <function __init__ at 0x10b60d410>, '__doc__': None}
+() {} 5
+{'count': 5, 'do': <classmethod object at 0x10b6200c0>, '__module__': 'tasks', 'execute2': <function execute2 at 0x10b60d500>, '__dict__': <attribute '__dict__' of 'Task' objects>, '__weakref__': <attribute '__weakref__' of 'Task' objects>, 'execute': <function execute at 0x10b60d398>, '__init__': <function __init__ at 0x10b60d410>, '__doc__': None}
+() {} 4
+4
+{'count': 5, 'id': 1}
+{'count': 4, 'do': <classmethod object at 0x10b6200c0>, '__module__': 'tasks', 'execute2': <function execute2 at 0x10b60d500>, '__dict__': <attribute '__dict__' of 'Task' objects>, '__weakref__': <attribute '__weakref__' of 'Task' objects>, 'execute': <function execute at 0x10b60d398>, '__init__': <function __init__ at 0x10b60d410>, '__doc__': None}
+'''
+```
+
+
+```python
+
+def t1():
+    from tasks import Task
+    func_name = 'do'
+    invoke_func = getattr(Task, func_name, None)
+    id = 0
+    if invoke_func is not None and callable(invoke_func):
+        while True:
+            task = Task(id)
+            if invoke_func(task, "count") > 0:
+                id += 1
+                continue
+            else:
+                break
+
+    task1 = Task('1')
+    task1.execute()
+
+def t2():
+    from tasks import Task
+    task2 = Task('2')
+    task2.execute()
+
+    func_name = 'execute'
+    func_name = 'execute2'
+    invoke_func = getattr(Task, func_name, None)
+    id = 0
+    if invoke_func is not None:
+        while True:
+            task = Task('123123')
+            if invoke_func(task, "count") > 0:
+                id += 1
+                continue
+            else:
+                break
+
+t2()
+t1()
+```
