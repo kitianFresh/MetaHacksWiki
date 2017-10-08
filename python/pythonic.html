@@ -419,12 +419,112 @@ True
 
 
 <p>最后执行 <code>source .bashrc</code> 生效. 然后在解释器中使用 <code>tab</code> 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;</p>
+<h2 id="python-oop-selfxxx-xxx">Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性</h2>
+<p>之前一直有一个误解，以为 Python 中的 func body 里面的 self.member_vars 对应的就是Java中的对象属性属于每一个对象，而在 class body 里面的成员就是 java 中的 静态成员变量属于类；在Python非类方法是无法修改静态成员的，这点在Java(this.XXX)是可行的，但是Python不能,这个时候 Python 会在 对象的 <code>object.__dict__</code> 中产生一个新的 XXX，初始值来自 类的XXX， 而且此时不再和类的XXX 产生联系。正确的做法是使用 ClassName.XXX 来访问。</p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="k">def</span> <span class="nf">execute2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">Task</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">count</span>
+</pre></div>
+
+
+<p>以下是查看对象和类的词典的变化，很明显，对象通过复制一份类变量XXX的形式将其复制给了 self.XXX</p>
+<div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">do</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+<span class="n">t1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+<span class="n">Task</span><span class="o">.</span><span class="n">do</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+<span class="n">t1</span><span class="o">.</span><span class="n">execute2</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">() {} 6</span>
+<span class="sd">{&#39;id&#39;: 1}</span>
+<span class="sd">() {} 5</span>
+<span class="sd">6</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;id&#39;: 1}</span>
+<span class="sd">{&#39;count&#39;: 6, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">() {} 5</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">() {} 4</span>
+<span class="sd">4</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;id&#39;: 1}</span>
+<span class="sd">{&#39;count&#39;: 4, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">t1</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;do&#39;</span>
+    <span class="n">invoke_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">invoke_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">invoke_func</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">invoke_func</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">id</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="n">task1</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+    <span class="n">task1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">t2</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+    <span class="n">task2</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>
+    <span class="n">task2</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;execute&#39;</span>
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s1">&#39;execute2&#39;</span>
+    <span class="n">invoke_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">invoke_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s1">&#39;123123&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">invoke_func</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">id</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+<span class="n">t2</span><span class="p">()</span>
+<span class="n">t1</span><span class="p">()</span>
+</pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-09-29 20:16:31</p>
+        <p>Site Generated 2017-10-08 15:32:47</p>
       </span>
     </div>
   </body>
