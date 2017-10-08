@@ -31,5 +31,56 @@ print num
 ```
 这个的输出结果预期应该是 999999， 但结果却不是，我试验是999987. 我们dis出f的字节码看看；
 ```python
+  5           0 LOAD_GLOBAL              0 (num)
+              3 LOAD_CONST               1 (1)
+              6 INPLACE_ADD         
+              7 STORE_GLOBAL             0 (num)
+             10 LOAD_CONST               0 (None)
+             13 RETURN_VALUE        
+```
 
+```python
+class Manager():
+    count = 0
+    def __init__(self):
+        self.count += 1
+    @classmethod
+    def get_count(cls):
+        return cls.count
+
+manager = None
+def get_default_manager():
+    global manager
+    if manager is None:
+        manager = Manager()
+    return manager
+
+import dis
+dis.dis(get_default_manager)
+
+import threading
+ts = []
+for i in range(10000000):
+    t = threading.Thread(target=get_default_manager)
+    ts.append(t)
+    t.start()
+
+for t in ts:
+    t.join()
+
+```
+
+```python
+12           0 LOAD_GLOBAL              0 (manager)
+              3 LOAD_CONST               0 (None)
+              6 COMPARE_OP               8 (is)
+              9 POP_JUMP_IF_FALSE       24
+
+ 13          12 LOAD_GLOBAL              2 (Manager)
+             15 CALL_FUNCTION            0
+             18 STORE_GLOBAL             0 (manager)
+             21 JUMP_FORWARD             0 (to 24)
+
+ 14     >>   24 LOAD_GLOBAL              0 (manager)
+             27 RETURN_VALUE 
 ```
