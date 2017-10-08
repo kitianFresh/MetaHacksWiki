@@ -52,14 +52,64 @@
 
 
 <p>这个的输出结果预期应该是 999999， 但结果却不是，我试验是999987. 我们dis出f的字节码看看；</p>
-<div class="hlcode"><pre><span></span>
+<div class="hlcode"><pre><span></span>  <span class="mi">5</span>           <span class="mi">0</span> <span class="n">LOAD_GLOBAL</span>              <span class="mi">0</span> <span class="p">(</span><span class="n">num</span><span class="p">)</span>
+              <span class="mi">3</span> <span class="n">LOAD_CONST</span>               <span class="mi">1</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+              <span class="mi">6</span> <span class="n">INPLACE_ADD</span>         
+              <span class="mi">7</span> <span class="n">STORE_GLOBAL</span>             <span class="mi">0</span> <span class="p">(</span><span class="n">num</span><span class="p">)</span>
+             <span class="mi">10</span> <span class="n">LOAD_CONST</span>               <span class="mi">0</span> <span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+             <span class="mi">13</span> <span class="n">RETURN_VALUE</span>        
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">Manager</span><span class="p">():</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">count</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="k">def</span> <span class="nf">get_default_manager</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">manager</span>
+    <span class="k">if</span> <span class="n">manager</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">manager</span>
+
+<span class="kn">import</span> <span class="nn">dis</span>
+<span class="n">dis</span><span class="o">.</span><span class="n">dis</span><span class="p">(</span><span class="n">get_default_manager</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000000</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">get_default_manager</span><span class="p">)</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="mi">12</span>           <span class="mi">0</span> <span class="n">LOAD_GLOBAL</span>              <span class="mi">0</span> <span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+              <span class="mi">3</span> <span class="n">LOAD_CONST</span>               <span class="mi">0</span> <span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+              <span class="mi">6</span> <span class="n">COMPARE_OP</span>               <span class="mi">8</span> <span class="p">(</span><span class="ow">is</span><span class="p">)</span>
+              <span class="mi">9</span> <span class="n">POP_JUMP_IF_FALSE</span>       <span class="mi">24</span>
+
+ <span class="mi">13</span>          <span class="mi">12</span> <span class="n">LOAD_GLOBAL</span>              <span class="mi">2</span> <span class="p">(</span><span class="n">Manager</span><span class="p">)</span>
+             <span class="mi">15</span> <span class="n">CALL_FUNCTION</span>            <span class="mi">0</span>
+             <span class="mi">18</span> <span class="n">STORE_GLOBAL</span>             <span class="mi">0</span> <span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+             <span class="mi">21</span> <span class="n">JUMP_FORWARD</span>             <span class="mi">0</span> <span class="p">(</span><span class="n">to</span> <span class="mi">24</span><span class="p">)</span>
+
+ <span class="mi">14</span>     <span class="o">&gt;&gt;</span>   <span class="mi">24</span> <span class="n">LOAD_GLOBAL</span>              <span class="mi">0</span> <span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+             <span class="mi">27</span> <span class="n">RETURN_VALUE</span> 
 </pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-10-08 15:32:47</p>
+        <p>Site Generated 2017-10-08 15:40:37</p>
       </span>
     </div>
   </body>
