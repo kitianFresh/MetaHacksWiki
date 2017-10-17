@@ -3,13 +3,13 @@ title: "git"
 date: 2017-04-23 21:22
 ---
 
-## repo fork notes
+# repo fork notes
 
  - [fork-a-repo](https://help.github.com/articles/fork-a-repo/)
  - [syncing-a-fork](https://help.github.com/articles/syncing-a-fork/)
  - [creating-a-pull-request](https://help.github.com/articles/creating-a-pull-request/)
 
-## Git出现merge或者pull与本地工作区状态冲突
+# Git出现merge或者pull与本地工作区状态冲突
 ```
 Updating c5ba2bc..ad63656
 error: Your local changes to the following files would be overwritten by merge:
@@ -34,7 +34,7 @@ git reset --hard
 git pull
 ```
 
-## 解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题
+# 解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题
 由于实验楼git服务器使用的是http协议而不是git或者ssh协议（希望实验楼能提供ssh协议的支持吧，这7样就可以把自己的公钥上传了）导致每一次本地git push都要输入用户名和密码；可以使用git config来配置；由于这是实验楼的一个项目，所以使用local就行了；命令如下：
 
 ```
@@ -43,16 +43,20 @@ git config --local credential.helper 'cache --timeout=3600' (可以添加时间�
 git config --local credential.helper store (长期存储密码)
 ```
 
-## Git 切换到某一个 commit 版本
-如果使用 `git reset --hard HEAD^`, 导致当前workspace 更改, 可以使用 
+# Git 切换到某一个 commit 版本
+如果使用 `git reset --hard HEAD^`（这是切换到上一个commit）, 导致当前workspace 更改, 可以使用 
 ```
 // 先找到commit id
 git reflog
-// 切换到那个版本的workspace
+// 切换到那个版本，但是workspace 是干净的，即commit-id 后面的提交修改，在workspace也是没有的
 git reset --hard 3628164
 ``` 
+如果使用 `git reset [commit-id]`，这样，commit-id 后面的一些提交修改，在workspace中能够查看到
 
-## git 相关操作
+# git blame
+`git blame meituan/server/clouds/common/macutils.py`
+
+# git rebase
 做merge、pull之前一定要先把自己的更改备份，可以使用以下方法
 ```
 git checkout -b tianqi05/deploy-binary-1.2.3
@@ -60,26 +64,32 @@ git reset --hard origin/release/1.2.3
 git diff >> a.diff
 git apply a.diff
 ```
-### git blame
-`git blame meituan/server/clouds/common/macutils.py`
-
-### rebase操作做合并
+## rebase操作做合并
+第一种是为了保持和远程主分支或者某个分支的一致，不至于落后主分支太多（因为主分支还有其他人在不断的commit），使用 rebase 操作, 这样你的分支就在主分支前面，主分支合并你的分支的时候，就不容易产生冲突了。
 ```
 git checkout experiment
-git rebase master
+git rebase -i origin/master
 ```
+假设master 和 experiment的公共祖先节点是 a， 以上两句是将 experiment 分支首先 git diff 保存从 a 开始的 变化，然后重置到 a， 执行master从a开始的变化，最后apply diff。然后 push 你的分支到远程repo，提交pr合并到主分支（在团队和公司都是这样的）
 
-假设master 和 experiment的公共祖先节点是 a， 以上两句是将 experiment 分支首先 git diff 保存从 a 开始的 变化，然后重置到 a， 执行master从a开始的变化，最后apply diff。
-
+自己的项目，也可以在本地主分支local/master上合并，然后直接push 主分支到 origin/master; 切回主分支，执行合并操作，将开发分支合并到主分支，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。
 ```
 git checkout master
 git merge experiment
 ```
-切回主分支，执行合并操作，将开发分支合并到主分支，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。
 
+## git rebase -i & squash 重演合并多个commit信息成为一个commit信息
+```
+git rebase -i 2323123
+```
+然后再弹出的编辑器里面进行把需要合并的commit 从pick 改成squash。注意，重演的时候，编辑器里看到的commit从上到下是从距离重演点开始到当前的commit，这和 `git lg` 看到的历史顺序是反的，因此重演就是从历史一步一步执行到现在。log 是从现在往回看历史。
+
+如果rebase 失败，出现冲突，看git提示，要么修改冲突，提交之后，然后`git rebase --continue`; 要么跳过这些有冲突的 commit， `git rebase --skip`; 要么直接不做了，回到以前，`git rebase --abort`;
+
+# git track
 pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好
 ```
-git pull = git fetch + git merge
+git pull = git fetch + git merge(但是仅仅只是当前分支的信息)
 git pull origin master
 git pull team1 dev
 ```
@@ -89,12 +99,6 @@ git pull team1 dev
 git push origin master
 git push origin tracking:upstream
 ```
-## git rebase -i & squash 重演合并多个commit信息成为一个commit信息
-```
-git rebase -i 2323123
-```
-
-### git track
 本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）
 git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master
 跟踪方法：
@@ -109,7 +113,7 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 5. 展示分支详细信息
 `git branch -vv`
 
-### git diff 支持通配符
+# git diff 支持通配符
 ```
 git diff --cached origin
 git diff --*.m
@@ -118,7 +122,9 @@ git apply -v changes.diff 失败
 可以patch成功的，失败的手动改
 git apply --reject --whitespace=fix mypatch.patch
 
-### 本地编辑代码直接推送到服务器上调试（ssh & rsync）
+# git revert 去掉某一次merge（慎用，很容易冲突）
+
+# 本地编辑代码直接推送到服务器上调试（ssh & rsync）
 sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试
 ```bash
 #!/bin/bash
