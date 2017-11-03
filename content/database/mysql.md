@@ -124,6 +124,43 @@ The MySQL server is running with the --secure-file-priv option so it cannot exec
 mysql> SELECT @@global.secure_file_priv;
 ```
 
+# mysql 查看索引
+```sql
+show index from table_name;
+
+ALTER TABLE disks_tbl ADD COLUMN `auto_backup` VARCHAR(32) CHARACTER SET 'ascii';
+ALTER TABLE mebs_snapshots_tbl DROP COLUMN `auto_take`;
+ALTER TABLE mebs_snapshots_tbl ADD COLUMN `snapshot_type` VARCHAR(32) CHARACTER SET 'ascii' NOT NULL DEFAULT '';
+
+ALTER TABLE disks_tbl ADD INDEX ix_disks_tbl_auto_backup (`auto_backup`);
+ALTER TABLE mebs_snapshots_tbl ADD INDEX ix_mebs_snapshots_tbl_snapshot_type (`snapshot_type`);
+
+CREATE TABLE `mebs_snapshot_strategy_disks_tbl` (
+`created_at` datetime NOT NULL,
+`updated_at` datetime NOT NULL,
+`deleted_at` datetime DEFAULT NULL,
+`deleted` tinyint(1) NOT NULL,
+`row_id` bigint(20) NOT NULL AUTO_INCREMENT,
+`mebs_snapshot_strategy_id` varchar(36) CHARACTER SET ascii NOT NULL,
+`disk_id` varchar(36) CHARACTER SET ascii NOT NULL,
+`cron_job_id` varchar(36) CHARACTER SET ascii DEFAULT NULL,
+`open` tinyint(1) NOT NULL,
+PRIMARY KEY (`row_id`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_deleted` (`deleted`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_open` (`open`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_mebs_snapshot_strategy_id` (`mebs_snapshot_strategy_id`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_created_at` (`created_at`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_disk_id` (`disk_id`),
+KEY `ix_mebs_snapshot_strategy_disks_tbl_cron_job_id` (`cron_job_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4
+```
+
+# mysql sql语句结果导出
+```sql
+mysql -uroot -p1234 -Ne "use cron; select id from cron_jobs_tbl;" > /tmp/jobs.txt
+insert into cron_logs_tbl(id,cron_job_id,created_at,updated_at) values(uuid(),"001d4865-127c-45ba-90de-6c1f74e5a782",now(),now());
+```
+
 # MySQL大数据统计Case Study
 ```sql
 drop database if exists `StudentManager`;
