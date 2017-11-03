@@ -158,6 +158,43 @@ mysql_secure_installation
 </pre></div>
 
 
+<h1 id="mysql_3">mysql 查看索引</h1>
+<div class="hlcode"><pre><span></span><span class="k">show</span> <span class="k">index</span> <span class="k">from</span> <span class="k">table_name</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">disks_tbl</span> <span class="k">ADD</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_backup</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="s1">&#39;ascii&#39;</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">DROP</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_take</span><span class="o">`</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">ADD</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">snapshot_type</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="s1">&#39;ascii&#39;</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">disks_tbl</span> <span class="k">ADD</span> <span class="k">INDEX</span> <span class="n">ix_disks_tbl_auto_backup</span> <span class="p">(</span><span class="o">`</span><span class="n">auto_backup</span><span class="o">`</span><span class="p">);</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">ADD</span> <span class="k">INDEX</span> <span class="n">ix_mebs_snapshots_tbl_snapshot_type</span> <span class="p">(</span><span class="o">`</span><span class="n">snapshot_type</span><span class="o">`</span><span class="p">);</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">mebs_snapshot_strategy_disks_tbl</span><span class="o">`</span> <span class="p">(</span>
+<span class="o">`</span><span class="n">created_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">updated_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">deleted_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">deleted</span><span class="o">`</span> <span class="n">tinyint</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">row_id</span><span class="o">`</span> <span class="nb">bigint</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+<span class="o">`</span><span class="n">mebs_snapshot_strategy_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">disk_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">cron_job_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="k">open</span><span class="o">`</span> <span class="n">tinyint</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">row_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_deleted</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">deleted</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_open</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="k">open</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_mebs_snapshot_strategy_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">mebs_snapshot_strategy_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_created_at</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">created_at</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_disk_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">disk_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_cron_job_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">cron_job_id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="n">AUTO_INCREMENT</span><span class="o">=</span><span class="mi">92</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span>
+</pre></div>
+
+
+<h1 id="mysql-sql">mysql sql语句结果导出</h1>
+<div class="hlcode"><pre><span></span><span class="n">mysql</span> <span class="o">-</span><span class="n">uroot</span> <span class="o">-</span><span class="n">p1234</span> <span class="o">-</span><span class="n">Ne</span> <span class="ss">&quot;use cron; select id from cron_jobs_tbl;&quot;</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">jobs</span><span class="p">.</span><span class="n">txt</span>
+<span class="k">insert</span> <span class="k">into</span> <span class="n">cron_logs_tbl</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">cron_job_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">,</span><span class="n">updated_at</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="n">uuid</span><span class="p">(),</span><span class="ss">&quot;001d4865-127c-45ba-90de-6c1f74e5a782&quot;</span><span class="p">,</span><span class="n">now</span><span class="p">(),</span><span class="n">now</span><span class="p">());</span>
+</pre></div>
+
+
 <h1 id="mysqlcase-study">MySQL大数据统计Case Study</h1>
 <div class="hlcode"><pre><span></span><span class="k">drop</span> <span class="k">database</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
@@ -179,7 +216,7 @@ mysql_secure_installation
 </pre></div>
 
 
-<h2 id="mysql_3">MySQL 聚合函数</h2>
+<h2 id="mysql_4">MySQL 聚合函数</h2>
 <p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
 <ul>
 <li>COUNT()/COUNT(DISTINCT)</li>
@@ -375,13 +412,13 @@ mysql_secure_installation
 </pre></div>
 
 
-<h2 id="mysql_4">MySQL列运算操作</h2>
+<h2 id="mysql_5">MySQL列运算操作</h2>
 <div class="hlcode"><pre><span></span><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
 <span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
 </pre></div>
 
 
-<h2 id="mysql_5">MySQL 索引优化</h2>
+<h2 id="mysql_6">MySQL 索引优化</h2>
 <ol>
 <li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
 <li>=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</li>
@@ -389,7 +426,7 @@ mysql_secure_installation
 <li>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</li>
 <li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
 </ol>
-<h2 id="mysql_6">MySQL 事务和锁</h2>
+<h2 id="mysql_7">MySQL 事务和锁</h2>
 <ul>
 <li><a href="http://www.cnblogs.com/chenqionghe/p/4845693.html">MySQL中的锁（表锁、行锁）</a></li>
 <li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">how-to-do-distributed-locking</a></li>
@@ -401,7 +438,7 @@ mysql_secure_installation
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-10-29 20:18:27</p>
+        <p>Site Generated 2017-11-03 22:00:29</p>
       </span>
     </div>
   </body>
