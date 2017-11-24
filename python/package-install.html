@@ -86,12 +86,40 @@ sudo apt-get install python-numpy
 
 
 <p>基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package</p>
+<h1 id="mysql-python">MySQL-python 安装</h1>
+<p>centos 上安装的时候报错 <code>EnvironmentError: mysql_config not found</code>； 网上说 装 mysql-devel， 但是因为安装的 mysql 是 percona 因此装不了， 正确的安装姿势是</p>
+<p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。<br />
+安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64</p>
+<h1 id="pip">pip 安装走国内镜像源的方法</h1>
+<p>pip 安装python包其实可以添加参数 <code>pip install --index-url  http://pypi.douban.com/simple</code>， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:</p>
+<div class="hlcode"><pre><span></span><span class="p">[</span><span class="k">global</span><span class="p">]</span>
+<span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">pypi</span><span class="o">.</span><span class="n">douban</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">simple</span>
+<span class="n">trusted</span><span class="o">-</span><span class="n">host</span> <span class="o">=</span> <span class="n">pypi</span><span class="o">.</span><span class="n">douban</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+
+
+<p>或者是直接使用 apt-get 或者 yum 来安装 python 包；</p>
+<h1 id="pyenv">安装pyenv</h1>
+<p>首先更新，必须的，不管安装什么， 要不然会出错。<code>yum update (apt-get update)</code>。 然后使用 <code>curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash</code> 安装 pyenv;</p>
+<p><code>pyenv versions</code> 查看版本，<code>pyenv global 2.7.13</code> 切换版本， 没有的话，需要先安装， <code>pyenv install 2.7.13</code> 可以安装各种版本以及Anaconda。</p>
+<p>但是一般你会安装的很慢，下载 python 安装包很慢。可以修改对应版本下的下载url。 在 <code>.pyenv/plugins/python-build/share/python-build/</code> 目录下修改对应安装版本的构建文件， 例如 2.7.13 就是 <code>.pyenv/plugins/python-build/share/python-build/2.7.13</code>；打开后编辑 url， 将原来的换成自己的一个可以很快下载的站点。</p>
+<div class="hlcode"><pre><span></span><span class="c1">#require_gcc</span>
+<span class="n">install_package</span> <span class="s2">&quot;openssl-1.0.2k&quot;</span> <span class="s2">&quot;https://www.openssl.org/source/openssl-1.0.2k.tar.gz#6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0&quot;</span> <span class="n">mac_openssl</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_openssl</span>
+<span class="n">install_package</span> <span class="s2">&quot;readline-6.3&quot;</span> <span class="s2">&quot;https://ftpmirror.gnu.org/readline/readline-6.3.tar.gz#56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43&quot;</span> <span class="n">standard</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_readline</span>
+<span class="c1">#if has_tar_xz_support; then</span>
+<span class="c1">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tar.xz#35d543986882f78261f97787fd3e06274bfa6df29fac9b4a94f73930ff98f731&quot; ldflags_dirs standard verify_py27 ensurepip</span>
+<span class="c1">#else</span>
+<span class="c1">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz#a4f05a0720ce0fd92626f0278b6b433eee9a6173ddf2bced7957dfb599a5ece1&quot; ldflags_dirs standard verify_py27 ensurepip</span>
+<span class="c1">#fi</span>
+
+<span class="n">install_package</span> <span class="s2">&quot;Python-2.7.13&quot;</span> <span class="s2">&quot;http://172.18.177.215:8000/Python-2.7.13.tar.xz&quot;</span> <span class="n">ldflags_dirs</span> <span class="n">standard</span> <span class="n">verify_py27</span> <span class="n">ensurepip</span>
+</pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-11-03 22:00:29</p>
+        <p>Site Generated 2017-11-24 13:54:06</p>
       </span>
     </div>
   </body>
