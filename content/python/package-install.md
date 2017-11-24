@@ -64,3 +64,38 @@ sudo apt-get install python-numpy
 ```
 基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package
 
+
+
+# MySQL-python 安装
+centos 上安装的时候报错 `EnvironmentError: mysql_config not found`； 网上说 装 mysql-devel， 但是因为安装的 mysql 是 percona 因此装不了， 正确的安装姿势是
+
+查看 `yum list installed | grep -i percona` 是否安装了 percona ，然后再 `yum whatprovides mysql_config` 或 `yum whatprovides */mysql_config` 列表中找到 devel 字样的开发包。
+安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64
+
+# pip 安装走国内镜像源的方法
+pip 安装python包其实可以添加参数 `pip install --index-url  http://pypi.douban.com/simple`， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:
+```python
+[global]
+index-url = http://pypi.douban.com/simple
+trusted-host = pypi.douban.com
+```
+或者是直接使用 apt-get 或者 yum 来安装 python 包；
+
+# 安装pyenv
+首先更新，必须的，不管安装什么， 要不然会出错。`yum update (apt-get update)`。 然后使用 `curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash` 安装 pyenv;
+
+`pyenv versions` 查看版本，`pyenv global 2.7.13` 切换版本， 没有的话，需要先安装， `pyenv install 2.7.13` 可以安装各种版本以及Anaconda。
+
+但是一般你会安装的很慢，下载 python 安装包很慢。可以修改对应版本下的下载url。 在 `.pyenv/plugins/python-build/share/python-build/` 目录下修改对应安装版本的构建文件， 例如 2.7.13 就是 `.pyenv/plugins/python-build/share/python-build/2.7.13`；打开后编辑 url， 将原来的换成自己的一个可以很快下载的站点。
+```python
+#require_gcc
+install_package "openssl-1.0.2k" "https://www.openssl.org/source/openssl-1.0.2k.tar.gz#6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0" mac_openssl --if has_broken_mac_openssl
+install_package "readline-6.3" "https://ftpmirror.gnu.org/readline/readline-6.3.tar.gz#56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43" standard --if has_broken_mac_readline
+#if has_tar_xz_support; then
+#  install_package "Python-2.7.13" "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tar.xz#35d543986882f78261f97787fd3e06274bfa6df29fac9b4a94f73930ff98f731" ldflags_dirs standard verify_py27 ensurepip
+#else
+#  install_package "Python-2.7.13" "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz#a4f05a0720ce0fd92626f0278b6b433eee9a6173ddf2bced7957dfb599a5ece1" ldflags_dirs standard verify_py27 ensurepip
+#fi
+
+install_package "Python-2.7.13" "http://172.18.177.215:8000/Python-2.7.13.tar.xz" ldflags_dirs standard verify_py27 ensurepip
+```
