@@ -182,6 +182,41 @@ create table `students` (
 )
 ```
 
+# SQL JOIN
+- inner join
+`SELECT <field_list> FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY`
+- left join
+`SELECT <field_list> FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY`
+- right join
+`SELECT <field_list> FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY`
+- outer join
+`SELECT <field_list> FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY`
+- left join excluding inner join
+`SELECT <field_list> FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL`
+- right join excluding inner join
+`SELECT <field_list> FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL`
+- outer join excluding inner join 
+`SELECT <field_list> FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL`
+
+以上在SQLAlchemy中的对应关系
+- [Visual Representation of SQL Joins](https://www.codeproject.com/Articles/33052/Visual-Representation-of-SQL-Joins)
+
+# SQL 执行顺序
+```sql
+SELECT DISTINCT column, AGG_FUNC(column_or_expression), …
+FROM mytable
+    JOIN another_table
+      ON mytable.column = another_table.column
+    WHERE constraint_expression
+    GROUP BY column
+    HAVING constraint_expression
+    ORDER BY column ASC/DESC
+    LIMIT count OFFSET COUNT;
+```
+根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，
+FROM & JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY -> LIMIT/OFFSET
+- [Order of execution of a Query](https://sqlbolt.com/lesson/select_queries_order_of_execution)
+
 ## MySQL 聚合函数
 [MySQL 聚合函数](https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html)可以理解成 `Map/Reduce` 中的　`reduce` 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．[Statistical functions in MySQL](http://www.xarg.org/2012/07/statistical-functions-in-mysql/)
 
@@ -336,7 +371,8 @@ ORDER BY Class, Age DESC;
 ```
 该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；
 
-## MySQL Limit 分页查询
+## MySQL 分页查询
+### offset 分页查询
 `limit offset, row_count`, `limit row_count` 等价于　`limit 0, row_count`; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　`limit`. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；
 
 以下语句按照时间顺序查询 第`21 ~ 30`条记录 即第三页，每页10条记录；
@@ -357,8 +393,13 @@ mysql> SELECT * FROM students ORDER BY Registry DESC LIMIT 20, 10;
 | 72 | Paul Singer  |     3 |   36 | 男   |    9 |       11 |      52 | 2017-05-17 22:23:54 |
 +----+--------------+-------+------+------+------+----------+---------+---------------------+
 10 rows in set (0.00 sec)
-
 ```
+### value-based 分页查询
+offset 版本的分页查询当面对大数据集合的时候，会非常低效，因为他总是先读出所有的数据，让后排序，这是非常耗时的。
+### 分页查询优化
+- [The art of pagination – Offset vs. value based paging](https://blog.novatec-gmbh.de/art-pagination-offset-vs-value-based-paging/)
+
+- [What’s wrong with pagination?](https://blog.jooq.org/2016/08/10/why-most-programmers-get-pagination-wrong/)
 
 ## MySQL列运算操作
 

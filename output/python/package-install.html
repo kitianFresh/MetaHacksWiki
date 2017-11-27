@@ -90,6 +90,9 @@ sudo apt-get install python-numpy
 <p>centos 上安装的时候报错 <code>EnvironmentError: mysql_config not found</code>； 网上说 装 mysql-devel， 但是因为安装的 mysql 是 percona 因此装不了， 正确的安装姿势是</p>
 <p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。<br />
 安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64</p>
+<h1 id="pycurl">pycurl 失败</h1>
+<p><code>__main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory</code><br />
+sudo yum install libcurl-openssl-devel</p>
 <h1 id="pip">pip 安装走国内镜像源的方法</h1>
 <p>pip 安装python包其实可以添加参数 <code>pip install --index-url  http://pypi.douban.com/simple</code>， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:</p>
 <div class="hlcode"><pre><span></span><span class="p">[</span><span class="k">global</span><span class="p">]</span>
@@ -119,7 +122,7 @@ sudo apt-get install python-numpy
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-11-24 13:54:06</p>
+        <p>Site Generated 2017-11-27 18:29:47</p>
       </span>
     </div>
   </body>

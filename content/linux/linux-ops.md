@@ -121,3 +121,37 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 
  ## 查看进程所暂用的资源
  首先找到进程 `ps aux|grep XXX`, 然后使用 `sudo lsof -p [pid]` 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， `lsof [filename]` 可以看到进程pid， 拿到pid 之后可以使用`ps aux|grep [pid]` 查看是什么进程；
+
+
+
+
+## 删除某个目录下的大量的文件
+```sh
+find /tmp -name core -type f -print0 | xargs -0 /bin/rm -f
+
+Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way
+that file or directory names containing spaces or newlines are correctly handled.
+
+find /tmp -depth -name core -type f -delete
+
+Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the
+previous example (because we avoid the need to use fork(2) and exec(2) to launch rm and we don't need the
+extra xargs process).
+
+cut -d: -f1 < /etc/passwd | sort | xargs echo
+```
+
+/bin/rm: Argument list too long.
+The problem is that when you type something like “rm -rf *”, the “*” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.
+To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:
+find . -type f -exec rm -v {} \;
+My problem is that I needed to delete 500,000 files and it was taking way too long.
+I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:
+find . -type f -delete
+Using this method, I was deleting files at a rate of about 2000 files/second – much faster!
+You can also show the filenames as you’re deleting them:
+find . -type f -print -delete
+…or even show how many files will be deleted, then time how long it takes to delete them:
+
+ls -1 汇报内存不足如果目录下有上百万个小文件
+ls -1 | wc -l && time find . -type f -delete

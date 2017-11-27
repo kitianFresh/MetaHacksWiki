@@ -72,6 +72,11 @@ centos 上安装的时候报错 `EnvironmentError: mysql_config not found`； �
 查看 `yum list installed | grep -i percona` 是否安装了 percona ，然后再 `yum whatprovides mysql_config` 或 `yum whatprovides */mysql_config` 列表中找到 devel 字样的开发包。
 安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64
 
+
+# pycurl 失败
+`    __main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory`
+sudo yum install libcurl-openssl-devel
+
 # pip 安装走国内镜像源的方法
 pip 安装python包其实可以添加参数 `pip install --index-url  http://pypi.douban.com/simple`， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:
 ```python
