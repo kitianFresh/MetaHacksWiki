@@ -216,6 +216,41 @@ mysql_secure_installation
 </pre></div>
 
 
+<h1 id="sql-join">SQL JOIN</h1>
+<ul>
+<li>inner join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
+<li>left join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
+<li>right join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
+<li>outer join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
+<li>left join excluding inner join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL</code></li>
+<li>right join excluding inner join<br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL</code></li>
+<li>outer join excluding inner join <br />
+<code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL</code></li>
+</ul>
+<p>以上在SQLAlchemy中的对应关系<br />
+- <a href="https://www.codeproject.com/Articles/33052/Visual-Representation-of-SQL-Joins">Visual Representation of SQL Joins</a></p>
+<h1 id="sql">SQL 执行顺序</h1>
+<div class="hlcode"><pre><span></span><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">column</span><span class="p">,</span> <span class="n">AGG_FUNC</span><span class="p">(</span><span class="n">column_or_expression</span><span class="p">),</span> <span class="err">…</span>
+<span class="k">FROM</span> <span class="n">mytable</span>
+    <span class="k">JOIN</span> <span class="n">another_table</span>
+      <span class="k">ON</span> <span class="n">mytable</span><span class="p">.</span><span class="k">column</span> <span class="o">=</span> <span class="n">another_table</span><span class="p">.</span><span class="k">column</span>
+    <span class="k">WHERE</span> <span class="n">constraint_expression</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">column</span>
+    <span class="k">HAVING</span> <span class="n">constraint_expression</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="k">column</span> <span class="k">ASC</span><span class="o">/</span><span class="k">DESC</span>
+    <span class="k">LIMIT</span> <span class="k">count</span> <span class="k">OFFSET</span> <span class="k">COUNT</span><span class="p">;</span>
+</pre></div>
+
+
+<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，<br />
+FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET<br />
+- <a href="https://sqlbolt.com/lesson/select_queries_order_of_execution">Order of execution of a Query</a></p>
 <h2 id="mysql_4">MySQL 聚合函数</h2>
 <p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
 <ul>
@@ -390,7 +425,8 @@ mysql_secure_installation
 
 
 <p>该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；</p>
-<h2 id="mysql-limit">MySQL Limit 分页查询</h2>
+<h2 id="mysql_5">MySQL 分页查询</h2>
+<h3 id="offset">offset 分页查询</h3>
 <p><code>limit offset, row_count</code>, <code>limit row_count</code> 等价于　<code>limit 0, row_count</code>; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　<code>limit</code>. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；</p>
 <p>以下语句按照时间顺序查询 第<code>21 ~ 30</code>条记录 即第三页，每页10条记录；</p>
 <div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Registry</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">;</span>
@@ -412,13 +448,24 @@ mysql_secure_installation
 </pre></div>
 
 
-<h2 id="mysql_5">MySQL列运算操作</h2>
+<h3 id="value-based">value-based 分页查询</h3>
+<p>offset 版本的分页查询当面对大数据集合的时候，会非常低效，因为他总是先读出所有的数据，让后排序，这是非常耗时的。</p>
+<h3 id="_2">分页查询优化</h3>
+<ul>
+<li>
+<p><a href="https://blog.novatec-gmbh.de/art-pagination-offset-vs-value-based-paging/">The art of pagination – Offset vs. value based paging</a></p>
+</li>
+<li>
+<p><a href="https://blog.jooq.org/2016/08/10/why-most-programmers-get-pagination-wrong/">What’s wrong with pagination?</a></p>
+</li>
+</ul>
+<h2 id="mysql_6">MySQL列运算操作</h2>
 <div class="hlcode"><pre><span></span><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
 <span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
 </pre></div>
 
 
-<h2 id="mysql_6">MySQL 索引优化</h2>
+<h2 id="mysql_7">MySQL 索引优化</h2>
 <ol>
 <li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
 <li>=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</li>
@@ -426,7 +473,7 @@ mysql_secure_installation
 <li>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</li>
 <li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
 </ol>
-<h2 id="mysql_7">MySQL 事务和锁</h2>
+<h2 id="mysql_8">MySQL 事务和锁</h2>
 <ul>
 <li><a href="http://www.cnblogs.com/chenqionghe/p/4845693.html">MySQL中的锁（表锁、行锁）</a></li>
 <li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">how-to-do-distributed-locking</a></li>
@@ -438,7 +485,7 @@ mysql_secure_installation
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-11-24 13:54:06</p>
+        <p>Site Generated 2017-11-27 18:29:47</p>
       </span>
     </div>
   </body>

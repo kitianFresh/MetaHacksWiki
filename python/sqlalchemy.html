@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>sqlalchemy - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#python">python</a>&nbsp;&#187;&nbsp;sqlalchemy
+    <span class="updated">Updated&nbsp;
+      2017-11-27 14:15
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">sqlalchemy</div>
+
+  <h1 id="fast-way-to-use-sqlalchemy-to-count-rows-in-a-query-results">Fast way to use sqlalchemy to count rows in a query results</h1>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="n">count_q</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">statement</span><span class="o">.</span><span class="n">with_only_columns</span><span class="p">([</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">()])</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">count_q</span><span class="p">)</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">count</span>
+
+<span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TestModel</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Slow: SELECT COUNT(*) FROM (SELECT ... FROM TestModel WHERE ...) ...</span>
+<span class="k">print</span> <span class="n">q</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="c1"># Fast: SELECT COUNT(*) FROM TestModel WHERE ...</span>
+<span class="k">print</span> <span class="n">get_count</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-11-27 18:29:47</p>
+      </span>
+    </div>
+  </body>
+</html>

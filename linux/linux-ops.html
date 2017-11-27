@@ -151,12 +151,41 @@ Remove dead screens with &#39;screen -wipe&#39;.
 </ul>
 <p>## 查看进程所暂用的资源<br />
  首先找到进程 <code>ps aux|grep XXX</code>, 然后使用 <code>sudo lsof -p [pid]</code> 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， <code>lsof [filename]</code> 可以看到进程pid， 拿到pid 之后可以使用<code>ps aux|grep [pid]</code> 查看是什么进程；</p>
+<h2 id="_2">删除某个目录下的大量的文件</h2>
+<div class="hlcode"><pre><span></span>find /tmp -name core -type f -print0 <span class="p">|</span> xargs -0 /bin/rm -f
+
+Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way
+that file or directory names containing spaces or newlines are correctly handled.
+
+find /tmp -depth -name core -type f -delete
+
+Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the
+previous example <span class="o">(</span>because we avoid the need to use fork<span class="o">(</span><span class="m">2</span><span class="o">)</span> and exec<span class="o">(</span><span class="m">2</span><span class="o">)</span> to launch rm and we don<span class="err">&#39;</span>t need the
+extra xargs process<span class="o">)</span>.
+
+cut -d: -f1 &lt; /etc/passwd <span class="p">|</span> sort <span class="p">|</span> xargs <span class="nb">echo</span>
+</pre></div>
+
+
+<p>/bin/rm: Argument list too long.<br />
+The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.<br />
+To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:<br />
+find . -type f -exec rm -v {} \;<br />
+My problem is that I needed to delete 500,000 files and it was taking way too long.<br />
+I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:<br />
+find . -type f -delete<br />
+Using this method, I was deleting files at a rate of about 2000 files/second – much faster!<br />
+You can also show the filenames as you’re deleting them:<br />
+find . -type f -print -delete<br />
+…or even show how many files will be deleted, then time how long it takes to delete them:</p>
+<p>ls -1 汇报内存不足如果目录下有上百万个小文件<br />
+ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-11-24 13:54:06</p>
+        <p>Site Generated 2017-11-27 18:29:47</p>
       </span>
     </div>
   </body>
