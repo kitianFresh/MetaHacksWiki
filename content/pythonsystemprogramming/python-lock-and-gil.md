@@ -84,3 +84,10 @@ for t in ts:
  14     >>   24 LOAD_GLOBAL              0 (manager)
              27 RETURN_VALUE 
 ```
+
+
+- [Python Threads](http://l4wisdom.com/python/python_threads.php)
+- [Python threads: communication and stopping](https://eli.thegreenplace.net/2011/12/27/python-threads-communication-and-stopping)
+- [Code sample - socket client thread in Python](https://eli.thegreenplace.net/2011/05/18/code-sample-socket-client-thread-in-python/)
+- [Python : Any way to get one process to have a write lock and others to just read on parallel?](https://stackoverflow.com/questions/16261902/python-any-way-to-get-one-process-to-have-a-write-lock-and-others-to-just-read)
+- [Python Threading Basics](https://christopherdavis.me/blog/threading-basics.html)
