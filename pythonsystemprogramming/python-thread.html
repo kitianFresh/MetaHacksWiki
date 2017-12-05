@@ -1,0 +1,94 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>python-thread - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#pythonsystemprogramming">pythonsystemprogramming</a>&nbsp;&#187;&nbsp;python-thread
+    <span class="updated">Updated&nbsp;
+      2017-12-05 22:22
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">python-thread</div>
+
+  <h1 id="python-thread">python thread</h1>
+<h2 id="daemon-thread">daemon thread</h2>
+<p>首先，注意不要把守护线程和UNIX守护进程混淆，这是两个不同的概念。UNIX守护进程也叫daemon，但是他指的是哪些脱离的终端即不受终端控制的后台进程；UNIX进程分为会话，进程组，进程，一个会话和一个（伪）终端关联，而一个会话包含多个进程组，会话中的进程组分前台进程组和后台进程组，前台进程组会接受来自终端的ctrl+c 等中断信号，但是他们并未脱离终端，只有脱离了终端的后台进程才是守护进程；</p>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="k">class</span> <span class="nc">DaemonizableThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DaemonizableThread</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">setDaemon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">daemonic</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="n">daemonic</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span><span class="p">:</span>
+            <span class="n">threading</span><span class="o">.</span><span class="n">_sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; sleeping </span><span class="si">%s</span><span class="s1"> seconds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">DaemonizableThread</span><span class="p">(</span><span class="s1">&#39;demon&#39;</span><span class="p">)</span>
+<span class="c1">#t.setDaemon(True)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># try:</span>
+<span class="c1">#     t.join()</span>
+<span class="c1"># except KeyboardInterrupt as e:</span>
+<span class="c1">#     t.stop()</span>
+
+
+<span class="c1"># import sys</span>
+<span class="c1"># import signal</span>
+<span class="c1"># def terminate_handler(sig, frame):</span>
+<span class="c1">#     print &quot;Caught signal: %s &quot; % sig</span>
+<span class="c1">#     sys.exit(0)</span>
+
+<span class="c1"># signal.signal(signal.SIGTERM, terminate_handler)</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">isAlive</span><span class="p">:</span>
+            <span class="k">break</span>
+<span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="inter-thread-communication">inter thread communication</h2>
+<h3 id="thread-signal">thread signal</h3>
+<p>signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。</p>
+<h3 id="thread-lock">thread lock</h3>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-12-05 23:08:39</p>
+      </span>
+    </div>
+  </body>
+</html>

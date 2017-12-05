@@ -180,12 +180,22 @@ find . -type f -print -delete<br />
 …or even show how many files will be deleted, then time how long it takes to delete them:</p>
 <p>ls -1 汇报内存不足如果目录下有上百万个小文件<br />
 ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
+<h1 id="check-dev-file-system">check dev file system</h1>
+<ol>
+<li><code>lsblk -f</code> 可以看到所有附着设备的文件系统类型，如果有的话；无论是否mount</li>
+<li><code>df -Th</code> 可以看到所有已经mount的设备的文件系统类型</li>
+<li><code>fsck -N /dev/vdc1</code> 设备修复工具，可以对某个分区进行修复，并可以查看到该分区的文件系统</li>
+<li><code>mount | grep "^/dev"</code></li>
+<li><code>blkid /dev/sda1</code></li>
+<li><code>file -sL /dev/sda1</code></li>
+<li><code>cat /etc/fstab</code> 在主机启动的时候回挂载改文件内容中的设备，里面描述了该挂载的设备的id，tag，label，mount point， fs等，但是这个是手动设置的</li>
+</ol>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-04 23:18:44</p>
+        <p>Site Generated 2017-12-05 23:08:39</p>
       </span>
     </div>
   </body>
