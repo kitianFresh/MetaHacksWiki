@@ -155,3 +155,14 @@ find . -type f -print -delete
 
 ls -1 汇报内存不足如果目录下有上百万个小文件
 ls -1 | wc -l && time find . -type f -delete
+
+
+
+# check dev file system
+1. `lsblk -f` 可以看到所有附着设备的文件系统类型，如果有的话；无论是否mount
+2. `df -Th` 可以看到所有已经mount的设备的文件系统类型
+3. `fsck -N /dev/vdc1` 设备修复工具，可以对某个分区进行修复，并可以查看到该分区的文件系统
+4. `mount | grep "^/dev"`
+5. `blkid /dev/sda1`
+6. `file -sL /dev/sda1`
+7. `cat /etc/fstab` 在主机启动的时候回挂载改文件内容中的设备，里面描述了该挂载的设备的id，tag，label，mount point， fs等，但是这个是手动设置的
