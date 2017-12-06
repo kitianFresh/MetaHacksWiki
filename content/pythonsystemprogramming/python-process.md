@@ -2,6 +2,60 @@
 title: "python-process"
 date: 2017-09-29 19:43
 ---
+# fork and exec
+UNIX 中 fork 的行为就是一次调用，两次返回，其中父进程返回的是子进程进程id，子进程返回的是0；根据判断可以分别继续执行父进程和子进程中的代码，但是当我们的子进程都是通用的代码的时候，就要写很多重复的逻辑代码，因此在子进程中可以调用 exec 去执行子进程的程序主体，比如一个编译好的程序；关于 fork 和 exec 的使用，更多的可以去参考 APUE 或者 CSAPP;
+```
+pid = fork()
+if pid = 0
+  child_process_code
+else if pid > 0
+  parent_process_code
+else
+  perror
+```
+
+# daemon process
+## 终端
+## 守护进程
+UNIX守护进程也叫daemon，但是他指的是那些脱离终端即不受终端控制的后台进程；UNIX进程中有会话，进程组，进程的概念，一个会话和一个（伪）终端关联，而一个会话包含多个进程组，会话中的进程组分前台进程组和后台进程组，前台进程组会接受来自终端的ctrl+c 等中断信号，但是他们并未脱离终端，只有脱离了终端的后台进程才是守护进程；使用 `ps -axj` -a 显示由其他用户所拥有的进程的状态，-x显示无控制终端的进程状态，-j显示与作业有关的信息：会话id<SID>、进程组id<PGID>、控制终端<TTY>以及终端进程组id<TPGID>, TTY=?表示没有控制终端；守护进程大多以超级权限UID=0 运行，且没有控制终端，控制终端前台进程组TPGID=-1;
+## 创建守护进程的编程范式(参考APUE)
+```python
+import os
+import sys
+
+def daemonize():
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # exit first parent
+            sys.exit(0)
+    except OSError as err:
+        sys.stderr.write('_Fork #1 failed: {0}\n'.format(err))
+        sys.exit(1)
+    # decouple from parent environment
+    os.chdir('/')
+    os.setsid()
+    os.umask(0)
+    # do second fork
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # exit from second parent
+            sys.exit(0)
+    except OSError as err:
+        sys.stderr.write('_Fork #2 failed: {0}\n'.format(err))
+        sys.exit(1)
+    # redirect standard file descriptors
+    sys.stdout.flush()
+    sys.stderr.flush()
+    si = open(os.devnull, 'r')
+    so = open(os.devnull, 'w')
+    se = open(os.devnull, 'w')
+    os.dup2(si.fileno(), sys.stdin.fileno())
+    os.dup2(so.fileno(), sys.stdout.fileno())
+    os.dup2(se.fileno(), sys.stderr.fileno())
+
+```
 # subprocess
 subprocess 和 multiprocessing
  - subprocess 是让进程可以执行一个子程序进程，类似 fork + exec 的模式。我们知道，比较底层的创建进程的接口是fork，然后代码逻辑通过fork的一次调用两次返回，通过父子进程返回的值不同来区分控制父子进程代码的执行逻辑，典型的就是 if else 的判断。如果在子进程的逻辑代码中有可以复用的部分，可以把这部分做成一个子程序，便于其他进程直接使用，可以直接让子进程调用 exec 函数来执行一个可执行程序。
@@ -168,7 +222,34 @@ print subprocess.check_output("ls -alt | wc -w", shell=True)
 ```
 
 
-## Process Groups / Sessions¶
+## Process Groups / Sessions
+signal_child.py
+```python
+import os
+import signal
+import time
+import sys
+
+pid = os.getpid()
+received = False
+
+def signal_usr1(signum, frame):
+    "Callback invoked when a signal is received"
+    global received
+    received = True
+    print 'CHILD %6s: Received USR1' % pid
+    sys.stdout.flush()
+
+print 'CHILD %6s: Setting up signal handler' % pid
+sys.stdout.flush()
+signal.signal(signal.SIGUSR1, signal_usr1)
+print 'CHILD %6s: Pausing to wait for signal' % pid
+sys.stdout.flush()
+time.sleep(3)
+
+if not received:
+    print 'CHILD %6s: Never received signal' % pid
+```
 通过subprocess 得到子进程，可以通过 os.kill 来向子进程发送信号；
 ```python
 import os
@@ -245,3 +326,4 @@ subprocess模块的缺陷在于默认提供的父子进程间通信手段有限�
 
 ## 参考
 - [subprocess – Work with additional processes](https://pymotw.com/2/subprocess/)
+
