@@ -33,6 +33,19 @@
 <p>当进程正在执行 IO 操作的时候，因为一个信号，可能会在信号处理器函数 handler 返回之后抛出IO异常。</p>
 <p>python 中 SIGPIPE 信号默认被忽略（因此在 pipes 和 sockets 上的写错误会被当成异常处理，SIGINT 默认被转换成 KeyboardInterrupt 异常。</p>
 <p>signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。</p>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span>
+
+<span class="k">def</span> <span class="nf">get_trap_signums</span><span class="p">():</span>
+    <span class="n">signal_list</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SIGHUP&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGINT&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGQUIT&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGTERM&#39;</span><span class="p">)</span>
+    <span class="n">signum_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">signal_name</span> <span class="ow">in</span> <span class="n">signal_list</span><span class="p">:</span>
+        <span class="n">signum_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">signum_list</span>
+
+<span class="n">get_trap_signums</span><span class="p">()</span>
+</pre></div>
+
+
 <h2 id="_1">常用信号发送</h2>
 <h3 id="pausewindows">pause()信号发送（Windows上不可得）</h3>
 <p>调用pause之后，进程睡眠一直到接受到一个信号。</p>
@@ -296,7 +309,7 @@
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-06 22:07:53</p>
+        <p>Site Generated 2017-12-07 23:35:48</p>
       </span>
     </div>
   </body>

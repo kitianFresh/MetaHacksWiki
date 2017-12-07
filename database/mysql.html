@@ -425,6 +425,17 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 
 
 <p>该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；</p>
+<h2 id="mysql-time">MYSQL time</h2>
+<p>unix 时间戳转换成时间</p>
+<div class="hlcode"><pre><span></span><span class="k">select</span> <span class="n">id</span><span class="p">,</span> <span class="n">from_unixtime</span><span class="p">(</span><span class="n">next_run_timestamp</span><span class="p">)</span> <span class="k">from</span> <span class="n">apscheduler_jobs_tbl</span><span class="p">;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">select</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">snapshot_type</span><span class="p">,</span> <span class="n">expired_days</span><span class="p">,</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">utc_timestamp</span><span class="p">(),</span> <span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> 
+<span class="n">expired_days</span> <span class="k">day</span><span class="p">)</span> <span class="k">as</span> <span class="n">expire</span><span class="p">,</span> <span class="n">time_to_sec</span><span class="p">(</span><span class="n">timediff</span><span class="p">(</span><span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> <span class="n">expired_days</span> <span class="k">day</span><span class="p">),</span> <span class="n">utc_timestamp</span><span class="p">()))</span> <span class="k">as</span> <span class="n">lefted</span>  <span class="k">from</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">where</span> <span class="n">expired_days</span><span class="o">!=-</span><span class="mi">1</span> <span class="k">and</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;mebs_snapshot_ready&#39;</span> <span class="k">and</span> <span class="n">deleted</span><span class="o">=</span><span class="k">false</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lefted</span><span class="p">;</span>
+</pre></div>
+
+
 <h2 id="mysql_5">MySQL 分页查询</h2>
 <h3 id="offset">offset 分页查询</h3>
 <p><code>limit offset, row_count</code>, <code>limit row_count</code> 等价于　<code>limit 0, row_count</code>; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　<code>limit</code>. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；</p>
@@ -485,7 +496,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
       <span>
         <p>Copyright © 2017 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-06 22:07:53</p>
+        <p>Site Generated 2017-12-07 23:35:48</p>
       </span>
     </div>
   </body>
