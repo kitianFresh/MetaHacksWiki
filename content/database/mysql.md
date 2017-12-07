@@ -371,6 +371,17 @@ ORDER BY Class, Age DESC;
 ```
 该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；
 
+## MYSQL time
+unix 时间戳转换成时间
+```sql
+select id, from_unixtime(next_run_timestamp) from apscheduler_jobs_tbl;
+```
+
+```sql
+select snapshot_id, name, snapshot_type, expired_days, created_at, utc_timestamp(), adddate(created_at, interval 
+expired_days day) as expire, time_to_sec(timediff(adddate(created_at, interval expired_days day), utc_timestamp())) as lefted  from mebs_snapshots_tbl where expired_days!=-1 and status='mebs_snapshot_ready' and deleted=false order by lefted;
+```
+
 ## MySQL 分页查询
 ### offset 分页查询
 `limit offset, row_count`, `limit row_count` 等价于　`limit 0, row_count`; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　`limit`. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；

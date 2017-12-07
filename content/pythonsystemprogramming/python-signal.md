@@ -18,6 +18,19 @@ python 中 SIGPIPE 信号默认被忽略（因此在 pipes 和 sockets 上的写
 
 signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。
 
+```python
+import signal
+
+def get_trap_signums():
+    signal_list = ('SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGTERM')
+    signum_list = []
+    for signal_name in signal_list:
+        signum_list.append(getattr(signal, signal_name))
+    return signum_list
+
+get_trap_signums()
+```
+
 ## 常用信号发送
 ### pause()信号发送（Windows上不可得）
 调用pause之后，进程睡眠一直到接受到一个信号。
