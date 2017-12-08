@@ -1,0 +1,1445 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>python-generator - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#python">python</a>&nbsp;&#187;&nbsp;python-generator
+    <span class="updated">Updated&nbsp;
+      2017-12-07 23:37
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">python-generator</div>
+
+  <h1 id="iterator">iterator</h1>
+<p>迭代器在Python中非常常见，在增强for loop 中，其实就是隐式的在使用迭代器，for loop通常会被转化为基本的while loop从而使用迭代器。</p>
+<div class="hlcode"><pre><span></span><span class="k">for</span> <span class="n">index</span><span class="p">(</span><span class="n">es</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>  <span class="c1"># indexes for unpacked assignment: e.g, key,value</span>
+      <span class="n">block</span><span class="o">-</span><span class="n">body</span>
+  <span class="p">[</span><span class="k">else</span><span class="p">:</span>
+      <span class="n">block</span><span class="o">-</span><span class="k">else</span><span class="p">]</span>
+</pre></div>
+
+
+<p>其实被翻译成了更原始的while loop.</p>
+<div class="hlcode"><pre><span></span><span class="n">_hidden</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>        <span class="c1"># ultimately calls iterable.__iter__()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">index</span><span class="p">(</span><span class="n">es</span><span class="p">)</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_hidden</span><span class="p">)</span>   <span class="c1"># ultimatelyl calls _hidden.__next__()</span>
+        <span class="n">block</span><span class="o">-</span><span class="n">body</span>
+<span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+    <span class="k">pass</span>                <span class="c1"># A place-holder, when [] is discarded;</span>
+    <span class="p">[</span><span class="n">block</span><span class="o">-</span><span class="k">else</span><span class="p">]</span>
+</pre></div>
+
+
+<p>其中， iter() 函数和 next() 函数一样，都调用对象内部的 __iter__() 和 __next__().</p>
+<div class="hlcode"><pre><span></span>def iter(i):
+    return i.__iter__()
+
+def next(i):
+    return i.__next__()
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">abs_diff1</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="n">alist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span><span class="c1">#有些iterable不支持切片（eg. tuple-comprehension）,因此这里先做转换</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">alist</span><span class="p">,</span> <span class="n">alist</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+
+<span class="k">def</span> <span class="nf">abs_diff2</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v2</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">v1</span><span class="o">-</span><span class="n">v2</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="n">alist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">%</span><span class="n">time</span> <span class="n">abs_diff1</span><span class="p">(</span><span class="n">alist</span><span class="p">)</span>
+<span class="c1">#%time abs_diff2(alist)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>CPU times: user 6 µs, sys: 2 µs, total: 8 µs
+Wall time: 10 µs
+
+
+
+
+
+[2, 2, 2, 2]
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">i</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">count</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">i</span><span class="p">,</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>0 1 2 3 4 5 6 7 8 9
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span> <span class="k">break</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;exec else&#39;</span><span class="p">)</span>
+
+<span class="c1">#v1</span>
+<span class="n">_hidden</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_hidden</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span> <span class="k">break</span>
+<span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;exec else&#39;</span><span class="p">)</span>
+
+<span class="c1">#v2</span>
+<span class="n">_hidden</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_hidden</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span> <span class="k">break</span>
+    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;exec else&#39;</span><span class="p">)</span>
+        <span class="k">break</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>1
+2
+3
+4
+1
+2
+3
+4
+1
+2
+3
+4
+</pre></div>
+
+
+<h2 id="iterator_1">自定义迭代器Iterator</h2>
+<p>Python 2 实现 __iter__() 和 next() 函数，就是 Iterables 对象。Iteration Protocol. Python 3版本next被更改成了__next__()方法。</p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">countdown</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+<span class="k">class</span> <span class="nc">Countdown</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">last</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">last</span>    <span class="c1"># self.last never changes</span>
+
+    <span class="c1"># __iter__ must return an object on which __next__ can be called; it returns</span>
+    <span class="c1"># self, which is an object of the Countdown class, which defines __next__.</span>
+    <span class="c1"># Later we will see a problem with returning self (when the same Countdown</span>
+    <span class="c1"># object is iterated over simultaneously), and how to solve that problem. </span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>  <span class="c1"># n attribute is added to the namespace here </span>
+        <span class="k">return</span> <span class="bp">self</span>             <span class="c1"># (not in __init__) and processed in __next__</span>
+
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="c1"># or, without the temporary, but more confusing</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-=</span> <span class="mi">1</span>     <span class="c1">#  self.n -= 1</span>
+            <span class="k">return</span> <span class="n">answer</span>       <span class="c1">#  return self.n+1</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">countdown</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">i</span><span class="p">,</span>
+
+<span class="k">print</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">countdown</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">countdown</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">countdown</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># c = Countdown(2)</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">countdown</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># c = Countdown(2)</span>
+<span class="n">_hidden_1</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_hidden_1</span><span class="p">)</span>
+        <span class="n">_hidden_2</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_hidden_2</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;inner exec&#39;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;outer exec&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>5 4 3 2 1 0
+(2, 2)
+(2, 1)
+(2, 0)
+(1, 2)
+(1, 1)
+(1, 0)
+(0, 2)
+(0, 1)
+(0, 0)
+(2, 1)
+(2, 0)
+--------------
+(2, 2)
+(2, 1)
+(2, 0)
+(1, 2)
+(1, 1)
+(1, 0)
+(0, 2)
+(0, 1)
+(0, 0)
+--------------
+(2, 1)
+(2, 0)
+inner exec
+outer exec
+</pre></div>
+
+
+<p>可以看出，以上的 countdown 是有问题的，我们必须让每次 for loop 都从新的 iterator 开始，即每个for loop 中的 iterator有其自己的状态，相互之间不干扰，我们方法就是在外部类的__iter__()方法中定义一个local nested class。然后在这个内部类中只用实现 __init__() 和 next() 方法即可。外部类就不用next了，代码直接放入内部类的next()代码中，这样每一次 iter()的调用，就会返回一个新对象，状态互不干扰。</p>
+<blockquote>
+<p>__iter__ method defining a LOCAL or NESTED CLASS (these classes define only<br />
+an __init__ and__next__ methods) and returning a new object constructed from<br />
+this local/nested class every time __iter__ is called.</p>
+</blockquote>
+<ul>
+<li><a href="https://www.ics.uci.edu/~pattis/ICS-33/lectures/iteratorclasses.txt">Iterators via Classes<br />
+</a></li>
+</ul>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">NewCountdown</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">last</span>
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">CD_iter</span><span class="p">:</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">last</span>
+            <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">StopIteration</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="n">r</span>
+        <span class="k">return</span> <span class="n">CD_iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">)</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">NewCountdown</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>(2, 2)
+(2, 1)
+(2, 0)
+(1, 2)
+(1, 1)
+(1, 0)
+(0, 2)
+(0, 1)
+(0, 0)
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>
+</pre></div>
+
+
+<h1 id="generator">Generator</h1>
+<p>用于一次性操作，list可以多次遍历，但是要想再一次遍历已经运行完的generator必须重新生成该generator。generator 是 iterable 的，因此可以当 iterable 使用。但是他并不是一个iterator对象，而是generator对象。<br />
+- <a href="https://docs.python.org/2/reference/expressions.html#generator.send">pydoc</a><br />
+- <a href="https://www.ics.uci.edu/~pattis/ICS-33/lectures/generators.txt">generators</a></p>
+<div class="hlcode"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">iterator</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+<span class="n">iterator</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>[2, 4, 6, 8]
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="n">generator</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">)</span>
+<span class="n">generator</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>&lt;generator object &lt;genexpr&gt; at 0x10b4c3dc0&gt;
+</pre></div>
+
+
+<ul>
+<li>General syntax</li>
+</ul>
+<div class="hlcode"><pre><span></span><span class="p">(</span><span class="n">expression</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">if</span> <span class="n">condition</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li>What it means</li>
+</ul>
+<div class="hlcode"><pre><span></span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+     <span class="k">if</span> <span class="n">condition</span><span class="p">:</span>
+         <span class="k">yield</span> <span class="n">expression</span>
+ <span class="sb">``</span><span class="err">`</span>
+
+<span class="o">&gt;</span><span class="n">A</span> <span class="k">yield</span><span class="o">-</span><span class="n">expression</span> <span class="n">must</span> <span class="n">always</span> <span class="n">be</span> <span class="n">parenthesized</span> <span class="k">except</span> <span class="n">when</span> <span class="n">it</span> <span class="n">occurs</span> <span class="n">at</span> <span class="n">the</span> <span class="n">top</span><span class="o">-</span><span class="n">level</span> <span class="n">expression</span> <span class="n">on</span> <span class="n">the</span> <span class="n">right</span><span class="o">-</span><span class="n">hand</span> <span class="n">side</span> <span class="n">of</span> <span class="n">an</span> <span class="n">assignment</span><span class="o">.</span> <span class="n">So</span>
+<span class="p">[</span><span class="n">PEP342</span><span class="p">](</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">peps</span><span class="o">/</span><span class="n">pep</span><span class="o">-</span><span class="mo">0342</span><span class="o">/</span><span class="p">)</span>
+
+<span class="sb">``</span><span class="err">`</span><span class="n">python</span>
+<span class="c1">#legal</span>
+<span class="n">x</span> <span class="o">=</span> <span class="k">yield</span> <span class="mi">42</span>
+<span class="n">x</span> <span class="o">=</span> <span class="k">yield</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">+</span> <span class="p">(</span><span class="k">yield</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">+</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+<span class="n">foo</span><span class="p">(</span><span class="k">yield</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">foo</span><span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+<span class="c1"># illegal</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">+</span> <span class="k">yield</span> <span class="mi">42</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">+</span> <span class="k">yield</span>
+<span class="n">foo</span><span class="p">(</span><span class="k">yield</span> <span class="mi">42</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+<span class="n">foo</span><span class="p">(</span><span class="k">yield</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+</pre></div>
+
+
+<p>要想是一个对象或函数成为generator，只要在函数体中使用<code>yield</code>关键字就可以了.</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">echo</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;Execution starts when &#39;next()&#39; is called for the first time.&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">e</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;Don&#39;t forget to clean up when &#39;close()&#39; is called.&quot;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="k">def</span> <span class="nf">is_prime</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">number</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">current</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">number</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">number</span> <span class="o">%</span> <span class="n">current</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+<span class="k">def</span> <span class="nf">get_primes</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_prime</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">number</span>
+        <span class="n">number</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="k">def</span> <span class="nf">print_successive_primes</span><span class="p">(</span><span class="n">iterations</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">prime_generator</span> <span class="o">=</span> <span class="n">get_primes</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+    <span class="n">prime_generator</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">power</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">prime_generator</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">base</span> <span class="o">**</span> <span class="n">power</span><span class="p">))</span>
+
+<span class="n">print_successive_primes</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">primes</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="nb">max</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_prime</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">p</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">pg</span> <span class="o">=</span> <span class="n">primes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">pg</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">pg</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">pg</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">pg</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>2
+11
+101
+1009
+2
+3
+5
+7
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isfunction</span><span class="p">,</span> <span class="n">isgenerator</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;primes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">primes</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;primes()&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">primes</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;isfunction(primes)&#39;</span><span class="p">,</span> <span class="n">isfunction</span><span class="p">(</span><span class="n">primes</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;isgenerator(primes())&#39;</span><span class="p">,</span> <span class="n">isgenerator</span><span class="p">(</span><span class="n">primes</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">primes</span><span class="p">()))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>(&#39;primes&#39;, &lt;type &#39;function&#39;&gt;)
+(&#39;primes()&#39;, &lt;type &#39;generator&#39;&gt;)
+(&#39;isfunction(primes)&#39;, True)
+(&#39;isgenerator(primes())&#39;, True)
+[&#39;__class__&#39;, &#39;__delattr__&#39;, &#39;__doc__&#39;, &#39;__format__&#39;, &#39;__getattribute__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, &#39;__iter__&#39;, &#39;__name__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;close&#39;, &#39;gi_code&#39;, &#39;gi_frame&#39;, &#39;gi_running&#39;, &#39;next&#39;, &#39;send&#39;, &#39;throw&#39;]
+</pre></div>
+
+
+<p>需要注意的是，primes 是一个函数对象，而 primes() 是一个 generator 对象。primes函数调用之后，由于内部含有<code>yield</code>关键字而被认为是一个generator函数，此时函数体并没有执行，而是返回一个generator对象!而后要使用generator执行他的代码，需要显式或隐式调用 <code>next()</code> 或者 <code>send()</code> 函数.</p>
+<p>对于函数调用，调用后，执行并返回；<br />
+对于生成器调用，调用之后，执行到 <code>yield</code> 关键字之后中断进入断点状态(suspend)，等待下一次从断点恢复执行(resume).</p>
+<p>generator有四个函数，next,send,throw,close</p>
+<h1 id="generator-application-for-system-programming">generator application for system programming</h1>
+<h2 id="python-version-of-unix-tail-f">Python version of Unix 'tail -f'</h2>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="k">def</span> <span class="nf">follow</span><span class="p">(</span><span class="n">thefile</span><span class="p">):</span>
+    <span class="n">thefile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 设置文件指针到文件末尾</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">thefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="c1"># 以下是模拟阻塞，因为一旦thefile.readline()读到文件末尾，就会返回None。</span>
+        <span class="c1"># 为了模拟能够一直读到最新的尾部数据，必须不断的poll，这里每隔0.1s轮询一次。</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">yield</span> <span class="n">line</span>
+<span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;access-log&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">follow</span><span class="p">(</span><span class="n">logfile</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">line</span><span class="p">,</span>
+<span class="n">logfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>pearl
+java
+python
+lua
+
+
+
+---------------------------------------------------------------------------
+
+KeyboardInterrupt                         Traceback (most recent call last)
+
+&lt;ipython-input-11-7b507f742f61&gt; in &lt;module&gt;()
+      9         yield line
+     10 logfile = open(&quot;access-log&quot;)
+---&gt; 11 for line in follow(logfile):
+     12     print line,
+     13 logfile.close()
+
+
+&lt;ipython-input-11-7b507f742f61&gt; in follow(thefile)
+      5         line = thefile.readline()
+      6         if not line:
+----&gt; 7             time.sleep(0.1)
+      8             continue
+      9         yield line
+
+
+KeyboardInterrupt:
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">grep</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">line</span>
+<span class="c1"># tail -f | grep python</span>
+<span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;access-log&quot;</span><span class="p">)</span>
+<span class="n">loglines</span> <span class="o">=</span> <span class="n">follow</span><span class="p">(</span><span class="n">logfile</span><span class="p">)</span>
+<span class="n">pylines</span> <span class="o">=</span> <span class="n">grep</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">loglines</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">pylines</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">line</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>python
+
+
+
+
+---------------------------------------------------------------------------
+
+KeyboardInterrupt                         Traceback (most recent call last)
+
+&lt;ipython-input-12-cfb4e4626dc8&gt; in &lt;module&gt;()
+      8 pylines = grep(&quot;python&quot;, loglines)
+      9 
+---&gt; 10 for line in pylines:
+     11     print line
+
+
+&lt;ipython-input-12-cfb4e4626dc8&gt; in grep(pattern, lines)
+      1 def grep(pattern, lines):
+----&gt; 2     for line in lines:
+      3         if pattern in line:
+      4             yield line
+      5 # tail -f | grep python
+
+
+&lt;ipython-input-11-7b507f742f61&gt; in follow(thefile)
+      5         line = thefile.readline()
+      6         if not line:
+----&gt; 7             time.sleep(0.1)
+      8             continue
+      9         yield line
+
+
+KeyboardInterrupt:
+</pre></div>
+
+
+<h1 id="coroutines">协程(coroutines)</h1>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">consumer</span><span class="p">():</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="s1">&#39;initial&#39;</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">r</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;[CONSUMER] Consuming </span><span class="si">%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s1">&#39;200 OK&#39;</span>
+
+<span class="k">def</span> <span class="nf">produce</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    为什么启动时候需要send(None)?</span>
+<span class="sd">    新建一个生成器之后，函数并没有执行，此时，生成器并没有处于yield状态即断点状态，不需要接受传递值，因此传入None，并使其执行到yield进入断点状态。</span>
+<span class="sd">    本例中c.send(None)会使得函数执行到 &quot;n = yield r&quot;, 也就是抛出一个 r 给发送者作为返回值，然后中断。当再一次调用c.send(1)的时候，生成器从断点恢复，，</span>
+<span class="sd">    首先接受发送过来的值1，执行 n = 1 的赋值语句，然后继续往下执行，直到循环回来再一次碰到yield，抛出r=&#39;200 OK&#39;.然后中断进入断点状态(这个状态就是等待一个接受值，然后从断点语句 n = receive开始往后执行)。</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>    <span class="c1"># 生成器刚刚启动的时候，只能传递None，否则TypeError: can&#39;t send non-None value to a just-started generator</span>
+    <span class="c1"># print next(c)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;[PRODUCER] Producing </span><span class="si">%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;[PRODUCER] Consumer return: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">consumer</span><span class="p">()</span>
+<span class="n">produce</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>initial
+[PRODUCER] Producing 1...
+[CONSUMER] Consuming 1...
+[PRODUCER] Consumer return: 200 OK
+[PRODUCER] Producing 2...
+[CONSUMER] Consuming 2...
+[PRODUCER] Consumer return: 200 OK
+[PRODUCER] Producing 3...
+[CONSUMER] Consuming 3...
+[PRODUCER] Consumer return: 200 OK
+[PRODUCER] Producing 4...
+[CONSUMER] Consuming 4...
+[PRODUCER] Consumer return: 200 OK
+[PRODUCER] Producing 5...
+[CONSUMER] Consuming 5...
+[PRODUCER] Consumer return: 200 OK
+</pre></div>
+
+
+<blockquote>
+<p>为什么启动时候需要send(None)?</p>
+</blockquote>
+<div class="hlcode"><pre><span></span>新建一个生成器之后，函数并没有执行，此时，生成器并没有处于yield状态即断点状态，不需要接受传递值，因此传入None，并使其执行到yield进入断点状态。
+
+本例中c.send(None)会使得函数执行到 &quot;n = yield r&quot;, 也就是抛出一个 r 给发送者作为返回值，然后中断。当再一次调用c.send(1)的时候，生成器从断点恢复，，
+
+首先接受发送过来的值1，执行 n = 1 的赋值语句，然后继续往下执行，直到循环回来再一次碰到yield，抛出r=&#39;200 OK&#39;.然后中断进入断点状态(这个状态就是等待一个接受值，然后从断点语句 n = receive开始往后执行)。
+
+由于next也能让生成器开始执行，因此启动生成器的时候，使用next() 和 send(None) 是一样的效果。
+</pre></div>
+
+
+<p>有经常需要先 generator.next() 或者 generator.send(None) 启动一个协程，很容易忘记，因此可以自己写一个装饰器来用。</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">coroutine</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">cr</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">cr</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cr</span>
+    <span class="k">return</span> <span class="n">start</span>
+
+<span class="nd">@coroutine</span>
+<span class="k">def</span> <span class="nf">grep</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;Looking for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pattern</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">line</span><span class="p">,</span>
+    <span class="k">except</span> <span class="ne">GeneratorExit</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;Going away. Goodbye&quot;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">grep</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;python generator rock!&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>Looking for python
+python generator rock!
+</pre></div>
+
+
+<p>抛出异常，可以使用throw() 函数。</p>
+<div class="hlcode"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">throw</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="s2">&quot;You&#39;re hosed&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>---------------------------------------------------------------------------
+
+RuntimeError                              Traceback (most recent call last)
+
+&lt;ipython-input-17-83761f9b0edc&gt; in &lt;module&gt;()
+----&gt; 1 g.throw(RuntimeError, &quot;You&#39;re hosed&quot;)
+
+
+&lt;ipython-input-14-34c09fc3efc5&gt; in grep(pattern)
+     11     try:
+     12         while True:
+---&gt; 13             line = (yield)
+     14             if pattern in line:
+     15                 print line,
+
+
+RuntimeError: You&#39;re hosed
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">down</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;countingd down from&quot;</span><span class="p">,</span> <span class="n">n</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">newvalue</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">newvalue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">newvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">-=</span> <span class="mi">1</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">down</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">n</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>countingd down from 5
+5
+2
+1
+0
+</pre></div>
+
+
+<ul>
+<li>Generators produce data for iteration</li>
+<li>Coroutines are consumers of data</li>
+</ul>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="k">def</span> <span class="nf">follow</span><span class="p">(</span><span class="n">thefile</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">thefile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">thefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+<span class="nd">@coroutine</span>
+<span class="k">def</span> <span class="nf">printer</span><span class="p">():</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">line</span><span class="p">,</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;access-log&quot;</span><span class="p">)</span>
+<span class="n">follow</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">printer</span><span class="p">())</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>python
+
+
+
+---------------------------------------------------------------------------
+
+KeyboardInterrupt                         Traceback (most recent call last)
+
+&lt;ipython-input-20-27b5a2021e19&gt; in &lt;module&gt;()
+     16 
+     17 f = open(&quot;access-log&quot;)
+---&gt; 18 follow(f, printer())
+     19 f.close()
+
+
+&lt;ipython-input-20-27b5a2021e19&gt; in follow(thefile, target)
+      5         line = thefile.readline()
+      6         if not line:
+----&gt; 7             time.sleep(0.1)
+      8             continue
+      9         target.send(line)
+
+
+KeyboardInterrupt:
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nd">@coroutine</span>
+<span class="k">def</span> <span class="nf">grep</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;access-log&quot;</span><span class="p">)</span>
+<span class="n">follow</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">grep</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="n">printer</span><span class="p">()))</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nd">@coroutine</span>
+<span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="n">targets</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="p">(</span><span class="k">yield</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;access-log&quot;</span><span class="p">)</span>
+<span class="n">follow</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> 
+       <span class="n">broadcast</span><span class="p">([</span>
+           <span class="n">grep</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="n">printer</span><span class="p">()),</span>
+           <span class="n">grep</span><span class="p">(</span><span class="s1">&#39;rnn&#39;</span><span class="p">,</span> <span class="n">printer</span><span class="p">()),</span>
+           <span class="n">grep</span><span class="p">(</span><span class="s1">&#39;cnn&#39;</span><span class="p">,</span> <span class="n">printer</span><span class="p">())</span>
+       <span class="p">])</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<h1 id="_1">协程实现多任务</h1>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">taskid</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span> <span class="o">=</span> <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendval</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span> <span class="c1"># 所有等待调度的Task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 跟踪所有活跃状态的Task</span>
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="c1"># create a new task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span> <span class="c1"># keep track</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span> <span class="c1"># 调度，即放入ready队列中</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># 从队列中取出任务调度</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="c1"># 执行任务到 yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="c1"># 调度任务</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;foo&quot;</span>
+        <span class="k">yield</span>
+
+<span class="k">def</span> <span class="nf">bar</span><span class="p">():</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;bar&quot;</span>
+        <span class="k">yield</span>
+
+<span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">foo</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">bar</span><span class="p">())</span>
+<span class="c1">#sched.mainloop()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>2
+</pre></div>
+
+
+<p>以上的调度器有两个问题，第一，任务无法终止；第二，某个任务如果返回，那么调度器会崩溃。</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">foo1</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;foo1&quot;</span>
+        <span class="k">yield</span>
+<span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">foo1</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">bar</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>foo1
+bar
+foo1
+bar
+foo1
+bar
+
+
+
+---------------------------------------------------------------------------
+
+StopIteration                             Traceback (most recent call last)
+
+&lt;ipython-input-37-d6d5e458832d&gt; in &lt;module&gt;()
+      6 sched.new(foo1())
+      7 sched.new(bar())
+----&gt; 8 sched.mainloop()
+
+
+&lt;ipython-input-36-f7715003ba50&gt; in mainloop(self)
+     17         while self.taskmap:
+     18             task = self.ready.get() # 从队列中取出任务调度
+---&gt; 19             result = task.run() # 执行任务到 yield
+     20             self.schedule(task) # 调度任务
+
+
+&lt;ipython-input-32-ee4ede936ba7&gt; in run(self)
+      9 
+     10     def run(self):
+---&gt; 11         return self.target.send(self.sendval)
+
+
+StopIteration:
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span> <span class="c1"># 所有等待调度的Task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 跟踪所有活跃状态的Task</span>
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="c1"># create a new task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span> <span class="c1"># keep track</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span> <span class="c1"># 调度，即放入ready队列中</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;Task </span><span class="si">%d</span><span class="s2"> terminated&quot;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># 从队列中取出任务调度</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="c1"># 执行任务到 yield</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="c1"># 调度任务</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">ping</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;ping&quot;</span>
+        <span class="k">yield</span>
+
+<span class="k">def</span> <span class="nf">pong</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;pong&quot;</span>
+        <span class="k">yield</span>
+<span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ping</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">pong</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>ping
+pong
+ping
+pong
+ping
+pong
+ping
+pong
+Task 7 terminated
+pong
+pong
+pong
+pong
+Task 8 terminated
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">SystemCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">GetTid</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span> <span class="c1"># 所有等待调度的Task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 跟踪所有活跃状态的Task</span>
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="c1"># create a new task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span> <span class="c1"># keep track</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span> <span class="c1"># 调度，即放入ready队列中</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;Task </span><span class="si">%d</span><span class="s2"> terminated&quot;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># 从队列中取出任务调度</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="c1"># 执行任务到 yield</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">SystemCall</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sched</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">handle</span><span class="p">()</span>
+                    <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="c1"># 调度任务</span>
+
+<span class="k">def</span> <span class="nf">didi</span><span class="p">():</span>
+    <span class="n">mytid</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">GetTid</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;didi&quot;</span><span class="p">,</span> <span class="n">mytid</span>
+        <span class="k">yield</span>
+
+<span class="k">def</span> <span class="nf">dada</span><span class="p">():</span>
+    <span class="n">mytid</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">GetTid</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;dada&quot;</span><span class="p">,</span> <span class="n">mytid</span>
+        <span class="k">yield</span>
+<span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">didi</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">dada</span><span class="p">())</span>
+<span class="n">sched</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>didi 9
+dada 10
+didi 9
+dada 10
+didi 9
+dada 10
+didi 9
+dada 10
+didi 9
+dada 10
+Task 9 terminated
+dada 10
+dada 10
+dada 10
+dada 10
+dada 10
+Task 10 terminated
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># pyos5.py  -  The Python Operating System</span>
+<span class="c1">#</span>
+<span class="c1"># Step 5: Added system calls for simple task management</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                       === Tasks ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">taskid</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span>     <span class="o">=</span> <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span>   <span class="c1"># Task ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span>  <span class="o">=</span> <span class="n">target</span>        <span class="c1"># Target coroutine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">None</span>          <span class="c1"># Value to send</span>
+
+    <span class="c1"># Run a task until it hits the next yield statement</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendval</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                      === Scheduler ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span>   <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span>        
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;Task </span><span class="si">%d</span><span class="s2"> terminated&quot;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">SystemCall</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">task</span>  <span class="o">=</span> <span class="n">task</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sched</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">handle</span><span class="p">()</span>
+                    <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># pyos5.py  -  The Python Operating System</span>
+<span class="c1">#</span>
+<span class="c1"># Step 5: Added system calls for simple task management</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                       === Tasks ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">taskid</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span>     <span class="o">=</span> <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span>   <span class="c1"># Task ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span>  <span class="o">=</span> <span class="n">target</span>        <span class="c1"># Target coroutine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">None</span>          <span class="c1"># Value to send</span>
+
+    <span class="c1"># Run a task until it hits the next yield statement</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendval</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                      === Scheduler ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span>   <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span>        
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;Task </span><span class="si">%d</span><span class="s2"> terminated&quot;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">SystemCall</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">task</span>  <span class="o">=</span> <span class="n">task</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sched</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">handle</span><span class="p">()</span>
+                    <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                   === System Calls ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="k">class</span> <span class="nc">SystemCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="c1"># Return a task&#39;s ID number</span>
+<span class="k">class</span> <span class="nc">GetTid</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Create a new task</span>
+<span class="k">class</span> <span class="nc">NewTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Kill a task</span>
+<span class="k">class</span> <span class="nc">KillTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span> <span class="o">=</span> <span class="n">tid</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">taskmap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tid</span><span class="p">,</span><span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                   === System Calls ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="k">class</span> <span class="nc">SystemCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="c1"># Return a task&#39;s ID number</span>
+<span class="k">class</span> <span class="nc">GetTid</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Create a new task</span>
+<span class="k">class</span> <span class="nc">NewTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Kill a task</span>
+<span class="k">class</span> <span class="nc">KillTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span> <span class="o">=</span> <span class="n">tid</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">taskmap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tid</span><span class="p">,</span><span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                      === Example ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+        <span class="n">mytid</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">GetTid</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s2">&quot;I&#39;m foo&quot;</span><span class="p">,</span> <span class="n">mytid</span>
+            <span class="k">yield</span>
+
+    <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">NewTask</span><span class="p">(</span><span class="n">foo</span><span class="p">())</span>    <span class="c1"># Launch new task</span>
+        <span class="k">print</span> <span class="s1">&#39;child&#39;</span><span class="p">,</span> <span class="n">child</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s2">&quot;i&#39;m main&quot;</span><span class="p">,</span> <span class="n">i</span>
+            <span class="k">yield</span>
+        <span class="k">yield</span> <span class="n">KillTask</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>           <span class="c1"># Kill the task</span>
+        <span class="k">print</span> <span class="s2">&quot;main done&quot;</span>
+
+    <span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+    <span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+    <span class="n">sched</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>child 2
+i&#39;m main 0
+I&#39;m foo 2
+i&#39;m main 1
+I&#39;m foo 2
+i&#39;m main 2
+I&#39;m foo 2
+i&#39;m main 3
+I&#39;m foo 2
+i&#39;m main 4
+I&#39;m foo 2
+Task 2 terminated
+main done
+Task 1 terminated
+</pre></div>
+
+
+<p>添加一个等待系统调用，此时需要一个记录{waited_task_id,[waiting_task_id]}的词典记录所有的等待被等待关系，并且使用一个 waiting 队列调度所有的等待任务。被等待任务在退出的时候，必须通知等待的任务即重新调度执行等待的任务。</p>
+<div class="hlcode"><pre><span></span><span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># pyos6.py  -  The Python Operating System</span>
+<span class="c1">#</span>
+<span class="c1"># Added support for task waiting</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                       === Tasks ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">taskid</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span>     <span class="o">=</span> <span class="n">Task</span><span class="o">.</span><span class="n">taskid</span>   <span class="c1"># Task ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span>  <span class="o">=</span> <span class="n">target</span>        <span class="c1"># Target coroutine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">None</span>          <span class="c1"># Value to send</span>
+
+    <span class="c1"># Run a task until it hits the next yield statement</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendval</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                      === Scheduler ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span>   <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span> <span class="o">=</span> <span class="p">{}</span>        
+
+        <span class="c1"># Tasks waiting for other tasks to exit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_waiting</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="n">newtask</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">newtask</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">newtask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">newtask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newtask</span><span class="o">.</span><span class="n">tid</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;Task </span><span class="si">%d</span><span class="s2"> terminated&quot;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">]</span>
+        <span class="c1"># Notify other tasks waiting for exit</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_waiting</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span><span class="p">,[]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">waitforexit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">,</span><span class="n">waittid</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">waittid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exit_waiting</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">waittid</span><span class="p">,[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">taskmap</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">SystemCall</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">task</span>  <span class="o">=</span> <span class="n">task</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sched</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">handle</span><span class="p">()</span>
+                    <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                   === System Calls ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+<span class="k">class</span> <span class="nc">SystemCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="c1"># Return a task&#39;s ID number</span>
+<span class="k">class</span> <span class="nc">GetTid</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Create a new task</span>
+<span class="k">class</span> <span class="nc">NewTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="n">tid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Kill a task</span>
+<span class="k">class</span> <span class="nc">KillTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span> <span class="o">=</span> <span class="n">tid</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">taskmap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tid</span><span class="p">,</span><span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Wait for a task to exit</span>
+<span class="k">class</span> <span class="nc">WaitTask</span><span class="p">(</span><span class="n">SystemCall</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tid</span> <span class="o">=</span> <span class="n">tid</span>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">waitforexit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">tid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">sendval</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="c1"># If waiting for a non-existent task,</span>
+        <span class="c1"># return immediately without waiting</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sched</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1">#                      === Example ===</span>
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s2">&quot;I&#39;m foo&quot;</span>
+            <span class="k">yield</span>
+
+    <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">NewTask</span><span class="p">(</span><span class="n">foo</span><span class="p">())</span>
+        <span class="k">print</span> <span class="s2">&quot;Waiting for child&quot;</span>
+        <span class="k">yield</span> <span class="n">WaitTask</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s2">&quot;Child done&quot;</span>
+
+    <span class="n">sched</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">()</span>
+    <span class="n">sched</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+    <span class="n">sched</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>I&#39;m foo
+Waiting for child
+I&#39;m foo
+I&#39;m foo
+I&#39;m foo
+I&#39;m foo
+Task 2 terminated
+Child done
+Task 1 terminated
+</pre></div>
+
+
+<blockquote>
+<p>One of the most critical parts of writing an OS is both protecting the system and keeping user applications isolated. In the sample code, the Scheduler class represents a kind of "operating system." You will notice that the tasks defined in this course never directly interact with this scheduler (other than using yield to execute scheduler traps). That is, they do not hold references to the scheduler object, they do not invoke methods on the scheduler, they do not inspect internal scheduler data, and they don't hold references to other tasks. For all practical purposes, the scheduler and the tasks are two completely different execution domains. There is a good reason for keeping this separation. Namely it promotes a loose coupling between tasks and their execution environment. One could imagine creating other kinds of task schedulers that run tasks within threads or subprocesses. If you've set things up right and taken great care to promote the separation of tasks and scheduling, such schedulers would be able to run existing tasks without modification.</p>
+</blockquote>
+<p>操作系统和应用的分离，在任务代码中，没有任何与scheduler直接交互的地方，即没有直接调用内核的代码，而是通过内核提供的接口SystemCall完成。或者通过简单的 yield 内陷trap。</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">mul_add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">r</span>
+    <span class="k">yield</span>
+
+<span class="k">def</span> <span class="nf">mul_add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">r</span><span class="o">*</span><span class="n">z</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">main</span><span class="p">()</span>
+<span class="n">sub</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">subsub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">rsubsub</span> <span class="o">=</span> <span class="n">subsub</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">rsub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">rsubsub</span><span class="p">)</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">rsub</span><span class="p">)</span>
+<span class="n">r</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>12
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-12-08 23:32:35</p>
+      </span>
+    </div>
+  </body>
+</html>

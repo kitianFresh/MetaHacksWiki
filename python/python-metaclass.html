@@ -1,0 +1,512 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>python-metaclass - MetaHacks Wiki</title>
+    <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+    <meta name="description" content="my personal wiki"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#python">python</a>&nbsp;&#187;&nbsp;python-metaclass
+    <span class="updated">Updated&nbsp;
+      2017-12-07 23:37
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">python-metaclass</div>
+
+  <div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__module__</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nd">@debug</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;***&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>***add
+
+
+
+
+
+4
+</pre></div>
+
+
+<p>Debug一个类的所有实例方法</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">debugmethods</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">print</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">debug</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="bp">cls</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nd">@debugmethods</span>
+<span class="k">class</span> <span class="nc">Spam</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">grok</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">gun</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fire</span><span class="p">():</span>
+        <span class="k">pass</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>grok &lt;function grok at 0x10ed6c050&gt;
+bar &lt;function bar at 0x10ed6c0c8&gt;
+foo &lt;function foo at 0x10ed6c140&gt;
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nb">vars</span><span class="p">(</span><span class="n">Spam</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="c1"># Spam.__dict__.items()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>[(&#39;grok&#39;, &lt;function __main__.grok&gt;),
+ (&#39;__module__&#39;, &#39;__main__&#39;),
+ (&#39;bar&#39;, &lt;function __main__.bar&gt;),
+ (&#39;fire&#39;, &lt;staticmethod at 0x10ece4b78&gt;),
+ (&#39;gun&#39;, &lt;classmethod at 0x10ece4980&gt;),
+ (&#39;foo&#39;, &lt;function __main__.foo&gt;),
+ (&#39;__doc__&#39;, None)]
+</pre></div>
+
+
+<p>以上缺点就是并不能装饰classmethod和staticmethod，为什么呢？从打印来看，你会发现函数地址不在一个scope下</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">debugattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="n">orig_getattribute</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__getattribute__</span> 
+    <span class="k">def</span> <span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Get:&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">orig_getattribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="bp">cls</span><span class="o">.</span><span class="fm">__getattribute__</span> <span class="o">=</span> <span class="fm">__getattribute__</span>
+
+    <span class="k">return</span> <span class="bp">cls</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nd">@debugattr</span>
+<span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span><span class="c1">#Python2.7中一定要继承object，否则没有object的一些属性</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">x</span>
+<span class="nb">dir</span><span class="p">(</span><span class="n">Point</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>(&#39;Get:&#39;, &#39;x&#39;)
+
+
+
+
+
+[&#39;__class__&#39;,
+ &#39;__delattr__&#39;,
+ &#39;__dict__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__format__&#39;,
+ &#39;__getattr__&#39;,
+ &#39;__getattribute__&#39;,
+ &#39;__hash__&#39;,
+ &#39;__init__&#39;,
+ &#39;__module__&#39;,
+ &#39;__new__&#39;,
+ &#39;__reduce__&#39;,
+ &#39;__reduce_ex__&#39;,
+ &#39;__repr__&#39;,
+ &#39;__setattr__&#39;,
+ &#39;__sizeof__&#39;,
+ &#39;__str__&#39;,
+ &#39;__subclasshook__&#39;,
+ &#39;__weakref__&#39;]
+</pre></div>
+
+
+<p>解决办法metaclass</p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">debugmeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clsname</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">clsdict</span><span class="p">):</span>
+        <span class="n">clsobj</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">debugmeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clsname</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">clsdict</span><span class="p">)</span>
+        <span class="n">clsobj</span> <span class="o">=</span> <span class="n">debugmethods</span><span class="p">(</span><span class="n">clsobj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">clsobj</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd"># python 3 syntax</span>
+<span class="sd">class Base(metaclass=debugmeta):</span>
+<span class="sd">    pass</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="k">class</span> <span class="nc">Base</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">debugmeta</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>__metaclass__ &lt;class &#39;__main__.debugmeta&#39;&gt;
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Point</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+<span class="nb">dir</span><span class="p">(</span><span class="n">debugmeta</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>[&#39;__abstractmethods__&#39;,
+ &#39;__base__&#39;,
+ &#39;__bases__&#39;,
+ &#39;__basicsize__&#39;,
+ &#39;__call__&#39;,
+ &#39;__class__&#39;,
+ &#39;__delattr__&#39;,
+ &#39;__dict__&#39;,
+ &#39;__dictoffset__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__eq__&#39;,
+ &#39;__flags__&#39;,
+ &#39;__format__&#39;,
+ &#39;__ge__&#39;,
+ &#39;__getattribute__&#39;,
+ &#39;__gt__&#39;,
+ &#39;__hash__&#39;,
+ &#39;__init__&#39;,
+ &#39;__instancecheck__&#39;,
+ &#39;__itemsize__&#39;,
+ &#39;__le__&#39;,
+ &#39;__lt__&#39;,
+ &#39;__module__&#39;,
+ &#39;__mro__&#39;,
+ &#39;__name__&#39;,
+ &#39;__ne__&#39;,
+ &#39;__new__&#39;,
+ &#39;__reduce__&#39;,
+ &#39;__reduce_ex__&#39;,
+ &#39;__repr__&#39;,
+ &#39;__setattr__&#39;,
+ &#39;__sizeof__&#39;,
+ &#39;__str__&#39;,
+ &#39;__subclasscheck__&#39;,
+ &#39;__subclasses__&#39;,
+ &#39;__subclasshook__&#39;,
+ &#39;__weakrefoffset__&#39;,
+ &#39;mro&#39;]
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">Spam</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;I&#39;m Spam.bar&quot;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>bar &lt;function bar at 0x1083532a8&gt;
+__init__ &lt;function __init__ at 0x1083539b0&gt;
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nb">dir</span><span class="p">(</span><span class="n">Spam</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>[&#39;__class__&#39;,
+ &#39;__delattr__&#39;,
+ &#39;__dict__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__format__&#39;,
+ &#39;__getattribute__&#39;,
+ &#39;__hash__&#39;,
+ &#39;__init__&#39;,
+ &#39;__metaclass__&#39;,
+ &#39;__module__&#39;,
+ &#39;__new__&#39;,
+ &#39;__reduce__&#39;,
+ &#39;__reduce_ex__&#39;,
+ &#39;__repr__&#39;,
+ &#39;__setattr__&#39;,
+ &#39;__sizeof__&#39;,
+ &#39;__str__&#39;,
+ &#39;__subclasshook__&#39;,
+ &#39;__weakref__&#39;,
+ &#39;bar&#39;]
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="n">body</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    def __init__(self, name):</span>
+<span class="s1">        self.name = name</span>
+<span class="s1">    def bar(self):</span>
+<span class="s1">        print &quot;I&#39;m Spam.bar&quot;</span>
+<span class="s1">&#39;&#39;&#39;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="n">clsdict</span> <span class="o">=</span> <span class="nb">type</span><span class="o">.</span><span class="n">__prepare__</span><span class="p">(</span><span class="s1">&#39;Spam&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">Base</span><span class="p">,))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>---------------------------------------------------------------------------
+
+AttributeError                            Traceback (most recent call last)
+
+&lt;ipython-input-108-cf797e00aba3&gt; in &lt;module&gt;()
+----&gt; 1 clsdict = type.__prepare__(&#39;Spam&#39;, (Base,))
+
+
+AttributeError: type object &#39;type&#39; has no attribute &#39;__prepare__&#39;
+</pre></div>
+
+
+<p>注意，Python 2 中， type 并未实现 <code>__prepare__()</code> 方法。在 Python 3 中， type 实现了 <code>__prepare__()</code> 方法。 Python 解释器构造类的时候，在解析class body 之前，会调用<code>__prepare__()</code>函数。并且Python 解释器在调用 <code>__prepare__()</code> 之前总是先检查<code>__prepare__()</code> 的存在。 存在就会调用，不存在就返回一个一般的dict。</p>
+<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">prepare_class</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">bases</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">metaclass</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">metaclass</span> <span class="o">=</span> <span class="n">compute_default_metaclass</span><span class="p">(</span><span class="n">bases</span><span class="p">)</span>
+    <span class="n">prepare</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">metaclass</span><span class="p">,</span> <span class="s1">&#39;__prepare__&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">prepare</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prepare</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+</pre></div>
+
+
+<blockquote>
+<p><strong>prepare</strong> returns a dictionary-like object which is used to store the class member definitions during evaluation of the class body. In other words, the class body is evaluated as a function block (just like it is now), except that the local variables dictionary is replaced by the dictionary returned from <strong>prepare</strong>. This dictionary object can be a regular dictionary or a custom mapping type.</p>
+</blockquote>
+<p><code>__prepare__</code> 函数返回一个类词典对象用来存储在解析class body 期间发现的类成员定义。局部变量词典会被该方法返回的词典替换。参考<a href="https://www.python.org/dev/peps/pep-3115/?cm_mc_uid=16088229483114992455164&amp;cm_mc_sid_50200000=1503827755">PEP 3115 -- Metaclasses in Python 3000</a></p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">MyInt</span><span class="p">(</span><span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;I am a new int:)&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyInt</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="n">MyInt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">i</span><span class="o">+</span><span class="mi">3</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>I am a new int:)
+5
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">MyInt</span><span class="p">),</span><span class="nb">type</span><span class="p">(</span><span class="nb">tuple</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="nb">list</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="nb">dict</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>(__main__.MyInt, type, type, type, type, type, type)
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="nb">dir</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>[&#39;__abstractmethods__&#39;,
+ &#39;__base__&#39;,
+ &#39;__bases__&#39;,
+ &#39;__basicsize__&#39;,
+ &#39;__call__&#39;,
+ &#39;__class__&#39;,
+ &#39;__delattr__&#39;,
+ &#39;__dict__&#39;,
+ &#39;__dictoffset__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__eq__&#39;,
+ &#39;__flags__&#39;,
+ &#39;__format__&#39;,
+ &#39;__ge__&#39;,
+ &#39;__getattribute__&#39;,
+ &#39;__gt__&#39;,
+ &#39;__hash__&#39;,
+ &#39;__init__&#39;,
+ &#39;__instancecheck__&#39;,
+ &#39;__itemsize__&#39;,
+ &#39;__le__&#39;,
+ &#39;__lt__&#39;,
+ &#39;__module__&#39;,
+ &#39;__mro__&#39;,
+ &#39;__name__&#39;,
+ &#39;__ne__&#39;,
+ &#39;__new__&#39;,
+ &#39;__reduce__&#39;,
+ &#39;__reduce_ex__&#39;,
+ &#39;__repr__&#39;,
+ &#39;__setattr__&#39;,
+ &#39;__sizeof__&#39;,
+ &#39;__str__&#39;,
+ &#39;__subclasscheck__&#39;,
+ &#39;__subclasses__&#39;,
+ &#39;__subclasshook__&#39;,
+ &#39;__weakrefoffset__&#39;,
+ &#39;mro&#39;]
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">InterfaceMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
+        <span class="c1"># create a class_id if it&#39;s not specified</span>
+        <span class="k">if</span> <span class="s1">&#39;class_id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
+            <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;class_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># open the specified file for writing</span>
+        <span class="k">if</span> <span class="s1">&#39;file&#39;</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+            <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="c1"># we need to call type.__new__ to complete the initialization</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InterfaceMeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="n">Interface</span> <span class="o">=</span> <span class="n">InterfaceMeta</span><span class="p">(</span><span class="s1">&#39;Interface&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="s1">&#39;tmp.txt&#39;</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">Interface</span><span class="o">.</span><span class="n">class_id</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Interface</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kr">interface</span>
+<span class="o">&lt;</span><span class="nx">open</span> <span class="nx">file</span> <span class="s1">&#39;tmp.txt&#39;</span><span class="p">,</span> <span class="nx">mode</span> <span class="s1">&#39;w&#39;</span> <span class="nx">at</span> <span class="mh">0x10ed49150</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>每次都这样构造出一个新类会非常心累，因此和 装饰器一样 Python 又为我们提供了 语法糖。定义一个 有<code>__metaclass__</code> 属性的类，该类的构造自动会使用该 <code>__metaclass__</code> 指向的元类来构造。简化和方便了我们写代码；</p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">Interface</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">InterfaceMeta</span>
+    <span class="nb">file</span> <span class="o">=</span> <span class="s1">&#39;tmp.txt&#39;</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">Interface</span><span class="o">.</span><span class="n">class_id</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Interface</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span><span class="kr">interface</span>
+<span class="o">&lt;</span><span class="nx">open</span> <span class="nx">file</span> <span class="s1">&#39;tmp.txt&#39;</span><span class="p">,</span> <span class="nx">mode</span> <span class="s1">&#39;w&#39;</span> <span class="nx">at</span> <span class="mh">0x10ed49270</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>继承的子类也会只要元类未被修改，都会通过该元类来构造出来。</p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">UserInterface</span><span class="p">(</span><span class="n">Interface</span><span class="p">):</span>
+    <span class="nb">file</span> <span class="o">=</span> <span class="s1">&#39;foo.txt&#39;</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">UserInterface</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">UserInterface</span><span class="o">.</span><span class="n">class_id</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>&lt;open file &#39;foo.txt&#39;, mode &#39;w&#39; at 0x10ed490c0&gt;
+userinterface
+</pre></div>
+
+
+<h1 id="abstract-base-classabc">Abstract Base Class(ABC)</h1>
+<p>抽象基类ABC，主要定义了基本类和最基本的抽象方法，为子类提供共有API。这个abc 包下有一个 abc.ABCMeta, 我们已经知道了元类，又知道了ABC是抽象基类，那这个 ABCMeta 就是创建 ABC 抽象基类的元类了。抽象基类一般不实现具体方法。都是定义的抽象方法和属性: <code>@abstractmethod</code> 和 <code>@abstarctproperty</code>.</p>
+<p>抽象基类当然是用来继承的，这里的继承分两种：直接代码上的继承和将其他类注册为虚拟子类的继承方式。区别就是，直接继承，必须要实现抽象方法；而通过注册(register) 是可以不实现抽象方法的，但是还是会被认为是该ABC的子类，可以使用 issubclass 和 issubinstance 验证。</p>
+<div class="hlcode"><pre><span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
+
+<span class="k">class</span> <span class="nc">MyABC</span><span class="p">():</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+    <span class="k">pass</span>
+
+<span class="n">MyABC</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">tuple</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">MyABC</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">((),</span> <span class="n">MyABC</span><span class="p">)</span>
+</pre></div>
+
+
+<p>以下是 issubclass 和 isinstance 的真正调用函数 <code>__instancecheck__</code> 和 <code>__subclasscheck__</code></p>
+<div class="hlcode"><pre><span></span><span class="k">class</span> <span class="nc">ABCMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__instancecheck__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">inst</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implement isinstance(inst, cls).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__subclasscheck__</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">{</span><span class="nb">type</span><span class="p">(</span><span class="n">inst</span><span class="p">),</span> <span class="n">inst</span><span class="o">.</span><span class="vm">__class__</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="fm">__subclasscheck__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sub</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implement issubclass(sub, cls).&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__subclass__&quot;</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span> <span class="o">|</span> <span class="p">{</span><span class="bp">cls</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sub</span><span class="o">.</span><span class="n">mro</span><span class="p">())</span>
+</pre></div>
+
+
+<p>更多详细内容可以参考<a href="https://www.python.org/dev/peps/pep-3119/?cm_mc_uid=16088229483114992455164&amp;cm_mc_sid_50200000=1503827755">PEP 3119</a></p>
+<h1 id="sixpython-2-3-six">six（python 2 * 3 = six）</h1>
+<p>six 其实就是一个 Python 2 和 Python 3 的使用元类写法的兼容库。Python 2 中元类的使用通过 <code>__metaclass__</code>, Python 3 中是通过参数的形式 Class(Base1, Base2, metaclass=ABCMeta) 完成的。</p>
+<p>装饰器是给一个类添加元类的23兼容写法。<code>@six.add_metaclass(metaclass)</code></p>
+<div class="hlcode"><pre><span></span><span class="nd">@add_metaclass</span><span class="p">(</span><span class="n">Meta</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">That</span> <span class="n">code</span> <span class="n">produces</span> <span class="n">a</span> <span class="k">class</span> <span class="nc">equivalent</span> <span class="n">to</span>
+
+<span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">Meta</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">on</span> <span class="n">Python</span> <span class="mi">3</span> <span class="ow">or</span>
+
+<span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">MyMeta</span>
+<span class="n">on</span> <span class="n">Python</span> <span class="mf">2.</span>
+
+<span class="n">Note</span> <span class="n">that</span> <span class="k">class</span> <span class="nc">decorators</span> <span class="n">require</span> <span class="n">Python</span> <span class="mf">2.6</span><span class="o">.</span> 
+
+<span class="n">However</span><span class="p">,</span> <span class="n">the</span> <span class="n">effect</span> <span class="n">of</span> <span class="n">the</span> <span class="n">decorator</span> <span class="n">can</span> <span class="n">be</span> <span class="n">emulated</span> <span class="n">on</span> <span class="n">Python</span> <span class="mf">2.5</span> <span class="n">like</span> <span class="n">so</span><span class="p">:</span>
+
+<span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">MyClass</span> <span class="o">=</span> <span class="n">add_metaclass</span><span class="p">(</span><span class="n">Meta</span><span class="p">)(</span><span class="n">MyClass</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span></span>
+</pre></div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2017 田奇.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2017-12-08 23:32:35</p>
+      </span>
+    </div>
+  </body>
+</html>
