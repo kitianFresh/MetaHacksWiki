@@ -45,7 +45,22 @@ else
 <div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="k">def</span> <span class="nf">daemonize</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">daemonize</span><span class="p">(</span><span class="n">pidfile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the daemon</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check for a pidfile to see if the daemon already runs</span>
+    <span class="k">try</span><span class="p">:</span>
+            <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="n">pid</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="n">pidfile</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -76,6 +91,139 @@ else
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">so</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">se</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+</pre></div>
+
+
+<p>OOP way</p>
+<div class="hlcode"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">atexit</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="kn">import</span> <span class="n">SIGTERM</span>
+
+<span class="k">class</span> <span class="nc">Daemon</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A generic daemon class.</span>
+
+<span class="sd">        Usage: subclass the Daemon class and override the run() method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pidfile</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">stdin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span> <span class="o">=</span> <span class="n">pidfile</span>
+
+        <span class="k">def</span> <span class="nf">daemonize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                do the UNIX double-fork magic, see Stevens&#39; &quot;Advanced</span>
+<span class="sd">                Programming in the UNIX Environment&quot; for details (ISBN 0201563177)</span>
+<span class="sd">                http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="c1"># exit first parent</span>
+                                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;fork #1 failed: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># decouple from parent environment</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">()</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># do second fork</span>
+                <span class="k">try</span><span class="p">:</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="c1"># exit from second parent</span>
+                                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;fork #2 failed: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># redirect standard file descriptors</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">si</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                <span class="n">so</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s1">&#39;a+&#39;</span><span class="p">)</span>
+                <span class="n">se</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s1">&#39;a+&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">so</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">se</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+
+                <span class="c1"># write pidfile</span>
+                <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delpid</span><span class="p">)</span>
+                <span class="n">pid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+                <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;w+&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">delpid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Start the daemon</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="c1"># Check for a pidfile to see if the daemon already runs</span>
+                <span class="k">try</span><span class="p">:</span>
+                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                        <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">if</span> <span class="n">pid</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Start the daemon</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">daemonize</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Stop the daemon</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="c1"># Get the pid from the pidfile</span>
+                <span class="k">try</span><span class="p">:</span>
+                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                        <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                        <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">pid</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> does not exist. Daemon not running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="c1"># not an error in a restart</span>
+
+                <span class="c1"># Try killing the daemon process       </span>
+                <span class="k">try</span><span class="p">:</span>
+                        <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">)</span>
+                                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+                        <span class="n">err</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;No such process&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">):</span>
+                                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                                <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Restart the daemon</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                You should override this method when you subclass Daemon. It will be called after the process has been</span>
+<span class="sd">                daemonized by start() or restart().</span>
+<span class="sd">                &quot;&quot;&quot;</span>
 </pre></div>
 
 
@@ -357,9 +505,9 @@ The shell and Python processes receive the signal. The shell ignores it. Python 
     </div>
     <div id="footer">
       <span>
-        <p>Copyright © 2017 田奇.
+        <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-08 23:32:35</p>
+        <p>Site Generated 2018-01-08 10:24:10</p>
       </span>
     </div>
   </body>

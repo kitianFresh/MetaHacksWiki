@@ -55,6 +55,16 @@
 <p>It is not possible to interrupt the acquire() method on a lock — the KeyboardInterrupt exception will happen after the lock has been acquired.</p>
 </blockquote>
 <p>python 官方建议使用更高级的threading模块; threading 模块模仿java的线程使用方式，<code>threading.Thread</code> 类提供了 <code>run</code> 方法供子类重写；并且还提供了更加高级的线程同步机制，包括可重入锁RLock，条件变量 Condition，信号量 Samephore，事件 Event；这些锁的实现稍后我们会对比 java 的 synchronized 和 wait/notify 机制 和 Java 并发包来分析，其实Python 模仿Java实现了这些线程同步机制；更加高级的线程同步锁比如读写锁等，Python 本身并未提供。</p>
+<h2 id="inter-thread-communication-inter-process-communicationipc">inter thread communication(仿造 inter process communication/IPC)</h2>
+<h3 id="thread-signal">thread signal</h3>
+<p>signal 进行进程间线程异步通讯主要使用在控制层面，通过发送信号和捕获信号进行处理的方式交互。模式基本上和 APUE 一致，都遵循POSIX标准。给相应的信号注册一个处理器函数，当接受到信号时自行处理。</p>
+<p>在 <a href="https://docs.python.org/2/library/signal.html">Python</a> 中，signal不建议用在线程之间！因为线程中使用signal有很多限制，线程通讯可以使用锁或者event。</p>
+<p>python sinnal 遵循 BSD style interface，除了SIGCHLD和具体实现有关。</p>
+<p>即使在临界区中，signal 也无法被阻塞； 信号可以被延迟执行；</p>
+<p>当进程正在执行 IO 操作的时候，因为一个信号，可能会在信号处理器函数 handler 返回之后抛出IO异常。</p>
+<p>python 中 SIGPIPE 信号默认被忽略（因此在 pipes 和 sockets 上的写错误会被当成异常处理，SIGINT 默认被转换成 KeyboardInterrupt 异常。</p>
+<p>signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。</p>
+<h3 id="thread-lock">thread lock</h3>
 <h2 id="daemon-threadprocess">daemon thread/process</h2>
 <h3 id="unix-daemon-process">unix daemon process</h3>
 <p>首先，注意不要把守护线程和UNIX守护进程混淆，这是两个不同的概念。UNIX守护进程也叫daemon，但是他指的是那些脱离终端即不受终端控制的后台进程；UNIX进程中有会话，进程组，进程的概念，一个会话和一个（伪）终端关联，而一个会话包含多个进程组，会话中的进程组分前台进程组和后台进程组，前台进程组会接受来自终端的ctrl+c 等中断信号，但是他们并未脱离终端，只有脱离了终端的后台进程才是守护进程；守护进程主要做一些</p>
@@ -84,10 +94,10 @@
 
 <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
-<span class="c1"># try:</span>
-<span class="c1">#     t.join()</span>
-<span class="c1"># except KeyboardInterrupt as e:</span>
-<span class="c1">#     t.stop()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 
 <span class="c1"># import sys</span>
@@ -97,9 +107,11 @@
 <span class="c1">#     sys.exit(0)</span>
 
 <span class="c1"># signal.signal(signal.SIGTERM, terminate_handler)</span>
+</pre></div>
 
 
-<span class="k">try</span><span class="p">:</span>
+<p>这里需要注意的是，主线程会因为join操作而直接阻塞，导致无法接受到中断信号，所以使用　ctrl+c　也无法使得主线程退出，目前的做法是</p>
+<div class="hlcode"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">isAlive</span><span class="p">:</span>
@@ -107,18 +119,12 @@
 <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="n">t</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 </pre></div>
-
-
-<h2 id="inter-thread-communication-inter-process-communicationipc">inter thread communication(仿造 inter process communication/IPC)</h2>
-<h3 id="thread-signal">thread signal</h3>
-<p>signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。</p>
-<h3 id="thread-lock">thread lock</h3>
     </div>
     <div id="footer">
       <span>
-        <p>Copyright © 2017 田奇.
+        <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-08 23:32:35</p>
+        <p>Site Generated 2018-01-08 10:24:10</p>
       </span>
     </div>
   </body>

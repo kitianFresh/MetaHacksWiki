@@ -6,7 +6,7 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
-    <title>dlm - MetaHacks Wiki</title>
+    <title>virtualbox - MetaHacks Wiki</title>
     <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
     <meta name="description" content="my personal wiki"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,19 +16,27 @@
     <div id="container">
       
 <div id="header">
-  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;&#187;&nbsp;dlm
+  <div class="post-nav"><a href="/">Home</a>&nbsp;&#187;&nbsp;<a href="/#tools">tools</a>&nbsp;&#187;&nbsp;virtualbox
     <span class="updated">Updated&nbsp;
-      2017-09-12 10:42
+      2018-01-04 20:55
     </span></div>
 </div>
 <div class="clearfix"></div>
 
-<div class="page_title">dlm</div>
+<div class="page_title">virtualbox</div>
 
-  <ul>
-<li><a href="http://www.hollischuang.com/archives/1716">分布式锁的几种实现方式</a></li>
-<li><a href="https://distributedalgorithm.wordpress.com/2015/06/20/architecture-of-zab-zookeeper-atomic-broadcast-protocol/">Architecture of ZAB – ZooKeeper Atomic Broadcast protocol</a></li>
-</ul>
+  <h1 id="vm">后台启动VM</h1>
+<p>VBoxManage startvm <uuid>|<name> [--type gui|sdl|headless] 使用headless 选项，无gui的服务器版本</p>
+<h1 id="vm_1">查看VM</h1>
+<p>vboxmanage list vms<br />
+vboxmanage list running vms</p>
+<h1 id="vm_2">控制VM</h1>
+<p>vboxmanage controlvm <uuid>|<vname> pause|resume|reset|poweroff|savestate</p>
+<h1 id="_1">设置共享目录</h1>
+<p>如果想使用共享目录则：<br />
+vboxmanage sharedfolder add centos --name <em>share</em> --hostpath <em>~/share</em></p>
+<p>登录成功后挂载共享目录:<br />
+mount -t vboxsf share /mnt/</p>
     </div>
     <div id="footer">
       <span>
