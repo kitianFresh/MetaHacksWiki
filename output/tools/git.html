@@ -134,6 +134,8 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 <code>git push origin --delete branchname</code><br />
 5. 展示分支详细信息<br />
 <code>git branch -vv</code></p>
+<h1 id="git-tag">git tag</h1>
+<p>又用到了删除git仓库的tags， 删除本地tag: git tag -d v0.1 只删除本地的没有用，下次fetch的时候还会拉下来，再删除远程仓库中的tag，跟删除远程分支的语法类似git push origin :refs/tags/v0.1.</p>
 <h1 id="git-diff">git diff 支持通配符</h1>
 <div class="hlcode"><pre><span></span>git diff --cached origin
 git diff --*.m
@@ -205,9 +207,9 @@ python_style_check
     </div>
     <div id="footer">
       <span>
-        <p>Copyright © 2017 田奇.
+        <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2017-12-08 23:32:35</p>
+        <p>Site Generated 2018-01-08 10:24:10</p>
       </span>
     </div>
   </body>

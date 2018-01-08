@@ -113,6 +113,9 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 5. 展示分支详细信息
 `git branch -vv`
 
+# git tag
+又用到了删除git仓库的tags， 删除本地tag: git tag -d v0.1 只删除本地的没有用，下次fetch的时候还会拉下来，再删除远程仓库中的tag，跟删除远程分支的语法类似git push origin :refs/tags/v0.1.
+
 # git diff 支持通配符
 ```
 git diff --cached origin

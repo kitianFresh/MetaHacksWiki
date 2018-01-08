@@ -410,7 +410,14 @@ offset 版本的分页查询当面对大数据集合的时候，会非常低效�
 ### 分页查询优化
 - [The art of pagination – Offset vs. value based paging](https://blog.novatec-gmbh.de/art-pagination-offset-vs-value-based-paging/)
 
+- [Optimized Pagination using MySQL](https://www.xarg.org/2011/10/optimized-pagination-using-mysql/)
 - [What’s wrong with pagination?](https://blog.jooq.org/2016/08/10/why-most-programmers-get-pagination-wrong/)
+
+- [Pagination](http://mysql.rjweb.org/doc.php/pagination)
+
+- [Finding the Best Match With a Top-N Query](http://blog.fatalmind.com/2010/09/29/finding-the-best-match-with-a-top-n-query/)
+
+- [Pagination with OFFSET / FETCH : A better way](https://sqlperformance.com/2015/01/t-sql-queries/pagination-with-offset-fetch)
 
 ## MySQL列运算操作
 
