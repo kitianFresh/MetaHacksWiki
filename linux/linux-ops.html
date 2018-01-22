@@ -27,7 +27,7 @@
 
   <h1 id="linux">Linux 软件源更新</h1>
 <p>更改之前注意备份: <code>sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup</code></p>
-<div class="hlcode"><pre><span></span><span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<div class="hlcode"><pre><span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
 <span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
 <span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-updates</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
 <span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-backports</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
@@ -49,21 +49,21 @@
 <ol>
 <li><code>generate-subunit: command not found</code></li>
 </ol>
-<div class="hlcode"><pre><span></span>sudo pip install -U os-testr
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">os</span><span class="o">-</span><span class="n">testr</span>
 </pre></div>
 
 
 <ol>
 <li><code>/bin/sh: 1: brctl: not found</code></li>
 </ol>
-<div class="hlcode"><pre><span></span>sudo apt-get install bridge-utils
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">bridge</span><span class="o">-</span><span class="n">utils</span>
 </pre></div>
 
 
 <ol>
 <li></li>
 </ol>
-<div class="hlcode"><pre><span></span>git config --global url.&quot;https://&quot;.insteadOf git://
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">url</span><span class="p">.</span><span class="s">&quot;https://&quot;</span><span class="p">.</span><span class="n">insteadOf</span> <span class="n">git</span><span class="o">:</span><span class="c1">//</span>
 </pre></div>
 
 
@@ -75,24 +75,24 @@
 <li><a href="https://docs.openstack.org/mitaka/zh_CN/install-guide-ubuntu/environment.html">openstack</a></li>
 </ul>
 <h1 id="sudo">配置 sudo 用户.</h1>
-<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.<br />
+<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.
 然后 使用 <code>visudo</code> 自动打开 <code>/etc/sudoers</code> 配置文件，在文件加入sudo权限，配置如下：</p>
-<div class="hlcode"><pre><span></span>tianqi05    ALL=(ALL)    ALL
-‘不要密码
-tianqi05    ALL=(ALL)    NOPASSWD:ALL
+<div class="hlcode"><pre><span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">ALL</span>
+<span class="err">‘不要密码</span>
+<span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">NOPASSWD</span><span class="o">:</span><span class="n">ALL</span>
 </pre></div>
 
 
-<p>最后切换用户<br />
+<p>最后切换用户
 sudo -iu tianqi05</p>
 <h1 id="screen">screen 使用简介</h1>
 <p>screen 和 tmux有类似的服务。只是screen开启会话后不会新建窗口，还是在当前窗口。</p>
 <ol>
 <li>screen 创建一个session</li>
 </ol>
-<div class="hlcode"><pre><span></span>screen -S myNewSession
-或者
-screen 创建一个名字默认是ttys[ID] 的session.
+<div class="hlcode"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">S</span> <span class="n">myNewSession</span>
+<span class="err">或者</span>
+<span class="n">screen</span> <span class="err">创建一个名字默认是</span><span class="n">ttys</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="err">的</span><span class="n">session</span><span class="p">.</span>
 </pre></div>
 
 
@@ -104,10 +104,10 @@ screen 创建一个名字默认是ttys[ID] 的session.
 <p>列出当前所有的session. <code>screen -ls</code> </p>
 </li>
 </ol>
-<div class="hlcode"><pre><span></span>There are screens on:
-    28007.ttys005.tianqideMacBook-Pro   (Detached)
-    28091.myNewSession  (Detached)
-2 Sockets in /var/folders/bb/ywfc1vbs5lx_blqpl5ssrvv40000gp/T/.screen.
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
 </pre></div>
 
 
@@ -119,11 +119,11 @@ screen 创建一个名字默认是ttys[ID] 的session.
 <p>强制杀死一个 session. <code>kill -9 28091</code></p>
 </li>
 </ol>
-<div class="hlcode"><pre><span></span>There are screens on:
-    28007.ttys005.tianqideMacBook-Pro   (Detached)
-    28091.myNewSession  (Dead ???)
-Remove dead screens with &#39;screen -wipe&#39;.
-2 Sockets in /var/folders/bb/ywfc1vbs5lx_blqpl5ssrvv40000gp/T/.screen.
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Dead</span> <span class="o">???</span><span class="p">)</span>
+<span class="n">Remove</span> <span class="n">dead</span> <span class="n">screens</span> <span class="n">with</span> <span class="err">&#39;</span><span class="n">screen</span> <span class="o">-</span><span class="n">wipe</span><span class="err">&#39;</span><span class="p">.</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
 </pre></div>
 
 
@@ -149,10 +149,10 @@ Remove dead screens with &#39;screen -wipe&#39;.
 <ul>
 <li><a href="https://www.tecmint.com/ifconfig-vs-ip-command-comparing-network-configuration/">ifconfig vs ip: What’s Difference and Comparing Network Configuration</a></li>
 </ul>
-<p>## 查看进程所暂用的资源<br />
+<p>## 查看进程所暂用的资源
  首先找到进程 <code>ps aux|grep XXX</code>, 然后使用 <code>sudo lsof -p [pid]</code> 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， <code>lsof [filename]</code> 可以看到进程pid， 拿到pid 之后可以使用<code>ps aux|grep [pid]</code> 查看是什么进程；</p>
 <h2 id="_2">删除某个目录下的大量的文件</h2>
-<div class="hlcode"><pre><span></span>find /tmp -name core -type f -print0 <span class="p">|</span> xargs -0 /bin/rm -f
+<div class="hlcode"><pre>find /tmp -name core -type f -print0 | xargs -0 /bin/rm -f
 
 Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way
 that file or directory names containing spaces or newlines are correctly handled.
@@ -160,25 +160,25 @@ that file or directory names containing spaces or newlines are correctly handled
 find /tmp -depth -name core -type f -delete
 
 Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the
-previous example <span class="o">(</span>because we avoid the need to use fork<span class="o">(</span><span class="m">2</span><span class="o">)</span> and exec<span class="o">(</span><span class="m">2</span><span class="o">)</span> to launch rm and we don<span class="err">&#39;</span>t need the
+previous example <span class="o">(</span>because we avoid the need to use fork<span class="o">(</span>2<span class="o">)</span> and <span class="nb">exec</span><span class="o">(</span>2<span class="o">)</span> to launch rm and we don<span class="err">&#39;</span>t need the
 extra xargs process<span class="o">)</span>.
 
-cut -d: -f1 &lt; /etc/passwd <span class="p">|</span> sort <span class="p">|</span> xargs <span class="nb">echo</span>
+cut -d: -f1 &lt; /etc/passwd | sort | xargs <span class="nb">echo</span>
 </pre></div>
 
 
-<p>/bin/rm: Argument list too long.<br />
-The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.<br />
-To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:<br />
-find . -type f -exec rm -v {} \;<br />
-My problem is that I needed to delete 500,000 files and it was taking way too long.<br />
-I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:<br />
-find . -type f -delete<br />
-Using this method, I was deleting files at a rate of about 2000 files/second – much faster!<br />
-You can also show the filenames as you’re deleting them:<br />
-find . -type f -print -delete<br />
+<p>/bin/rm: Argument list too long.
+The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.
+To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:
+find . -type f -exec rm -v {} \;
+My problem is that I needed to delete 500,000 files and it was taking way too long.
+I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:
+find . -type f -delete
+Using this method, I was deleting files at a rate of about 2000 files/second – much faster!
+You can also show the filenames as you’re deleting them:
+find . -type f -print -delete
 …or even show how many files will be deleted, then time how long it takes to delete them:</p>
-<p>ls -1 汇报内存不足如果目录下有上百万个小文件<br />
+<p>ls -1 汇报内存不足如果目录下有上百万个小文件
 ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
 <h1 id="check-dev-file-system">check dev file system</h1>
 <ol>
@@ -195,7 +195,7 @@ ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

@@ -27,13 +27,13 @@
 
   <h1 id="fork-and-exec">fork and exec</h1>
 <p>UNIX 中 fork 的行为就是一次调用，两次返回，其中父进程返回的是子进程进程id，子进程返回的是0；根据判断可以分别继续执行父进程和子进程中的代码，但是当我们的子进程都是通用的代码的时候，就要写很多重复的逻辑代码，因此在子进程中可以调用 exec 去执行子进程的程序主体，比如一个编译好的程序；关于 fork 和 exec 的使用，更多的可以去参考 APUE 或者 CSAPP;</p>
-<div class="hlcode"><pre><span></span>pid = fork()
-if pid = 0
-  child_process_code
-else if pid &gt; 0
-  parent_process_code
-else
-  perror
+<div class="hlcode"><pre><span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">pid</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">child_process_code</span>
+<span class="k">else</span> <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="n">parent_process_code</span>
+<span class="k">else</span>
+  <span class="n">perror</span>
 </pre></div>
 
 
@@ -42,52 +42,52 @@ else
 <h2 id="_2">守护进程</h2>
 <p>UNIX守护进程也叫daemon，但是他指的是那些脱离终端即不受终端控制的后台进程；UNIX进程中有会话，进程组，进程的概念，一个会话和一个（伪）终端关联，而一个会话包含多个进程组，会话中的进程组分前台进程组和后台进程组，前台进程组会接受来自终端的ctrl+c 等中断信号，但是他们并未脱离终端，只有脱离了终端的后台进程才是守护进程；使用 <code>ps -axj</code> -a 显示由其他用户所拥有的进程的状态，-x显示无控制终端的进程状态，-j显示与作业有关的信息：会话id<SID>、进程组id<PGID>、控制终端<TTY>以及终端进程组id<TPGID>, TTY=?表示没有控制终端；守护进程大多以超级权限UID=0 运行，且没有控制终端，控制终端前台进程组TPGID=-1;</p>
 <h2 id="apue">创建守护进程的编程范式(参考APUE)</h2>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="k">def</span> <span class="nf">daemonize</span><span class="p">(</span><span class="n">pidfile</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the daemon</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Check for a pidfile to see if the daemon already runs</span>
+    <span class="c"># Check for a pidfile to see if the daemon already runs</span>
     <span class="k">try</span><span class="p">:</span>
-            <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="n">pidfile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
             <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
             <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
             <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
 
     <span class="k">if</span> <span class="n">pid</span><span class="p">:</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;pidfile </span><span class="si">%s</span><span class="s"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s">&quot;</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="n">pidfile</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># exit first parent</span>
+            <span class="c"># exit first parent</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;_Fork #1 failed: {0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;_Fork #1 failed: {0}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># decouple from parent environment</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="c"># decouple from parent environment</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">()</span>
     <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="c1"># do second fork</span>
+    <span class="c"># do second fork</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># exit from second parent</span>
+            <span class="c"># exit from second parent</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;_Fork #2 failed: {0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;_Fork #2 failed: {0}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># redirect standard file descriptors</span>
+    <span class="c"># redirect standard file descriptors</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-    <span class="n">si</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-    <span class="n">so</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-    <span class="n">se</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">si</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">so</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">se</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">so</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
     <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">se</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
@@ -95,7 +95,7 @@ else
 
 
 <p>OOP way</p>
-<div class="hlcode"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<div class="hlcode"><pre><span class="c">#!/usr/bin/env python</span>
 
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">atexit</span>
 <span class="kn">from</span> <span class="nn">signal</span> <span class="kn">import</span> <span class="n">SIGTERM</span>
@@ -106,7 +106,7 @@ else
 
 <span class="sd">        Usage: subclass the Daemon class and override the run() method</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pidfile</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pidfile</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="s">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="s">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="s">&#39;/dev/null&#39;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">stdin</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span>
@@ -121,41 +121,41 @@ else
                 <span class="k">try</span><span class="p">:</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
                         <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                                <span class="c1"># exit first parent</span>
+                                <span class="c"># exit first parent</span>
                                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;fork #1 failed: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;fork #1 failed: </span><span class="si">%d</span><span class="s"> (</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-                <span class="c1"># decouple from parent environment</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="c"># decouple from parent environment</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">()</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-                <span class="c1"># do second fork</span>
+                <span class="c"># do second fork</span>
                 <span class="k">try</span><span class="p">:</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
                         <span class="k">if</span> <span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                                <span class="c1"># exit from second parent</span>
+                                <span class="c"># exit from second parent</span>
                                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;fork #2 failed: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;fork #2 failed: </span><span class="si">%d</span><span class="s"> (</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">))</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-                <span class="c1"># redirect standard file descriptors</span>
+                <span class="c"># redirect standard file descriptors</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-                <span class="n">si</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-                <span class="n">so</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s1">&#39;a+&#39;</span><span class="p">)</span>
-                <span class="n">se</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s1">&#39;a+&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">si</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+                <span class="n">so</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&#39;a+&#39;</span><span class="p">)</span>
+                <span class="n">se</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;a+&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">so</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">se</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
 
-                <span class="c1"># write pidfile</span>
+                <span class="c"># write pidfile</span>
                 <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delpid</span><span class="p">)</span>
                 <span class="n">pid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
-                <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;w+&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">)</span>
+                <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s">&#39;w+&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">delpid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
@@ -164,20 +164,20 @@ else
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                Start the daemon</span>
 <span class="sd">                &quot;&quot;&quot;</span>
-                <span class="c1"># Check for a pidfile to see if the daemon already runs</span>
+                <span class="c"># Check for a pidfile to see if the daemon already runs</span>
                 <span class="k">try</span><span class="p">:</span>
-                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
                         <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
 
                 <span class="k">if</span> <span class="n">pid</span><span class="p">:</span>
-                        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;pidfile </span><span class="si">%s</span><span class="s"> already exist. Daemon already running?</span><span class="se">\n</span><span class="s">&quot;</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-                <span class="c1"># Start the daemon</span>
+                <span class="c"># Start the daemon</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">daemonize</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
@@ -185,27 +185,27 @@ else
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                Stop the daemon</span>
 <span class="sd">                &quot;&quot;&quot;</span>
-                <span class="c1"># Get the pid from the pidfile</span>
+                <span class="c"># Get the pid from the pidfile</span>
                 <span class="k">try</span><span class="p">:</span>
-                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                        <span class="n">pf</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
                         <span class="n">pf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                         <span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">pid</span><span class="p">:</span>
-                        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;pidfile </span><span class="si">%s</span><span class="s2"> does not exist. Daemon not running?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;pidfile </span><span class="si">%s</span><span class="s"> does not exist. Daemon not running?</span><span class="se">\n</span><span class="s">&quot;</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
-                        <span class="k">return</span> <span class="c1"># not an error in a restart</span>
+                        <span class="k">return</span> <span class="c"># not an error in a restart</span>
 
-                <span class="c1"># Try killing the daemon process       </span>
+                <span class="c"># Try killing the daemon process       </span>
                 <span class="k">try</span><span class="p">:</span>
                         <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
                                 <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">SIGTERM</span><span class="p">)</span>
                                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
                         <span class="n">err</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;No such process&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;No such process&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">):</span>
                                         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pidfile</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
@@ -228,20 +228,20 @@ else
 
 
 <h1 id="subprocess">subprocess</h1>
-<p>subprocess 和 multiprocessing<br />
+<p>subprocess 和 multiprocessing
  - subprocess 是让进程可以执行一个子程序进程，类似 fork + exec 的模式。我们知道，比较底层的创建进程的接口是fork，然后代码逻辑通过fork的一次调用两次返回，通过父子进程返回的值不同来区分控制父子进程代码的执行逻辑，典型的就是 if else 的判断。如果在子进程的逻辑代码中有可以复用的部分，可以把这部分做成一个子程序，便于其他进程直接使用，可以直接让子进程调用 exec 函数来执行一个可执行程序。</p>
 <ul>
 <li>multiprocessing更像是和threading模块一样，提供直接传入函数开启一个进程或者线程的功能。</li>
 </ul>
-<p>Python 官方文档建议使用 subprocess 替代一下模块<br />
-- os.system<br />
-- os.spawn<em><br />
-- os.popen</em><br />
-- popen2.<em><br />
+<p>Python 官方文档建议使用 subprocess 替代一下模块
+- os.system
+- os.spawn<em>
+- os.popen</em>
+- popen2.<em>
 - commands.</em></p>
 <h2 id="check_call">check_call</h2>
-<p>以下都是阻塞的调用。<br />
-1. subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)<br />
+<p>以下都是阻塞的调用。
+1. subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)
   - 执行cmd，并返回一个值，不抛出异常; ret != 0 表示程序返回值非0即程序异常退出。</p>
 <ol>
 <li>subprocess.check_call(args, *, stdin=None, stdout=None, stderr=None, shell=False)</li>
@@ -258,29 +258,29 @@ else
 <p>Note Do not use stderr=PIPE with this function as that can deadlock based on the child process error volume. Use Popen with the communicate() method when you need a stderr pipe.</p>
 </blockquote>
 <p>shell 参数表示是否使用shell来执行命令。一般情况下不使用，除非该命令是shell的内置命令，只能由shell来执行。</p>
-<div class="hlcode"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="s2">&quot;ls&quot;</span><span class="p">,</span> <span class="s2">&quot;-l&quot;</span><span class="p">])</span>
+<div class="hlcode"><pre><span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="s">&quot;ls&quot;</span><span class="p">,</span> <span class="s">&quot;-l&quot;</span><span class="p">])</span>
 
-<span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;exit 2&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&quot;exit 2&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">ret</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s2">&quot;failed!&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;failed!&quot;</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s2">&quot;succ&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;succ&quot;</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="s2">&quot;exit 1&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="s">&quot;exit 1&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">returncode</span>
     <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">output</span>
     <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">cmd</span>
-    <span class="c1">#print ret 此时ret还未赋值</span>
+    <span class="c">#print ret 此时ret还未赋值</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span></span><span class="n">returned_string</span> <span class="o">=</span> <span class="bp">None</span>
+<div class="hlcode"><pre><span class="n">returned_string</span> <span class="o">=</span> <span class="bp">None</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">returned_string</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s2">&quot;exit 2&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">returned_string</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s">&quot;exit 2&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">returncode</span>
     <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">output</span>
@@ -289,22 +289,22 @@ else
     <span class="k">print</span> <span class="n">returned_string</span>
 
 
-<span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s2">&quot;ls non_existent_file; exit 0&quot;</span><span class="p">,</span>
+<span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s">&quot;ls non_existent_file; exit 0&quot;</span><span class="p">,</span>
                    <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
                    <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 
 
 <h2 id="subprocesspopen">subprocess.Popen</h2>
-<p>以上接口都是通过更加底层的 subprocess.Popen()来实现的。这个函数在linux上就是 fork + execv 实现的，windows 上则是通过 CreateProcess() 实现的。<br />
-4. class subprocess.Popen(args, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0)<br />
-  - args参数是一个list或者字符串儿，如果是list，就执行list的第一项元素即可执行程序，后续的项是可执行程序的参数；如果是字符串，默认整个串儿就是可执行程序，所以一般在命令行中使用 shlex.<br />
-  - args：要执行的命令或可执行文件的路径。一个由字符串组成的序列（通常是列表），列表的第一个元素是可执行程序的路径，剩下的是传给这个程序的参数，如果没有要传给这个程序的参数，args 参数可以仅仅是一个字符串。<br />
-  - bufsize：控制 stdin, stdout, stderr 等参数指定的文件的缓冲，和打开文件的 open()函数中的参数 bufsize 含义相同。<br />
-  - executable：如果这个参数不是 None，将替代参数 args 作为可执行程序；<br />
-  - stdin：指定子进程的标准输入；<br />
-  - stdout：指定子进程的标准输出；<br />
-  - stderr：指定子进程的标准错误输出；<br />
+<p>以上接口都是通过更加底层的 subprocess.Popen()来实现的。这个函数在linux上就是 fork + execv 实现的，windows 上则是通过 CreateProcess() 实现的。
+4. class subprocess.Popen(args, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0)
+  - args参数是一个list或者字符串儿，如果是list，就执行list的第一项元素即可执行程序，后续的项是可执行程序的参数；如果是字符串，默认整个串儿就是可执行程序，所以一般在命令行中使用 shlex.
+  - args：要执行的命令或可执行文件的路径。一个由字符串组成的序列（通常是列表），列表的第一个元素是可执行程序的路径，剩下的是传给这个程序的参数，如果没有要传给这个程序的参数，args 参数可以仅仅是一个字符串。
+  - bufsize：控制 stdin, stdout, stderr 等参数指定的文件的缓冲，和打开文件的 open()函数中的参数 bufsize 含义相同。
+  - executable：如果这个参数不是 None，将替代参数 args 作为可执行程序；
+  - stdin：指定子进程的标准输入；
+  - stdout：指定子进程的标准输出；
+  - stderr：指定子进程的标准错误输出；
 　　对于 stdin, stdout 和 stderr 而言，如果他们是 None（默认情况），那么子进程使用和父进程相同的标准流文件。</p>
 <p>父进程如果想要和子进程通过 communicate() 方法通信，对应的参数必须是 subprocess.PIPE（见下文例4）；</p>
 <p>当然 stdin, stdout 和 stderr 也可以是已经打开的 file 对象，前提是以合理的方式打开，比如 stdin 对应的文件必须要可读等。　</p>
@@ -318,7 +318,7 @@ else
 <li>startupinfo：见下一个参数；</li>
 <li>creationfalgs：最后这两个参数是Windows中才有的参数，传递给Win32的CreateProcess API调用。</li>
 </ul>
-<p>进程对象属性：<br />
+<p>进程对象属性：
 1. p.returncode 该属性表示子进程的返回状态，returncode可能有多重情况：</p>
 <ul>
 <li>None —— 子进程尚未结束；</li>
@@ -331,8 +331,8 @@ else
 <p>p.stdin, p.stdout, p.stderr, p.pid</p>
 </li>
 </ul>
-<p>进程对象方法：<br />
-1. p.poll()<br />
+<p>进程对象方法：
+1. p.poll()
   - 检查子进程 p 是否终止，返回的而是 p.returncode</p>
 <ol>
 <li>p.wait()</li>
@@ -366,42 +366,42 @@ else
 </li>
 <li>杀死子进程，等价于 p.send_signal(SIGKILL)</li>
 </ol>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">shlex</span><span class="o">,</span> <span class="nn">subprocess</span>
-<span class="c1"># &#39;cat tmux-client-4152.log &gt; /Users/kiki/study/test/echo.txt&#39;</span>
-<span class="c1"># 以上命令不能直接用在Popen中，因为这样他只会默认读取第一项是cat命令执行，后面都是cat的参数。读到 `&gt;` 就不认识了。</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">shlex</span><span class="o">,</span> <span class="nn">subprocess</span>
+<span class="c"># &#39;cat tmux-client-4152.log &gt; /Users/kiki/study/test/echo.txt&#39;</span>
+<span class="c"># 以上命令不能直接用在Popen中，因为这样他只会默认读取第一项是cat命令执行，后面都是cat的参数。读到 `&gt;` 就不认识了。</span>
 <span class="n">command_line</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">()</span>
 <span class="n">args</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">command_line</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">args</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<span class="c1"># tmux-client-4152.log</span>
+<span class="c"># tmux-client-4152.log</span>
 </pre></div>
 
 
 <p>pipeline</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="c1">#方案一</span>
-<span class="n">c1</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;ls&#39;</span><span class="p">,</span> <span class="s1">&#39;-alt&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-<span class="c1">#以下两种形式注意对比区别（1）</span>
-<span class="c1"># c2 = subprocess.Popen([&#39;wc&#39;, &#39;-w&#39;], stdin=c1.stdout, stdout=subprocess.PIPE)</span>
-<span class="n">c2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;wc&#39;</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">c1</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="c">#方案一</span>
+<span class="n">c1</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&#39;ls&#39;</span><span class="p">,</span> <span class="s">&#39;-alt&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+<span class="c">#以下两种形式注意对比区别（1）</span>
+<span class="c"># c2 = subprocess.Popen([&#39;wc&#39;, &#39;-w&#39;], stdin=c1.stdout, stdout=subprocess.PIPE)</span>
+<span class="n">c2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&#39;wc&#39;</span><span class="p">,</span> <span class="s">&#39;-w&#39;</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">c1</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">c2</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">c2</span><span class="o">.</span><span class="n">stderr</span>
 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">stdout</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">line</span>
 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">stderr</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">line</span>
-<span class="c1">#stdout, stderr = c2.communicate()</span>
-<span class="n">c1</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span> <span class="c1"># 调用wait 防止父进程比子进程提前结束</span>
+<span class="c">#stdout, stderr = c2.communicate()</span>
+<span class="n">c1</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span> <span class="c"># 调用wait 防止父进程比子进程提前结束</span>
 <span class="n">c2</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 <span class="k">print</span> <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
 
-<span class="c1"># 方案二</span>
-<span class="k">print</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s2">&quot;ls -alt | wc -w&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># 方案二</span>
+<span class="k">print</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s">&quot;ls -alt | wc -w&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 
 
 <h2 id="process-groups-sessions">Process Groups / Sessions</h2>
 <p>signal_child.py</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -410,46 +410,46 @@ else
 <span class="n">received</span> <span class="o">=</span> <span class="bp">False</span>
 
 <span class="k">def</span> <span class="nf">signal_usr1</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-    <span class="s2">&quot;Callback invoked when a signal is received&quot;</span>
+    <span class="s">&quot;Callback invoked when a signal is received&quot;</span>
     <span class="k">global</span> <span class="n">received</span>
     <span class="n">received</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">print</span> <span class="s1">&#39;CHILD </span><span class="si">%6s</span><span class="s1">: Received USR1&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+    <span class="k">print</span> <span class="s">&#39;CHILD </span><span class="si">%6s</span><span class="s">: Received USR1&#39;</span> <span class="o">%</span> <span class="n">pid</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-<span class="k">print</span> <span class="s1">&#39;CHILD </span><span class="si">%6s</span><span class="s1">: Setting up signal handler&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+<span class="k">print</span> <span class="s">&#39;CHILD </span><span class="si">%6s</span><span class="s">: Setting up signal handler&#39;</span> <span class="o">%</span> <span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">signal_usr1</span><span class="p">)</span>
-<span class="k">print</span> <span class="s1">&#39;CHILD </span><span class="si">%6s</span><span class="s1">: Pausing to wait for signal&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+<span class="k">print</span> <span class="s">&#39;CHILD </span><span class="si">%6s</span><span class="s">: Pausing to wait for signal&#39;</span> <span class="o">%</span> <span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">received</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s1">&#39;CHILD </span><span class="si">%6s</span><span class="s1">: Never received signal&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+    <span class="k">print</span> <span class="s">&#39;CHILD </span><span class="si">%6s</span><span class="s">: Never received signal&#39;</span> <span class="o">%</span> <span class="n">pid</span>
 </pre></div>
 
 
 <p>通过subprocess 得到子进程，可以通过 os.kill 来向子进程发送信号；</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="n">script</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;#!/bin/sh</span>
-<span class="s1">echo &quot;Shell script in process $$&quot;</span>
-<span class="s1">set -x</span>
-<span class="s1">python signal_child.py</span>
-<span class="s1">&#39;&#39;&#39;</span>
-<span class="n">script_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;#!/bin/sh</span>
+<span class="s">echo &quot;Shell script in process $$&quot;</span>
+<span class="s">set -x</span>
+<span class="s">python signal_child.py</span>
+<span class="s">&#39;&#39;&#39;</span>
+<span class="n">script_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s">&#39;wt&#39;</span><span class="p">)</span>
 <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 <span class="n">script_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-<span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;sh&#39;</span><span class="p">,</span> <span class="n">script_file</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">close_fds</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="k">print</span> <span class="s1">&#39;PARENT      : Pausing before sending signal to child </span><span class="si">%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
+<span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&#39;sh&#39;</span><span class="p">,</span> <span class="n">script_file</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">close_fds</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;PARENT      : Pausing before sending signal to child </span><span class="si">%s</span><span class="s">...&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">print</span> <span class="s1">&#39;PARENT      : Signaling child </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
+<span class="k">print</span> <span class="s">&#39;PARENT      : Signaling child </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">)</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -457,30 +457,30 @@ else
 
 
 <p>但是对于子进程又创建的孙子进程，孙子进程是无法接受到信号的，必须通过进程组合回话来控制！ 也就是必须让孙子进程在子进程的回话组中！ 才能够接受到父进程发送的信号！ os.killpg()</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="n">script</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;#!/bin/sh</span>
-<span class="s1">echo &quot;Shell script in process $$&quot;</span>
-<span class="s1">set -x</span>
-<span class="s1">python signal_child.py</span>
-<span class="s1">&#39;&#39;&#39;</span>
-<span class="n">script_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;#!/bin/sh</span>
+<span class="s">echo &quot;Shell script in process $$&quot;</span>
+<span class="s">set -x</span>
+<span class="s">python signal_child.py</span>
+<span class="s">&#39;&#39;&#39;</span>
+<span class="n">script_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s">&#39;wt&#39;</span><span class="p">)</span>
 <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 <span class="n">script_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-<span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;sh&#39;</span><span class="p">,</span> <span class="n">script_file</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> 
+<span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&#39;sh&#39;</span><span class="p">,</span> <span class="n">script_file</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> 
                         <span class="n">close_fds</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                         <span class="n">preexec_fn</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">,</span>
                         <span class="p">)</span>
-<span class="k">print</span> <span class="s1">&#39;PARENT      : Pausing before sending signal to child </span><span class="si">%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
+<span class="k">print</span> <span class="s">&#39;PARENT      : Pausing before sending signal to child </span><span class="si">%s</span><span class="s">...&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">print</span> <span class="s1">&#39;PARENT      : Signaling process group </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
+<span class="k">print</span> <span class="s">&#39;PARENT      : Signaling process group </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">proc</span><span class="o">.</span><span class="n">pid</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">)</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -488,14 +488,14 @@ else
 
 
 <p>The sequence of events is:</p>
-<p>The parent program instantiates Popen.<br />
-The Popen instance forks a new process.<br />
-The new process runs os.setsid().<br />
-The new process runs exec() to start the shell.<br />
-The shell runs the shell script.<br />
-The shell script forks again and that process execs Python.<br />
-Python runs signal_child.py.<br />
-The parent program signals the process group using the pid of the shell.<br />
+<p>The parent program instantiates Popen.
+The Popen instance forks a new process.
+The new process runs os.setsid().
+The new process runs exec() to start the shell.
+The shell runs the shell script.
+The shell script forks again and that process execs Python.
+Python runs signal_child.py.
+The parent program signals the process group using the pid of the shell.
 The shell and Python processes receive the signal. The shell ignores it. Python invokes the signal handler.</p>
 <p>subprocess模块的缺陷在于默认提供的父子进程间通信手段有限，只有管道；同时创建的子进程专门用来执行外部的程序或命令。</p>
 <h2 id="_3">参考</h2>
@@ -507,7 +507,7 @@ The shell and Python processes receive the signal. The shell ignores it. Python 
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

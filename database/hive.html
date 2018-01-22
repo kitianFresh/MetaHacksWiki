@@ -28,7 +28,7 @@
   <h1 id="hive">Hive 排序</h1>
 <h2 id="sort-by">sort by</h2>
 <p>局部排序，每一个 reducer 结果之内是有序的, 但是多个 reducer 之间是无序的；</p>
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="n">sort</span> <span class="k">by</span> <span class="n">salary</span><span class="p">;</span>
@@ -47,7 +47,7 @@
 
 <h2 id="order-by">order by</h2>
 <p>全局排序，每一个 reducer 结果之内是有序的额, reducer 与 reducer 之间是有序的，结果可以直接拼接在一起构成全序；</p>
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="k">order</span> <span class="k">by</span> <span class="n">salary</span><span class="p">;</span> 
@@ -66,7 +66,7 @@
 
 <h2 id="distribute-by">distribute by</h2>
 <p>组间排序，每一个 reducer 结果之内无序， reducer 与 reducer 之间有序；</p>
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="n">distribute</span> <span class="k">by</span> <span class="n">id</span><span class="p">;</span>
@@ -84,7 +84,7 @@
 
 
 <h2 id="distribute-by-sort-by">distribute by &amp; sort by</h2>
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="n">distribute</span> <span class="k">by</span> <span class="n">id</span> <span class="n">sort</span> <span class="k">by</span> <span class="n">salary</span><span class="p">;</span>
@@ -103,7 +103,7 @@
 
 <h2 id="cluster-by">cluster by</h2>
 <p>只针对某个列的 distribute by col + sort by col;</p>
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="n">distribute</span> <span class="k">by</span> <span class="n">id</span> <span class="n">sort</span> <span class="k">by</span> <span class="n">id</span><span class="p">;</span>
@@ -120,7 +120,7 @@
 </pre></div>
 
 
-<div class="hlcode"><pre><span></span><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
+<div class="hlcode"><pre><span class="o">#</span><span class="k">set</span> <span class="n">the</span> <span class="nb">number</span> <span class="k">of</span> <span class="n">reducers</span> <span class="k">to</span> <span class="mi">2</span>
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">set</span> <span class="n">mapred</span><span class="p">.</span><span class="n">reduce</span><span class="p">.</span><span class="n">tasks</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
 
 <span class="mi">0</span><span class="p">:</span> <span class="n">jdbc</span><span class="p">:</span><span class="n">hive2</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">10000</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">employee</span> <span class="k">cluster</span> <span class="k">by</span> <span class="n">id</span><span class="p">;</span>
@@ -139,22 +139,25 @@
 
 <h2 id="map-reduce">上述四种排序对应的 map reduce 实现方式</h2>
 <h3 id="sort-by_1">sort by</h3>
-<p>mapreduce 实现局部排序<br />
---------------------Map Phase---------------------------------|------------------------------Reduce Phase----------------------<br />
-(map    -&gt;    partition    -&gt;    sort    -&gt;  |-----------|)   -&gt;    (shuffle    -&gt;    merge sort    -&gt;    group    -&gt;    reduce)<br />
- |              |                |           |split merge|                              |                  |               |<br />
- |              |                |           |sort       |                              |                  |               |<br />
-map()       Partitioner     SortComparator                                         SortComparator    GroupComparator    reduce()</p>
+<p>mapreduce 实现局部排序</p>
+<div class="hlcode"><pre><span class="o">--------------------</span><span class="n">Map</span> <span class="n">Phase</span><span class="o">---------------------------------|------------------------------</span><span class="n">Reduce</span> <span class="n">Phase</span><span class="o">----------------------</span>
+<span class="p">(</span><span class="nb">map</span>    <span class="o">-&gt;</span>    <span class="n">partition</span>    <span class="o">-&gt;</span>    <span class="n">sort</span>    <span class="o">-&gt;</span>  <span class="o">|-----------|</span><span class="p">)</span>   <span class="o">-&gt;</span>    <span class="p">(</span><span class="n">shuffle</span>    <span class="o">-&gt;</span>    <span class="n">merge</span> <span class="n">sort</span>    <span class="o">-&gt;</span>    <span class="n">group</span>    <span class="o">-&gt;</span>    <span class="nb">reduce</span><span class="p">)</span>
+ <span class="o">|</span>              <span class="o">|</span>                <span class="o">|</span>           <span class="o">|</span><span class="n">split</span> <span class="n">merge</span><span class="o">|</span>                              <span class="o">|</span>                  <span class="o">|</span>               <span class="o">|</span>
+ <span class="o">|</span>              <span class="o">|</span>                <span class="o">|</span>           <span class="o">|</span><span class="n">sort</span>       <span class="o">|</span>                              <span class="o">|</span>                  <span class="o">|</span>               <span class="o">|</span>
+<span class="nb">map</span><span class="p">()</span>       <span class="n">Partitioner</span>     <span class="n">SortComparator</span>                                         <span class="n">SortComparator</span>    <span class="n">GroupComparator</span>    <span class="nb">reduce</span><span class="p">()</span>
+</pre></div>
+
+
 <p>其实 MapReduce 本身就已经是默认局部排序了， 只要实现自己的 key 的 Partitioner SortComparator 和 GroupComparator 即可自动 reduce 内部排序</p>
 <h3 id="order-by_1">order by</h3>
 <p>mapreduce 实现全序排序</p>
 <p>第一种方法是在正常的排序完成之后, 对第一阶段每一个 reducer 结果再次构造 MapReduce，但是该阶段只设置 一个 reducer， 那最后合并到一个reducer文件即可，但是当数量量很大，这个会导致某个reducer 压力很大；</p>
 <p>第二种方法就是，在操作partition 的时候， 让 reducer 组间 有序， 即 根据需要改写 Partitioner， 根据 key 范围进行划分不同的 reducer，保证 reducer 之间有序； 这个可以自己实现，但是hadoop 已经提供了一个 TotalOrderPartitioner 了， 采用 trie 树 采样达到负载均衡；</p>
 <h3 id="distribute-by_1">distribute by</h3>
-<p>MapReduce 实现组间排序<br />
+<p>MapReduce 实现组间排序
 只需要实现自定义的 Partitioner 即可实现组间排序；</p>
 <h3 id="cluster-by_1">cluster by</h3>
-<p>MapReduce 实现 聚集排序<br />
+<p>MapReduce 实现 聚集排序
 同时实现自定义 Partitioner SortComparator GroupComparator 即可；</p>
 <h3 id="secondary-sort">secondary sort</h3>
 <p>MapReduce 多级排序实现；</p>
@@ -164,7 +167,7 @@ map()       Partitioner     SortComparator                                      
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

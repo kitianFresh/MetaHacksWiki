@@ -26,10 +26,10 @@
 <div class="page_title">mysql</div>
 
   <h1 id="centosmysql">在centos上安装MySQL</h1>
-<div class="hlcode"><pre><span></span>sudo yum install Percona-Server-server-55.x86_64
-sudo service mysql start
-sudo chkconfig --level 2345 mysql on
-mysql_secure_installation
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">Percona</span><span class="o">-</span><span class="n">Server</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mf">55.</span><span class="n">x86_64</span>
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">start</span>
+<span class="n">sudo</span> <span class="n">chkconfig</span> <span class="o">--</span><span class="n">level</span> <span class="mi">2345</span> <span class="n">mysql</span> <span class="n">on</span>
+<span class="n">mysql_secure_installation</span>
 </pre></div>
 
 
@@ -48,14 +48,14 @@ mysql_secure_installation
 <p>重置密码</p>
 </li>
 </ol>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">mysql</span><span class="p">;</span>  
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">mysql</span><span class="p">;</span>  
 <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">update</span> <span class="k">user</span> <span class="k">set</span> <span class="n">password</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;mynewpassword&quot;</span><span class="p">)</span> <span class="k">where</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>  
 <span class="n">mysql</span><span class="o">&gt;</span> <span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span> 
 </pre></div>
 
 
 <p>如果 update 不成功，比如报错说没有 password 字段，看看自己的MYSQL版本，新版本 5.7 密码字段叫 <code>authentication_string</code></p>
-<div class="hlcode"><pre><span></span><span class="k">UPDATE</span> <span class="k">user</span> <span class="k">SET</span> <span class="n">authentication_string</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;NEWPASSWORD&quot;</span><span class="p">)</span> <span class="k">WHERE</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">UPDATE</span> <span class="k">user</span> <span class="k">SET</span> <span class="n">authentication_string</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;NEWPASSWORD&quot;</span><span class="p">)</span> <span class="k">WHERE</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>
 </pre></div>
 
 
@@ -67,19 +67,19 @@ mysql_secure_installation
 <p>苹果上重启后可能还遇到问题<code>ERROR 1820 (HY000): You must reset your password using ALTER USER statement before executing this statement.</code></p>
 </li>
 </ol>
-<div class="hlcode"><pre><span></span><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;YourNewPass&#39;</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;YourNewPass&#39;</span><span class="p">;</span>
 </pre></div>
 
 
 <h1 id="mysql">MYSQL 创建用户并授权</h1>
 <p>创建</p>
-<div class="hlcode"><pre><span></span><span class="k">insert</span> <span class="k">into</span> <span class="n">mysql</span><span class="p">.</span><span class="k">user</span><span class="p">(</span><span class="k">Host</span><span class="p">,</span><span class="k">User</span><span class="p">,</span><span class="n">Password</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="ss">&quot;localhost&quot;</span><span class="p">,</span><span class="ss">&quot;cron&quot;</span><span class="p">,</span><span class="n">password</span><span class="p">(</span><span class="ss">&quot;cron&quot;</span><span class="p">));</span>
+<div class="hlcode"><pre><span class="k">insert</span> <span class="k">into</span> <span class="n">mysql</span><span class="p">.</span><span class="k">user</span><span class="p">(</span><span class="k">Host</span><span class="p">,</span><span class="k">User</span><span class="p">,</span><span class="n">Password</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="ss">&quot;localhost&quot;</span><span class="p">,</span><span class="ss">&quot;cron&quot;</span><span class="p">,</span><span class="n">password</span><span class="p">(</span><span class="ss">&quot;cron&quot;</span><span class="p">));</span>
 <span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
 </pre></div>
 
 
 <p>授权</p>
-<div class="hlcode"><pre><span></span><span class="k">create</span> <span class="k">database</span> <span class="n">cron</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">create</span> <span class="k">database</span> <span class="n">cron</span><span class="p">;</span>
 <span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron&#39;</span><span class="p">;</span>
 <span class="o">#</span> <span class="k">grant</span> <span class="k">select</span><span class="p">,</span><span class="k">update</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="n">xxx</span><span class="p">,</span> <span class="n">cron</span><span class="p">.</span><span class="n">yyy</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron(password)&#39;</span><span class="p">;</span>
 <span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
@@ -88,11 +88,11 @@ mysql_secure_installation
 
 <h1 id="mysql_1">MySQL 表定义范例</h1>
 <p>用于爬取 <a href="http://www.icd10data.com/ICD10CM/Codes">icd10data</a> 中的数据，mysql 数据库模式如下：</p>
-<div class="hlcode"><pre><span></span><span class="k">drop</span> <span class="k">database</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 <span class="n">use</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 
-<span class="k">drop</span> <span class="k">table</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">Tbl_ICD10CM</span><span class="o">`</span><span class="p">;</span>
+<span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">Tbl_ICD10CM</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">Tbl_ICD10CM</span><span class="o">`</span> <span class="p">(</span>
     <span class="o">`</span><span class="n">ClinicalId</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span> <span class="n">auto_increment</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
     <span class="o">`</span><span class="n">DiagnosisCode</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span> <span class="k">default</span> <span class="s1">&#39;00&#39;</span> <span class="k">comment</span> <span class="s1">&#39;疾病诊断码&#39;</span><span class="p">,</span>
@@ -107,37 +107,37 @@ mysql_secure_installation
 
 <h1 id="mysql_2">mysql 数据库备份</h1>
 <p>备份整个数据库</p>
-<div class="hlcode"><pre><span></span><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
 </pre></div>
 
 
 <p>备份数据库中的某些表</p>
-<div class="hlcode"><pre><span></span><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename1</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dumps</span><span class="p">.</span><span class="k">sql</span>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename1</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dumps</span><span class="p">.</span><span class="k">sql</span>
 </pre></div>
 
 
 <p>恢复数据库</p>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
+<div class="hlcode"><pre><span class="n">mysql</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
 </pre></div>
 
 
 <p>另一种备份方式是数据库元数据和数据表分开在不同的文件中</p>
-<div class="hlcode"><pre><span></span><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">T</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="n">directory</span> <span class="p">[</span><span class="k">database</span><span class="p">]</span> <span class="c1">--fields-enclosed-by=\&quot; --fields-terminated-by=,</span>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">T</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="n">directory</span> <span class="p">[</span><span class="k">database</span><span class="p">]</span> <span class="c1">--fields-enclosed-by=\&quot; --fields-terminated-by=,</span>
 </pre></div>
 
 
 <p>只获取数据库元数据备份或者表元数据备份</p>
-<div class="hlcode"><pre><span></span><span class="n">mysqldump</span> <span class="c1">--no-data -u someuser -p mydatabase</span>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="c1">--no-data -u someuser -p mydatabase</span>
 <span class="n">mysqldump</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">u</span> <span class="n">someuser</span> <span class="o">-</span><span class="n">p</span> <span class="n">mydatabase</span> <span class="n">table1</span> <span class="n">table2</span> <span class="n">table3</span>
 </pre></div>
 
 
 <h1 id="mysql-csv">导出 Mysql 数据 到 csv</h1>
-<p>导出到csv时，需要注意分隔符和转义字符的问题；<br />
- - Excel saves \r\n for line separators.<br />
- - Excel saves \n for newline characters within column data<br />
+<p>导出到csv时，需要注意分隔符和转义字符的问题；
+ - Excel saves \r\n for line separators.
+ - Excel saves \n for newline characters within column data
  - Have to replace \r\n inside your data first otherwise Excel will think its a start of the next line.</p>
-<div class="hlcode"><pre><span></span><span class="n">USE</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="n">USE</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 <span class="k">SELECT</span>
 <span class="n">DiagnosisCode</span><span class="p">,</span>
 <span class="k">REPLACE</span><span class="p">(</span> <span class="n">IFNULL</span><span class="p">(</span><span class="n">ClinicalInfo</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="s1">&#39;\r\n&#39;</span> <span class="p">,</span> <span class="s1">&#39;\n&#39;</span> <span class="p">)</span> <span class="k">AS</span> <span class="n">ClinicalInfo</span>
@@ -149,17 +149,17 @@ mysql_secure_installation
 
 
 <p>出错</p>
-<div class="hlcode"><pre><span></span><span class="n">The</span> <span class="n">MySQL</span> <span class="n">server</span> <span class="k">is</span> <span class="n">running</span> <span class="k">with</span> <span class="n">the</span> <span class="c1">--secure-file-priv option so it cannot execute this statement</span>
+<div class="hlcode"><pre><span class="n">The</span> <span class="n">MySQL</span> <span class="n">server</span> <span class="k">is</span> <span class="n">running</span> <span class="k">with</span> <span class="n">the</span> <span class="c1">--secure-file-priv option so it cannot execute this statement</span>
 </pre></div>
 
 
 <p>解决办法是Mysql默认有保护措施，只能输出文件到特定目录，通过一下命令查看目录</p>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">@@</span><span class="k">global</span><span class="p">.</span><span class="n">secure_file_priv</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">@@</span><span class="k">global</span><span class="p">.</span><span class="n">secure_file_priv</span><span class="p">;</span>
 </pre></div>
 
 
 <h1 id="mysql_3">mysql 查看索引</h1>
-<div class="hlcode"><pre><span></span><span class="k">show</span> <span class="k">index</span> <span class="k">from</span> <span class="k">table_name</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">show</span> <span class="k">index</span> <span class="k">from</span> <span class="k">table_name</span><span class="p">;</span>
 
 <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">disks_tbl</span> <span class="k">ADD</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_backup</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="s1">&#39;ascii&#39;</span><span class="p">;</span>
 <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">DROP</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_take</span><span class="o">`</span><span class="p">;</span>
@@ -190,17 +190,17 @@ mysql_secure_installation
 
 
 <h1 id="mysql-sql">mysql sql语句结果导出</h1>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span> <span class="o">-</span><span class="n">uroot</span> <span class="o">-</span><span class="n">p1234</span> <span class="o">-</span><span class="n">Ne</span> <span class="ss">&quot;use cron; select id from cron_jobs_tbl;&quot;</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">jobs</span><span class="p">.</span><span class="n">txt</span>
+<div class="hlcode"><pre><span class="n">mysql</span> <span class="o">-</span><span class="n">uroot</span> <span class="o">-</span><span class="n">p1234</span> <span class="o">-</span><span class="n">Ne</span> <span class="ss">&quot;use cron; select id from cron_jobs_tbl;&quot;</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">jobs</span><span class="p">.</span><span class="n">txt</span>
 <span class="k">insert</span> <span class="k">into</span> <span class="n">cron_logs_tbl</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">cron_job_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">,</span><span class="n">updated_at</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="n">uuid</span><span class="p">(),</span><span class="ss">&quot;001d4865-127c-45ba-90de-6c1f74e5a782&quot;</span><span class="p">,</span><span class="n">now</span><span class="p">(),</span><span class="n">now</span><span class="p">());</span>
 </pre></div>
 
 
 <h1 id="mysqlcase-study">MySQL大数据统计Case Study</h1>
-<div class="hlcode"><pre><span></span><span class="k">drop</span> <span class="k">database</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
 <span class="n">use</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
 
-<span class="k">drop</span> <span class="k">table</span> <span class="k">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span><span class="p">;</span>
+<span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span><span class="p">;</span>
 <span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span> <span class="p">(</span>
     <span class="o">`</span><span class="n">Id</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span> <span class="n">auto_increment</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
     <span class="o">`</span><span class="n">Name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
@@ -218,25 +218,25 @@ mysql_secure_installation
 
 <h1 id="sql-join">SQL JOIN</h1>
 <ul>
-<li>inner join<br />
+<li>inner join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>left join<br />
+<li>left join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>right join<br />
+<li>right join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>outer join<br />
+<li>outer join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>left join excluding inner join<br />
+<li>left join excluding inner join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL</code></li>
-<li>right join excluding inner join<br />
+<li>right join excluding inner join
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL</code></li>
-<li>outer join excluding inner join <br />
+<li>outer join excluding inner join 
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL</code></li>
 </ul>
-<p>以上在SQLAlchemy中的对应关系<br />
+<p>以上在SQLAlchemy中的对应关系
 - <a href="https://www.codeproject.com/Articles/33052/Visual-Representation-of-SQL-Joins">Visual Representation of SQL Joins</a></p>
 <h1 id="sql">SQL 执行顺序</h1>
-<div class="hlcode"><pre><span></span><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">column</span><span class="p">,</span> <span class="n">AGG_FUNC</span><span class="p">(</span><span class="n">column_or_expression</span><span class="p">),</span> <span class="err">…</span>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">column</span><span class="p">,</span> <span class="n">AGG_FUNC</span><span class="p">(</span><span class="n">column_or_expression</span><span class="p">),</span> <span class="err">…</span>
 <span class="k">FROM</span> <span class="n">mytable</span>
     <span class="k">JOIN</span> <span class="n">another_table</span>
       <span class="k">ON</span> <span class="n">mytable</span><span class="p">.</span><span class="k">column</span> <span class="o">=</span> <span class="n">another_table</span><span class="p">.</span><span class="k">column</span>
@@ -248,8 +248,8 @@ mysql_secure_installation
 </pre></div>
 
 
-<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，<br />
-FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET<br />
+<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，
+FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET
 - <a href="https://sqlbolt.com/lesson/select_queries_order_of_execution">Order of execution of a Query</a></p>
 <h2 id="mysql_4">MySQL 聚合函数</h2>
 <p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
@@ -262,7 +262,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 <li>STD()</li>
 <li>GROUP_CONCAT()</li>
 </ul>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
 
 <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
 
@@ -322,12 +322,12 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 </tbody>
 </table>
 <p><strong>众数Mode</strong>, 需要我们做更复杂的操作，寻找某一个组的众数．</p>
-<div class="hlcode"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span> <span class="k">WHERE</span> <span class="k">Count</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">MAX</span><span class="p">(</span><span class="k">Count</span><span class="p">)</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span><span class="p">);</span>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span> <span class="k">WHERE</span> <span class="k">Count</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">MAX</span><span class="p">(</span><span class="k">Count</span><span class="p">)</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span><span class="p">);</span>
 </pre></div>
 
 
 <p>聚合函数运用在一个集合数据上，因此对于查询出来的表或者分组都可用的，运用特别多的就是和　GROUP BY 一起使用．因为 GROUP BY 是无法打印出来每一个组的所有记录的！此时还有一个聚合函数　<code>GROUP_CONCAT()</code>;此函数可以将每一组的某个字段值连接成一个字符串字段；</p>
-<div class="hlcode"><pre><span></span><span class="n">GROUP_CONCAT</span><span class="p">([</span><span class="k">DISTINCT</span><span class="p">]</span> <span class="n">expr</span> <span class="p">[,</span><span class="n">expr</span> <span class="p">...]</span>
+<div class="hlcode"><pre><span class="n">GROUP_CONCAT</span><span class="p">([</span><span class="k">DISTINCT</span><span class="p">]</span> <span class="n">expr</span> <span class="p">[,</span><span class="n">expr</span> <span class="p">...]</span>
              <span class="p">[</span><span class="k">ORDER</span> <span class="k">BY</span> <span class="err">{</span><span class="n">unsigned_integer</span> <span class="o">|</span> <span class="n">col_name</span> <span class="o">|</span> <span class="n">expr</span><span class="err">}</span>
                  <span class="p">[</span><span class="k">ASC</span> <span class="o">|</span> <span class="k">DESC</span><span class="p">]</span> <span class="p">[,</span><span class="n">col_name</span> <span class="p">...]]</span>
              <span class="p">[</span><span class="n">SEPARATOR</span> <span class="n">str_val</span><span class="p">])</span>
@@ -335,7 +335,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 
 
 <p>例如，查询每一个班上所有同学的Id, 并按照年龄大小降序．</p>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">GROUP_CONCAT</span><span class="p">(</span><span class="n">Id</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">GROUP_CONCAT</span><span class="p">(</span><span class="n">Id</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
 <span class="o">+</span><span class="c1">-------+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="k">Class</span> <span class="o">|</span> <span class="n">GROUP_CONCAT</span><span class="p">(</span><span class="n">Id</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">)</span>                               <span class="o">|</span>
 <span class="o">+</span><span class="c1">-------+------------------------------------------------------------------+</span>
@@ -351,7 +351,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 
 <h2 id="top-n">统计分组排序后的 TOP N</h2>
 <h3 id="_1">使用相关子查询</h3>
-<div class="hlcode"><pre><span></span><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> 
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> 
 <span class="k">FROM</span> <span class="n">students</span> <span class="n">s</span> 
 <span class="k">WHERE</span>
   <span class="p">(</span>
@@ -395,7 +395,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 
 <p>以上查询的意思就是，对于 students 表中的每一个学生，看他是不是该组的 TOP 5, 其实就是看有多少个和 s.Class 相同的学生他的年龄比　s.Age 大，如果个数小于 N 个，　就表明这个学生是　TOP N 中的，　因为　TOP N 中的记录，比他还大的必定少于 N 个；　但是这个版本的缺陷可以从结果看出来，　他无法正确统计值相同的情况！</p>
 <h3 id="union">UNION 集合并</h3>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
     <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
     <span class="o">-&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
     <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
@@ -410,11 +410,11 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 
 <p>方法就是单独查询每一类别的TOP N, 然后使用　UNION　并集；</p>
 <h3 id="user-defined-varibles">User Defined Varibles</h3>
-<div class="hlcode"><pre><span></span><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span>
 <span class="k">FROM</span>
 <span class="p">(</span>
     <span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span>
-        <span class="o">@</span><span class="n">ClassRank</span> <span class="p">:</span><span class="o">=</span> <span class="k">IF</span><span class="p">(</span><span class="o">@</span><span class="n">CurrentClass</span> <span class="o">=</span> <span class="k">Class</span><span class="p">,</span> <span class="o">@</span><span class="n">ClassRank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">As</span> <span class="n">ClassRank</span><span class="p">,</span>
+        <span class="o">@</span><span class="n">ClassRank</span> <span class="p">:</span><span class="o">=</span> <span class="n">IF</span><span class="p">(</span><span class="o">@</span><span class="n">CurrentClass</span> <span class="o">=</span> <span class="k">Class</span><span class="p">,</span> <span class="o">@</span><span class="n">ClassRank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">As</span> <span class="n">ClassRank</span><span class="p">,</span>
         <span class="o">@</span><span class="n">CurrentClass</span> <span class="p">:</span><span class="o">=</span> <span class="k">Class</span>
     <span class="k">FROM</span> <span class="n">students</span>
     <span class="k">ORDER</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> <span class="k">DESC</span>
@@ -427,11 +427,11 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 <p>该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；</p>
 <h2 id="mysql-time">MYSQL time</h2>
 <p>unix 时间戳转换成时间</p>
-<div class="hlcode"><pre><span></span><span class="k">select</span> <span class="n">id</span><span class="p">,</span> <span class="n">from_unixtime</span><span class="p">(</span><span class="n">next_run_timestamp</span><span class="p">)</span> <span class="k">from</span> <span class="n">apscheduler_jobs_tbl</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">id</span><span class="p">,</span> <span class="n">from_unixtime</span><span class="p">(</span><span class="n">next_run_timestamp</span><span class="p">)</span> <span class="k">from</span> <span class="n">apscheduler_jobs_tbl</span><span class="p">;</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span></span><span class="k">select</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">snapshot_type</span><span class="p">,</span> <span class="n">expired_days</span><span class="p">,</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">utc_timestamp</span><span class="p">(),</span> <span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> 
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">snapshot_type</span><span class="p">,</span> <span class="n">expired_days</span><span class="p">,</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">utc_timestamp</span><span class="p">(),</span> <span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> 
 <span class="n">expired_days</span> <span class="k">day</span><span class="p">)</span> <span class="k">as</span> <span class="n">expire</span><span class="p">,</span> <span class="n">time_to_sec</span><span class="p">(</span><span class="n">timediff</span><span class="p">(</span><span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> <span class="n">expired_days</span> <span class="k">day</span><span class="p">),</span> <span class="n">utc_timestamp</span><span class="p">()))</span> <span class="k">as</span> <span class="n">lefted</span>  <span class="k">from</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">where</span> <span class="n">expired_days</span><span class="o">!=-</span><span class="mi">1</span> <span class="k">and</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;mebs_snapshot_ready&#39;</span> <span class="k">and</span> <span class="n">deleted</span><span class="o">=</span><span class="k">false</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lefted</span><span class="p">;</span>
 </pre></div>
 
@@ -440,7 +440,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 <h3 id="offset">offset 分页查询</h3>
 <p><code>limit offset, row_count</code>, <code>limit row_count</code> 等价于　<code>limit 0, row_count</code>; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　<code>limit</code>. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；</p>
 <p>以下语句按照时间顺序查询 第<code>21 ~ 30</code>条记录 即第三页，每页10条记录；</p>
-<div class="hlcode"><pre><span></span><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Registry</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">;</span>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Registry</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">;</span>
 <span class="o">+</span><span class="c1">----+--------------+-------+------+------+------+----------+---------+---------------------+</span>
 <span class="o">|</span> <span class="n">Id</span> <span class="o">|</span> <span class="n">Name</span>         <span class="o">|</span> <span class="k">Class</span> <span class="o">|</span> <span class="n">Age</span>  <span class="o">|</span> <span class="n">Sex</span>  <span class="o">|</span> <span class="n">Math</span> <span class="o">|</span> <span class="n">Computer</span> <span class="o">|</span> <span class="n">Physics</span> <span class="o">|</span> <span class="n">Registry</span>            <span class="o">|</span>
 <span class="o">+</span><span class="c1">----+--------------+-------+------+------+------+----------+---------+---------------------+</span>
@@ -483,7 +483,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 </li>
 </ul>
 <h2 id="mysql_6">MySQL列运算操作</h2>
-<div class="hlcode"><pre><span></span><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
+<div class="hlcode"><pre><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
 <span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
 </pre></div>
 
@@ -508,7 +508,7 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

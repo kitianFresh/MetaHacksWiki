@@ -26,59 +26,59 @@
 <div class="page_title">python-persistence</div>
 
   <h1 id="python-serialization">python serialization 序列化</h1>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
 
 <span class="k">def</span> <span class="nf">job</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s1">&#39;hehe&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;hehe&#39;</span>
 <span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">含有 __slots__ 的类对象将不再支持动态添加新成员，因为内存固定了。一般用于大规模少量属性的对象，可节省内存；</span>
 <span class="sd">不含__slots__ 的类对象其实是通过一次词典来维护对象内部成员的，因此更耗费内存。</span>
 <span class="sd">&#39;&#39;&#39;</span> 
 <span class="k">class</span> <span class="nc">Family</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="n">_resource_name_</span> <span class="o">=</span> <span class="s1">&#39;father&#39;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;father&#39;</span><span class="p">,</span> <span class="s1">&#39;var1&#39;</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">]</span> <span class="c1"># 必须与self 的成员变量个数保持一致</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">_resource_name_</span> <span class="o">=</span> <span class="s">&#39;father&#39;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;father&#39;</span><span class="p">,</span> <span class="s">&#39;var1&#39;</span><span class="p">,</span> <span class="s">&#39;func&#39;</span><span class="p">]</span> <span class="c"># 必须与self 的成员变量个数保持一致</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">father</span><span class="p">,</span> <span class="n">var1</span><span class="p">,</span> <span class="n">func</span>
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;father&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="s1">&#39;var1&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">var1</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;father&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="s">&#39;var1&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">var1</span><span class="p">,</span> <span class="s">&#39;func&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">}</span>
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">father</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;father&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;var1&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">father</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s">&#39;father&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s">&#39;var1&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">Country</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;father&#39;</span><span class="p">,</span> <span class="s1">&#39;var1&#39;</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">]</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;father&#39;</span><span class="p">,</span> <span class="s">&#39;var1&#39;</span><span class="p">,</span> <span class="s">&#39;func&#39;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">father</span><span class="p">,</span> <span class="n">var1</span><span class="p">,</span> <span class="n">func</span>
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span> <span class="n">slot</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">)</span> <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">Country</span><span class="o">.</span><span class="vm">__slots__</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">slot</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">)</span> <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">Country</span><span class="o">.</span><span class="n">__slots__</span><span class="p">}</span>
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="n">slot</span><span class="p">])</span>
 
-<span class="n">foo</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="s1">&#39;father&#39;</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="s">&#39;father&#39;</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">foo</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">foo_pickled</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">foo</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">())</span>
 <span class="n">foo2</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">foo_pickled</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">foo2</span><span class="p">))</span>
-<span class="c1"># print(foo2.var1) # AttributeError: &#39;dict&#39; object has no attribute &#39;var1&#39;</span>
-<span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Family</span><span class="p">)</span>
+<span class="c"># print(foo2.var1) # AttributeError: &#39;dict&#39; object has no attribute &#39;var1&#39;</span>
+<span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">Family</span><span class="p">)</span>
 <span class="n">family</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">foo2</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="n">foo2</span><span class="p">[</span><span class="s1">&#39;var1&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">foo2</span><span class="p">[</span><span class="s">&#39;var1&#39;</span><span class="p">])</span>
 <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">family</span><span class="p">))</span>
 <span class="k">print</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">var1</span><span class="p">)</span>
 <span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
 
-<span class="n">coo</span> <span class="o">=</span> <span class="n">Country</span><span class="p">(</span><span class="s1">&#39;father&#39;</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">coo</span> <span class="o">=</span> <span class="n">Country</span><span class="p">(</span><span class="s">&#39;father&#39;</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">coo</span><span class="p">))</span>
-<span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">father</span> <span class="o">==</span> <span class="s1">&#39;father&#39;</span>
+<span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">father</span> <span class="o">==</span> <span class="s">&#39;father&#39;</span>
 <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">func</span> <span class="o">==</span> <span class="n">job</span>
 <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">var1</span> <span class="o">==</span> <span class="mi">2</span>
 
 <span class="k">class</span> <span class="nc">T</span><span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">T</span><span class="p">()</span>
@@ -88,42 +88,42 @@
 <span class="n">tt</span><span class="o">.</span><span class="n">job</span> <span class="o">=</span> <span class="n">job</span>
 <span class="k">print</span> <span class="n">tt</span><span class="o">.</span><span class="n">var2</span>
 <span class="n">tt</span><span class="o">.</span><span class="n">job</span><span class="p">()</span>
-<span class="n">family</span><span class="o">.</span><span class="n">mother</span> <span class="o">=</span> <span class="s1">&#39;mother&#39;</span>
+<span class="n">family</span><span class="o">.</span><span class="n">mother</span> <span class="o">=</span> <span class="s">&#39;mother&#39;</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
 
 <span class="k">class</span> <span class="nc">Father</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s1">&#39;Father was called by </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;Father was called by </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">Family</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;father&#39;</span><span class="p">,</span> <span class="s1">&#39;var1&#39;</span><span class="p">]</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;father&#39;</span><span class="p">,</span> <span class="s">&#39;var1&#39;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">father</span><span class="p">,</span> <span class="n">var1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="n">father</span><span class="p">,</span> <span class="n">var1</span>
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var1</span>
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">father</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="n">state</span>
 
-<span class="n">father</span> <span class="o">=</span> <span class="n">Father</span><span class="p">(</span><span class="s1">&#39;tian&#39;</span><span class="p">)</span>
+<span class="n">father</span> <span class="o">=</span> <span class="n">Father</span><span class="p">(</span><span class="s">&#39;tian&#39;</span><span class="p">)</span>
 <span class="n">foo</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="n">father</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">foo</span><span class="o">.</span><span class="n">var1</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">foo_pickled</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
 <span class="n">foo2</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">foo_pickled</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">foo2</span><span class="p">))</span>
-<span class="c1"># &lt;__main__.Family object at 0xb77037ec&gt;</span>
+<span class="c"># &lt;__main__.Family object at 0xb77037ec&gt;</span>
 <span class="k">print</span> <span class="n">foo2</span><span class="o">.</span><span class="n">father</span>
 <span class="k">print</span><span class="p">(</span><span class="n">foo2</span><span class="o">.</span><span class="n">var1</span><span class="p">)</span>
-<span class="c1"># 2</span>
+<span class="c"># 2</span>
 <span class="nb">dir</span><span class="p">(</span><span class="n">Family</span><span class="p">)</span>
 
-<span class="n">Family</span><span class="o">.</span><span class="vm">__dict__</span>
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Family</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="n">Family</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Family</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">print</span> <span class="n">key</span>
 </pre></div>
 
@@ -134,7 +134,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

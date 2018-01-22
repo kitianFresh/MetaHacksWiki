@@ -33,10 +33,10 @@
 <p>当进程正在执行 IO 操作的时候，因为一个信号，可能会在信号处理器函数 handler 返回之后抛出IO异常。</p>
 <p>python 中 SIGPIPE 信号默认被忽略（因此在 pipes 和 sockets 上的写错误会被当成异常处理，SIGINT 默认被转换成 KeyboardInterrupt 异常。</p>
 <p>signal.signal() 函数只能在主线程中使用，即只有主线程可以注册信号处理函数； 任何一个线程都可以使用 alarm(), getsignal(), pause(), setitimer(), getitimer(). 只有主线程可以接受信号，这就是为什么线程通讯不适合用signal。</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">signal</span>
 
 <span class="k">def</span> <span class="nf">get_trap_signums</span><span class="p">():</span>
-    <span class="n">signal_list</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SIGHUP&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGINT&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGQUIT&#39;</span><span class="p">,</span> <span class="s1">&#39;SIGTERM&#39;</span><span class="p">)</span>
+    <span class="n">signal_list</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;SIGHUP&#39;</span><span class="p">,</span> <span class="s">&#39;SIGINT&#39;</span><span class="p">,</span> <span class="s">&#39;SIGQUIT&#39;</span><span class="p">,</span> <span class="s">&#39;SIGTERM&#39;</span><span class="p">)</span>
     <span class="n">signum_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">signal_name</span> <span class="ow">in</span> <span class="n">signal_list</span><span class="p">:</span>
         <span class="n">signum_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">))</span>
@@ -56,28 +56,28 @@
 <h3 id="setitimerwhich-secondsinterval">setitimer(which, seconds[,interval])</h3>
 <h3 id="alarmtime">alarm(time)信号发送</h3>
 <p>打开文件设备无穷等待时候，使用alarm() 函数可以设置打开超时，抛出异常。</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span><span class="o">,</span> <span class="nn">os</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">signal</span><span class="o">,</span> <span class="nn">os</span>
 
 <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s1">&#39;Signal handler called with signal&#39;</span><span class="p">,</span> <span class="n">signum</span>
-    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t open device!&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Signal handler called with signal&#39;</span><span class="p">,</span> <span class="n">signum</span>
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Couldn&#39;t open device!&quot;</span><span class="p">)</span>
 
-<span class="c1"># Set the signal handler and a 5-second alarm</span>
+<span class="c"># Set the signal handler and a 5-second alarm</span>
 <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
 <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="c1"># This open() may hang indefinitely</span>
-<span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/dev/ttyS0&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDWR</span><span class="p">)</span>
+<span class="c"># This open() may hang indefinitely</span>
+<span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;/dev/ttyS0&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDWR</span><span class="p">)</span>
 
-<span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>          <span class="c1"># Disable the alarm</span>
+<span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>          <span class="c"># Disable the alarm</span>
 </pre></div>
 
 
-<p>prefork 模式，通过信号管理从进程，<a href="http://orangleliu.info/2016/03/06/python-pre-fork-mode-use/">Python中prefork模式的简单实现<br />
+<p>prefork 模式，通过信号管理从进程，<a href="http://orangleliu.info/2016/03/06/python-pre-fork-mode-use/">Python中prefork模式的简单实现
 </a></p>
-<div class="hlcode"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#master-slaves.py  python2.7.x</span>
-<span class="c1">#orangleliu@gmail.com</span>
+<div class="hlcode"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#master-slaves.py  python2.7.x</span>
+<span class="c">#orangleliu@gmail.com</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">简单的模拟pre-fork模式，master进程控制多个子进程</span>
 
@@ -108,20 +108,20 @@
 
     <span class="n">WORKERS</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">SIG_QUEUE</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">SIGNALS</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="s2">&quot;SIG</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="s2">&quot;INT TTIN TTOU&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+    <span class="n">SIGNALS</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="s">&quot;SIG</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="s">&quot;INT TTIN TTOU&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
     <span class="n">SIG_NAMES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SIG&quot;</span> <span class="ow">and</span> <span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;_&quot;</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;SIG&quot;</span> <span class="ow">and</span> <span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;_&quot;</span>
     <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker_nums</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker_nums</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worker_nums</span> <span class="o">=</span> <span class="n">worker_nums</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">master_name</span> <span class="o">=</span> <span class="s2">&quot;Master&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master_name</span> <span class="o">=</span> <span class="s">&quot;Master&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reexec_pid</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s2">&quot;start master&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;start master&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_signals</span><span class="p">()</span>
@@ -143,8 +143,8 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manage_workers</span><span class="p">()</span>
             <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-                <span class="c1"># 如果不增加sleep 整个master进程就会进入几乎100 cpu的状态</span>
-                <span class="c1"># 使用sleep的好处就是master的cpu消耗小很多，对于来自系统的给master的信号可以即使反馈</span>
+                <span class="c"># 如果不增加sleep 整个master进程就会进入几乎100 cpu的状态</span>
+                <span class="c"># 使用sleep的好处就是master的cpu消耗小很多，对于来自系统的给master的信号可以即使反馈</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
                 <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIG_QUEUE</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SIG_QUEUE</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span>
@@ -153,13 +153,13 @@
                     <span class="k">continue</span>
 
                 <span class="k">if</span> <span class="n">sig</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIG_NAMES</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="s2">&quot;unknow signals:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">sig</span>
+                    <span class="k">print</span> <span class="s">&quot;unknow signals:</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">sig</span>
                     <span class="k">continue</span>
 
                 <span class="n">signame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIG_NAMES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
-                <span class="n">handler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;handle_</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">signame</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="n">handler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;handle_</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">signame</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">handler</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="s2">&quot;Unhandler signal: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">signame</span>
+                    <span class="k">print</span> <span class="s">&quot;Unhandler signal: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">signame</span>
                     <span class="k">continue</span>
 
                 <span class="n">handler</span><span class="p">()</span>
@@ -191,7 +191,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        增加一个子进程</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">print</span> <span class="s2">&quot;add a worker&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;add a worker&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worker_nums</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manage_workers</span><span class="p">()</span>
 
@@ -199,7 +199,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        减少一个子进程</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">print</span> <span class="s2">&quot;deincrease a worker&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;deincrease a worker&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_nums</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worker_nums</span> <span class="o">-=</span> <span class="mi">1</span>
@@ -209,7 +209,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        停止子进程 这里都当做SIGTERM来处理</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">print</span> <span class="s1">&#39;stop workers&#39;</span>
+        <span class="k">print</span> <span class="s">&#39;stop workers&#39;</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kill_workers</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kill_workers</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
@@ -218,7 +218,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        master 进程自杀</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">print</span> <span class="s2">&quot;master exit&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;master exit&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">exit_status</span><span class="p">)</span>
 
@@ -229,9 +229,9 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-                <span class="c1">#os.waitpid 收集僵尸子进程的信息,并把它彻底销毁后返回</span>
-                <span class="c1">#这里的 -1 代表所有子进程</span>
-                <span class="c1">#os.WNOHANG 如果没有子进程信息就立刻返回</span>
+                <span class="c">#os.waitpid 收集僵尸子进程的信息,并把它彻底销毁后返回</span>
+                <span class="c">#这里的 -1 代表所有子进程</span>
+                <span class="c">#os.WNOHANG 如果没有子进程信息就立刻返回</span>
                 <span class="n">wpid</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">waitpid</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">WNOHANG</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">wpid</span><span class="p">:</span>
                     <span class="k">break</span>
@@ -241,7 +241,7 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">worker</span><span class="p">:</span>
                         <span class="k">continue</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1">#errno.ECHILD 是没有子进程错误</span>
+            <span class="c">#errno.ECHILD 是没有子进程错误</span>
             <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">error</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">ECHILD</span><span class="p">:</span>
                 <span class="k">raise</span>
 
@@ -262,12 +262,12 @@
         <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">()</span>
         <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span>
 
-        <span class="c1">#master进程处理</span>
+        <span class="c">#master进程处理</span>
         <span class="k">if</span> <span class="n">pid</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">WORKERS</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">worker</span>
             <span class="k">return</span> <span class="n">pid</span>
 
-        <span class="c1">#worker进程处理</span>
+        <span class="c">#worker进程处理</span>
         <span class="n">worker_pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -275,13 +275,13 @@
         <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
             <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s2">&quot;work error </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;work error </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">spawn_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worker_nums</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">WORKERS</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spawn_worker</span><span class="p">()</span>
-            <span class="c1">#为什么要那么端时间的休眠</span>
+            <span class="c">#为什么要那么端时间的休眠</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">kill_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
@@ -293,10 +293,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s2">&quot;kill worker error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;kill worker error: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">Master</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 
@@ -309,7 +309,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

@@ -31,28 +31,28 @@
 <p>查看status文件; <code>cat /proc/[pid]/status</code>;</p>
 <h3 id="pstree">pstree</h3>
 <p><code>pstree -p 7604</code></p>
-<div class="hlcode"><pre><span></span>java(7604)─┬─{java}(7605)
-           ├─{java}(7606)
-           ├─{java}(7607)
-           ├─{java}(7608)
-           ├─{java}(7609)
-           ├─{java}(7610)
-           ├─{java}(7611)
-           ├─{java}(7612)
-           ├─{java}(7613)
-           ├─{java}(7614)
-           ├─{java}(7615)
-           ├─{java}(7616)
-           ├─{java}(7617)
-           ├─{java}(7618)
-           ├─{java}(7619)
-           ├─{java}(7620)
-           ├─{java}(7621)
-           ├─{java}(7622)
-           ├─{java}(7623)
-           ├─{java}(7624)
-           ├─{java}(7625)
-           └─{java}(7626)
+<div class="hlcode"><pre><span class="n">java</span><span class="p">(</span><span class="mi">7604</span><span class="p">)</span><span class="err">─┬─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7605</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7606</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7607</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7608</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7609</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7610</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7611</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7612</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7613</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7614</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7615</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7616</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7617</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7618</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7619</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7620</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7621</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7622</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7623</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7624</span><span class="p">)</span>
+           <span class="err">├─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7625</span><span class="p">)</span>
+           <span class="err">└─</span><span class="p">{</span><span class="n">java</span><span class="p">}(</span><span class="mi">7626</span><span class="p">)</span>
 </pre></div>
 
 
@@ -61,7 +61,7 @@
 <p><code>ps -eo ruser,pid,ppid,lwp,psr,args -L | grep java</code></p>
 <h2 id="java">Java 进程线程堆栈分析工具</h2>
 <h3 id="jps-jstack">jps &amp; jstack</h3>
-<p><code>jps</code> 一般可以直接用来获取 java 进程 id; 比如我运行了一个8线程的java程序;jps命令格式 <code>jps [ options ] [ hostid ]</code><br />
+<p><code>jps</code> 一般可以直接用来获取 java 进程 id; 比如我运行了一个8线程的java程序;jps命令格式 <code>jps [ options ] [ hostid ]</code>
 主选项:</p>
 <table>
 <thead>
@@ -89,21 +89,21 @@
 </tr>
 </tbody>
 </table>
-<div class="hlcode"><pre><span></span>6993 org.eclipse.equinox.launcher_1.3.200.v20160318-1642.jar
-7604 ThreadNums
-15721 Jps
-1372 Bootstrap
+<div class="hlcode"><pre><span class="mi">6993</span> <span class="n">org</span><span class="p">.</span><span class="n">eclipse</span><span class="p">.</span><span class="n">equinox</span><span class="p">.</span><span class="n">launcher_1</span><span class="mf">.3.200</span><span class="p">.</span><span class="n">v20160318</span><span class="o">-</span><span class="mf">1642.</span><span class="n">jar</span>
+<span class="mi">7604</span> <span class="n">ThreadNums</span>
+<span class="mi">15721</span> <span class="n">Jps</span>
+<span class="mi">1372</span> <span class="n">Bootstrap</span>
 </pre></div>
 
 
 <p>进程号是 7604;</p>
 <p>jstack（Stack Trace for Java）命令用于生成<strong>虚拟机当前时刻的线程快照。线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合，生成线程快照的目的主要是定位线程长时间出现停顿的原因，如线程间死锁、死循环、请求外部资源导致的长时间等待等都是导致线程长时间停顿的原因。线程出现停顿的时候通过jstack来查看各个线程的调用堆栈，就可以知道没有响应的线程到底在后台做些什么事情，或者在等待些什么资源。</strong></p>
 <p><code>sudo jstack [pid]</code> 查看 某个java进程的线程状态. 如果不反应, 使用强制参数 <code>sudo jstack -F [pid]</code>;可以直接查到各个线程的状态,运行到哪一句代码等.</p>
-<div class="hlcode"><pre><span></span><span class="n">Attaching</span> <span class="n">to</span> <span class="n">process</span> <span class="n">ID</span> <span class="mi">7604</span><span class="o">,</span> <span class="n">please</span> <span class="n">wait</span><span class="o">...</span>
+<div class="hlcode"><pre><span class="n">Attaching</span> <span class="n">to</span> <span class="n">process</span> <span class="n">ID</span> <span class="mi">7604</span><span class="o">,</span> <span class="n">please</span> <span class="n">wait</span><span class="o">...</span>
 <span class="n">Debugger</span> <span class="n">attached</span> <span class="n">successfully</span><span class="o">.</span>
 <span class="n">Server</span> <span class="n">compiler</span> <span class="n">detected</span><span class="o">.</span>
 <span class="n">JVM</span> <span class="n">version</span> <span class="n">is</span> <span class="mf">25.131</span><span class="o">-</span><span class="n">b11</span>
-<span class="n">Deadlock</span> <span class="n">Detection</span><span class="o">:</span>
+<span class="n">Deadlock</span> <span class="nl">Detection:</span>
 
 <span class="n">No</span> <span class="n">deadlocks</span> <span class="n">found</span><span class="o">.</span>
 
@@ -146,14 +146,14 @@
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">.</span><span class="na">wait</span><span class="o">(</span><span class="kt">long</span><span class="o">)</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">0</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">ReferenceQueue</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="kt">long</span><span class="o">)</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">59</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">143</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">ReferenceQueue</span><span class="o">.</span><span class="na">remove</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">164</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
- <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">Finalizer$FinalizerThread</span><span class="o">.</span><span class="na">run</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">36</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">209</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
+ <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">Finalizer</span><span class="n">$FinalizerThread</span><span class="o">.</span><span class="na">run</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">36</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">209</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
 
 
 <span class="n">Thread</span> <span class="mi">7611</span><span class="o">:</span> <span class="o">(</span><span class="n">state</span> <span class="o">=</span> <span class="n">BLOCKED</span><span class="o">)</span>
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">.</span><span class="na">wait</span><span class="o">(</span><span class="kt">long</span><span class="o">)</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">0</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">.</span><span class="na">wait</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">502</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
  <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">Reference</span><span class="o">.</span><span class="na">tryHandlePending</span><span class="o">(</span><span class="kt">boolean</span><span class="o">)</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">54</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">191</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
- <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">Reference$ReferenceHandler</span><span class="o">.</span><span class="na">run</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">1</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">153</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
+ <span class="o">-</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ref</span><span class="o">.</span><span class="na">Reference</span><span class="n">$ReferenceHandler</span><span class="o">.</span><span class="na">run</span><span class="o">()</span> <span class="nd">@bci</span><span class="o">=</span><span class="mi">1</span><span class="o">,</span> <span class="n">line</span><span class="o">=</span><span class="mi">153</span> <span class="o">(</span><span class="n">Interpreted</span> <span class="n">frame</span><span class="o">)</span>
 
 
 <span class="n">Thread</span> <span class="mi">7605</span><span class="o">:</span> <span class="o">(</span><span class="n">state</span> <span class="o">=</span> <span class="n">BLOCKED</span><span class="o">)</span>
@@ -176,12 +176,12 @@
 <p>由于进程退出之后并不是释放所有的资源,内核保留一定的信息,如果进程不调用wait / waitpid的话， 那么保留的那段信息就不会释放，其进程号就会一直被占用，但是系统所能使用的进程号是有限的，如果大量的产生僵死进程，将因为没有可用的进程号而导致系统不能产生新的进程. 此即为僵尸进程的危害，应当避免。</p>
 <h2 id="_2">查看僵尸进程个数</h2>
 <p>查看僵尸进程</p>
-<div class="hlcode"><pre><span></span>ps -ef | grep defunct | grep -v grep
+<div class="hlcode"><pre><span class="n">ps</span> <span class="o">-</span><span class="n">ef</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">defunct</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">grep</span>
 </pre></div>
 
 
 <p>统计僵尸个数</p>
-<div class="hlcode"><pre><span></span>ps -ef | grep defunct | grep -v grep | wc -l
+<div class="hlcode"><pre><span class="n">ps</span> <span class="o">-</span><span class="n">ef</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">defunct</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">grep</span> <span class="o">|</span> <span class="n">wc</span> <span class="o">-</span><span class="n">l</span>
 </pre></div>
 
 
@@ -189,11 +189,11 @@
 <p>僵尸进程很难用 kill 命令杀死.</p>
 <h3 id="1">1.利用信号通信机制</h3>
 <p>子进程退出时向父进程发送SIGCHILD信号，父进程处理SIGCHILD信号。在信号处理函数中调用wait进行处理僵尸进程。</p>
-<div class="hlcode"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp"></span>
+<div class="hlcode"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;unistd.h&gt;</span>
+<span class="cp">#include &lt;errno.h&gt;</span>
+<span class="cp">#include &lt;stdlib.h&gt;</span>
+<span class="cp">#include &lt;signal.h&gt;</span>
 
 <span class="k">static</span> <span class="kt">void</span> <span class="nf">sig_child</span><span class="p">(</span><span class="kt">int</span> <span class="n">signo</span><span class="p">);</span>
 
@@ -235,10 +235,10 @@
 
 <h2 id="2-fork">2. fork 两次</h2>
 <p>原理是将子进程成为孤儿进程，从而其的父进程变为init进程，通过init进程可以处理僵尸进程</p>
-<div class="hlcode"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp"></span>
+<div class="hlcode"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;stdlib.h&gt;</span>
+<span class="cp">#include &lt;unistd.h&gt;</span>
+<span class="cp">#include &lt;errno.h&gt;</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
@@ -288,7 +288,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

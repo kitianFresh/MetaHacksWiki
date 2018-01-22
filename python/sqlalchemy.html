@@ -26,17 +26,17 @@
 <div class="page_title">sqlalchemy</div>
 
   <h1 id="fast-way-to-use-sqlalchemy-to-count-rows-in-a-query-results">Fast way to use sqlalchemy to count rows in a query results</h1>
-<div class="hlcode"><pre><span></span><span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
     <span class="n">count_q</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">statement</span><span class="o">.</span><span class="n">with_only_columns</span><span class="p">([</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">()])</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
     <span class="n">count</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">count_q</span><span class="p">)</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">count</span>
 
 <span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TestModel</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
-<span class="c1"># Slow: SELECT COUNT(*) FROM (SELECT ... FROM TestModel WHERE ...) ...</span>
+<span class="c"># Slow: SELECT COUNT(*) FROM (SELECT ... FROM TestModel WHERE ...) ...</span>
 <span class="k">print</span> <span class="n">q</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 
-<span class="c1"># Fast: SELECT COUNT(*) FROM TestModel WHERE ...</span>
+<span class="c"># Fast: SELECT COUNT(*) FROM TestModel WHERE ...</span>
 <span class="k">print</span> <span class="n">get_count</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
 </pre></div>
     </div>
@@ -44,7 +44,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

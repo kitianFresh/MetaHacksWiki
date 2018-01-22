@@ -34,40 +34,40 @@
 <p>可以进入另一个ubuntu 账号， 从这个账号通过ssh登录到 Hadoop。 Hadoop和Ubuntu一样拥有多账户管理， 这就是为什么 安装Hadoop的时候默认要求设置ssh。</p>
 <p>例如， 我可以进入我的Ubuntu 的kinny 账户， 然后执行 <code>ssh hadoop@localhost</code> 进入本主机上的Hadoop账户(前提是 安装了 openssh-client 和 openssh-server, Ubuntu默认有客户端没有服务端。然后启动了ssh服务， 打开 20 端口。)， Hadoop账户拥有对Hadoop的管理权限， 实际上， Hadoop软件就安装在这同一台主机上， 不过你的 kinny账户没有对 Hadoop软件目录的管理权限而已。 但是你可以使用ssh 登录到 Hadoop账户即可。</p>
 <h2 id="hdfs">hdfs</h2>
-<div class="hlcode"><pre><span></span>./bin/hdfs dfs -mkdir -p /user/hadoop
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hdfs</span> <span class="n">dfs</span> <span class="o">-</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">hadoop</span>
 </pre></div>
 
 
 <p>接着将 <code>./etc/hadoop</code> 中的 xml 文件作为输入文件复制到分布式文件系统中，即将 <code>/usr/local/hadoop/etc/hadoop</code> 复制到分布式文件系统中的 <code>/user/hadoop/input</code> 中。我们使用的是 hadoop 用户，并且已创建相应的用户目录 <code>/user/hadoop</code> ，因此在命令中就可以使用相对路径如 input，其对应的绝对路径就是 <code>/user/hadoop/input</code>:</p>
-<div class="hlcode"><pre><span></span>./bin/hdfs dfs -mkdir input
-./bin/hdfs dfs -put ./etc/hadoop/*.xml input
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hdfs</span> <span class="n">dfs</span> <span class="o">-</span><span class="n">mkdir</span> <span class="n">input</span>
+<span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hdfs</span> <span class="n">dfs</span> <span class="o">-</span><span class="n">put</span> <span class="p">.</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hadoop</span><span class="o">/*</span><span class="p">.</span><span class="n">xml</span> <span class="n">input</span>
 </pre></div>
 
 
 <p>复制完成后，可以通过如下命令查看文件列表：</p>
-<div class="hlcode"><pre><span></span>./bin/hdfs dfs -ls input
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hdfs</span> <span class="n">dfs</span> <span class="o">-</span><span class="n">ls</span> <span class="n">input</span>
 </pre></div>
 
 
 <p>伪分布式运行 MapReduce 作业的方式跟单机模式相同，区别在于伪分布式读取的是HDFS中的文件（可以将单机步骤中创建的本地 input 文件夹，输出结果 output 文件夹都删掉来验证这一点）。</p>
-<div class="hlcode"><pre><span></span>./bin/hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar grep input output &#39;dfs[a-z.]+&#39;
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hadoop</span> <span class="n">jar</span> <span class="p">.</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">hadoop</span><span class="o">/</span><span class="n">mapreduce</span><span class="o">/</span><span class="n">hadoop</span><span class="o">-</span><span class="n">mapreduce</span><span class="o">-</span><span class="n">examples</span><span class="o">-*</span><span class="p">.</span><span class="n">jar</span> <span class="n">grep</span> <span class="n">input</span> <span class="n">output</span> <span class="err">&#39;</span><span class="n">dfs</span><span class="p">[</span><span class="n">a</span><span class="o">-</span><span class="n">z</span><span class="p">.]</span><span class="o">+</span><span class="err">&#39;</span>
 </pre></div>
 
 
 <p>查看运行结果的命令（查看的是位于 HDFS 中的输出结果）：</p>
-<div class="hlcode"><pre><span></span>./bin/hdfs dfs -cat output/*
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">hdfs</span> <span class="n">dfs</span> <span class="o">-</span><span class="n">cat</span> <span class="n">output</span><span class="o">/*</span>
 </pre></div>
 
 
 <h2 id="yarn">YARN</h2>
 <p>通过 <code>./sbin/start-dfs.sh</code> 启动 Hadoop，仅仅是启动了 MapReduce 环境，我们可以启动 YARN ，让 YARN 来负责资源管理与任务调度。</p>
 <p>首先修改配置文件 <code>mapred-site.xml</code>，这边需要先进行重命名：</p>
-<div class="hlcode"><pre><span></span>mv ./etc/hadoop/mapred-site.xml.template ./etc/hadoop/mapred-site.xml
+<div class="hlcode"><pre><span class="n">mv</span> <span class="p">.</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hadoop</span><span class="o">/</span><span class="n">mapred</span><span class="o">-</span><span class="n">site</span><span class="p">.</span><span class="n">xml</span><span class="p">.</span><span class="n">template</span> <span class="p">.</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hadoop</span><span class="o">/</span><span class="n">mapred</span><span class="o">-</span><span class="n">site</span><span class="p">.</span><span class="n">xml</span>
 </pre></div>
 
 
 <p>然后再进行编辑，同样使用 gedit 编辑会比较方便些 <code>gedit ./etc/hadoop/mapred-site.xml</code>：</p>
-<div class="hlcode"><pre><span></span><span class="nt">&lt;configuration&gt;</span>
+<div class="hlcode"><pre><span class="nt">&lt;configuration&gt;</span>
         <span class="nt">&lt;property&gt;</span>
              <span class="nt">&lt;name&gt;</span>mapreduce.framework.name<span class="nt">&lt;/name&gt;</span>
              <span class="nt">&lt;value&gt;</span>yarn<span class="nt">&lt;/value&gt;</span>
@@ -77,7 +77,7 @@
 
 
 <p>接着修改配置文件 <code>yarn-site.xml</code>：</p>
-<div class="hlcode"><pre><span></span><span class="nt">&lt;configuration&gt;</span>
+<div class="hlcode"><pre><span class="nt">&lt;configuration&gt;</span>
         <span class="nt">&lt;property&gt;</span>
              <span class="nt">&lt;name&gt;</span>yarn.nodemanager.aux-services<span class="nt">&lt;/name&gt;</span>
              <span class="nt">&lt;value&gt;</span>mapreduce_shuffle<span class="nt">&lt;/value&gt;</span>
@@ -87,17 +87,17 @@
 
 
 <p>然后就可以启动 YARN 了（需要先执行过 <code>./sbin/start-dfs.sh</code>）：</p>
-<div class="hlcode"><pre><span></span>./sbin/start-yarn.sh      # 启动YARN
-./sbin/mr-jobhistory-daemon.sh start historyserver  # 开启历史服务器，才能在Web中查看任务运行情况
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">start</span><span class="o">-</span><span class="n">yarn</span><span class="p">.</span><span class="n">sh</span>      <span class="err">#</span> <span class="err">启动</span><span class="n">YARN</span>
+<span class="p">.</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">mr</span><span class="o">-</span><span class="n">jobhistory</span><span class="o">-</span><span class="n">daemon</span><span class="p">.</span><span class="n">sh</span> <span class="n">start</span> <span class="n">historyserver</span>  <span class="err">#</span> <span class="err">开启历史服务器，才能在</span><span class="n">Web</span><span class="err">中查看任务运行情况</span>
 </pre></div>
 
 
 <p><strong>但 YARN 主要是为集群提供更好的资源管理与任务调度，然而这在单机上体现不出价值，反而会使程序跑得稍慢些。因此在单机上是否开启 YARN 就看实际情况了。</strong></p>
-<p><strong>不启动 YARN 需重命名 <code>mapred-site.xml</code></strong><br />
+<p><strong>不启动 YARN 需重命名 <code>mapred-site.xml</code></strong>
 如果不想启动 YARN，务必把配置文件 <code>mapred-site.xml</code> 重命名，改成 <code>mapred-site.xml.template</code>，需要用时改回来就行。否则在该配置文件存在，而未开启 YARN 的情况下，运行程序会提示 “Retrying connect to server: 0.0.0.0/0.0.0.0:8032” 的错误，这也是为何该配置文件初始文件名为 <code>mapred-site.xml.template</code>。</p>
 <p>同样的，关闭 YARN 的脚本如下：</p>
-<div class="hlcode"><pre><span></span>./sbin/stop-yarn.sh
-./sbin/mr-jobhistory-daemon.sh stop historyserver
+<div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">stop</span><span class="o">-</span><span class="n">yarn</span><span class="p">.</span><span class="n">sh</span>
+<span class="p">.</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">mr</span><span class="o">-</span><span class="n">jobhistory</span><span class="o">-</span><span class="n">daemon</span><span class="p">.</span><span class="n">sh</span> <span class="n">stop</span> <span class="n">historyserver</span>
 </pre></div>
 
 
@@ -107,13 +107,13 @@
 </ul>
 <h1 id="_2">错误</h1>
 <p>Library you are using is compiled for 32 bit and you are using 64 bit version. so open your .bashrc file where configuration for hadoop exists. Go to this line</p>
-<p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"<br />
+<p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"
 and replace it with</p>
 <p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib/native"</p>
 <ul>
 <li><a href="http://www.cnblogs.com/kevinq/p/5103653.html">Unable to load native-hadoop library for your platform(已解决)</a></li>
 </ul>
-<div class="hlcode"><pre><span></span><span class="kn">package</span> <span class="nn">multicore</span><span class="o">;</span>
+<div class="hlcode"><pre><span class="kn">package</span> <span class="n">multicore</span><span class="o">;</span>
 
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">ArraySumerDc</span> <span class="kd">extends</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Thread</span><span class="o">{</span>
     <span class="kt">int</span><span class="o">[]</span> <span class="n">a</span><span class="o">;</span>
@@ -177,7 +177,7 @@ and replace it with</p>
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

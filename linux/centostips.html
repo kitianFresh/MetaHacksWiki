@@ -26,118 +26,118 @@
 <div class="page_title">CentosTips</div>
 
   <h1 id="sudo">配置 sudo 用户.</h1>
-<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.<br />
+<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.
 然后 使用 <code>visudo</code> 自动打开 <code>/etc/sudoers</code> 配置文件，在文件加入sudo权限，配置如下：</p>
-<div class="hlcode"><pre><span></span>tianqi05    ALL=(ALL)    ALL
-‘不要密码
-tianqi05    ALL=(ALL)    NOPASSWD:ALL
+<div class="hlcode"><pre><span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">ALL</span>
+<span class="err">‘不要密码</span>
+<span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">NOPASSWD</span><span class="o">:</span><span class="n">ALL</span>
 </pre></div>
 
 
-<p>最后切换用户<br />
+<p>最后切换用户
 sudo -iu tianqi05</p>
 <h1 id="rpm">rpm删除安装</h1>
-<div class="hlcode"><pre><span></span>rpm -qal | grep 
-sudo rpm -e xx.rpm
-sudo rpm -ivh XX.rpm
+<div class="hlcode"><pre><span class="n">rpm</span> <span class="o">-</span><span class="n">qal</span> <span class="o">|</span> <span class="n">grep</span> 
+<span class="n">sudo</span> <span class="n">rpm</span> <span class="o">-</span><span class="n">e</span> <span class="n">xx</span><span class="p">.</span><span class="n">rpm</span>
+<span class="n">sudo</span> <span class="n">rpm</span> <span class="o">-</span><span class="n">ivh</span> <span class="n">XX</span><span class="p">.</span><span class="n">rpm</span>
 </pre></div>
 
 
 <p>系统中的awk命令到底是执行哪个可以执行文件呢？</p>
-<div class="hlcode"><pre><span></span>$ readlink /usr/bin/awk  
-/etc/alternatives/awk  ----&gt; 其实这个还是一个符号连接  
-$ readlink /etc/alternatives/awk  
-/usr/bin/gawk  ----&gt; 这个才是真正的可执行文件  
--f 选项：
--f 选项可以递归跟随给出文件名的所有符号链接以标准化，除最后一个外所有组件必须存在。
-简单地说，就是一直跟随符号链接，直到直到非符号链接的文件位置，限制是最后必须存在一个非符号链接的文件。
-$ readlink -f /usr/bin/awk  
-/usr/bin/gawk  
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">readlink</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">awk</span>  
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">alternatives</span><span class="o">/</span><span class="n">awk</span>  <span class="o">----&gt;</span> <span class="err">其实这个还是一个符号连接</span>  
+<span class="err">$</span> <span class="n">readlink</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">alternatives</span><span class="o">/</span><span class="n">awk</span>  
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">gawk</span>  <span class="o">----&gt;</span> <span class="err">这个才是真正的可执行文件</span>  
+<span class="o">-</span><span class="n">f</span> <span class="err">选项：</span>
+<span class="o">-</span><span class="n">f</span> <span class="err">选项可以递归跟随给出文件名的所有符号链接以标准化，除最后一个外所有组件必须存在。</span>
+<span class="err">简单地说，就是一直跟随符号链接，直到直到非符号链接的文件位置，限制是最后必须存在一个非符号链接的文件。</span>
+<span class="err">$</span> <span class="n">readlink</span> <span class="o">-</span><span class="n">f</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">awk</span>  
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">gawk</span>  
 </pre></div>
 
 
 <h1 id="screen">screen 启动一个可执行文件</h1>
-<div class="hlcode"><pre><span></span><span class="k">function</span> check_service <span class="o">{</span>
-    <span class="nb">local</span> <span class="nv">URL</span><span class="o">=</span><span class="nv">$1</span>
-    <span class="nb">local</span> <span class="nv">TIMEOUT</span><span class="o">=</span><span class="nv">$2</span>
-    <span class="c1">#echo &quot;Check service $URL&quot;</span>
-    <span class="k">if</span> <span class="o">[</span> -z <span class="nv">$TIMEOUT</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-        <span class="nv">TIMEOUT</span><span class="o">=</span><span class="m">300</span>
+<div class="hlcode"><pre><span class="k">function </span>check_service <span class="o">{</span>
+    <span class="nb">local </span><span class="nv">URL</span><span class="o">=</span><span class="nv">$1</span>
+    <span class="nb">local </span><span class="nv">TIMEOUT</span><span class="o">=</span><span class="nv">$2</span>
+    <span class="c">#echo &quot;Check service $URL&quot;</span>
+    <span class="k">if</span> <span class="o">[</span> -z <span class="nv">$TIMEOUT</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">        </span><span class="nv">TIMEOUT</span><span class="o">=</span>300
     <span class="k">fi</span>
-    <span class="k">if</span> <span class="o">[[</span> <span class="nv">$1</span> <span class="o">==</span> https* <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-        <span class="nv">OPT</span><span class="o">=</span><span class="s1">&#39;-k&#39;</span>
+<span class="k">    if</span> <span class="o">[[</span> <span class="nv">$1</span> <span class="o">==</span> https* <span class="o">]]</span>; <span class="k">then</span>
+<span class="k">        </span><span class="nv">OPT</span><span class="o">=</span><span class="s1">&#39;-k&#39;</span>
     <span class="k">else</span>
-        <span class="nv">OPT</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<span class="k">        </span><span class="nv">OPT</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
     <span class="k">fi</span>
-    <span class="k">if</span> ! timeout <span class="nv">$TIMEOUT</span> sh -c <span class="s2">&quot;while ! curl </span><span class="nv">$OPT</span><span class="s2"> -s </span><span class="nv">$1</span><span class="s2"> &gt;/dev/null; do sleep 1; done&quot;</span><span class="p">;</span> <span class="k">then</span>
-        <span class="c1">#echo &quot;Cannot reach!&quot;</span>
-        <span class="k">return</span> <span class="m">1</span>
+<span class="k">    if</span> ! timeout <span class="nv">$TIMEOUT</span> sh -c <span class="s2">&quot;while ! curl $OPT -s $1 &gt;/dev/null; do sleep 1; done&quot;</span>; <span class="k">then</span>
+        <span class="c">#echo &quot;Cannot reach!&quot;</span>
+        <span class="k">return </span>1
     <span class="k">else</span>
-        <span class="c1">#echo &quot;Success!&quot;</span>
-        <span class="k">return</span> <span class="m">0</span>
+        <span class="c">#echo &quot;Success!&quot;</span>
+        <span class="k">return </span>0
     <span class="k">fi</span>
 <span class="o">}</span>
 
-<span class="k">function</span> quick_check_service <span class="o">{</span>
-    <span class="k">if</span> check_service <span class="nv">$1</span> <span class="m">2</span><span class="p">;</span> <span class="k">then</span>
-        <span class="k">return</span> <span class="m">0</span>
+<span class="k">function </span>quick_check_service <span class="o">{</span>
+    <span class="k">if </span>check_service <span class="nv">$1</span> 2; <span class="k">then</span>
+<span class="k">        return </span>0
     <span class="k">else</span>
-        <span class="k">return</span> <span class="m">1</span>
+<span class="k">        return </span>1
     <span class="k">fi</span>
 <span class="o">}</span>
 
-<span class="k">function</span> screen_it <span class="o">{</span>
+<span class="k">function </span>screen_it <span class="o">{</span>
     <span class="nv">NL</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> -ne <span class="s1">&#39;\015&#39;</span><span class="sb">`</span>
-    <span class="nv">SESSION</span><span class="o">=</span><span class="k">$(</span>screen -ls <span class="p">|</span> awk <span class="s1">&#39;/[0-9].&#39;</span><span class="nv">$1</span><span class="s1">&#39;/ { print $1 }&#39;</span><span class="k">)</span>
-    <span class="k">if</span> <span class="o">[</span> ! -n <span class="s2">&quot;</span><span class="nv">$SESSION</span><span class="s2">&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-        screen -d -m -S <span class="nv">$1</span> sh -c <span class="s1">&#39;script /dev/null&#39;</span>
-        sleep  <span class="m">1</span>.5
+    <span class="nv">SESSION</span><span class="o">=</span><span class="k">$(</span>screen -ls | awk <span class="s1">&#39;/[0-9].&#39;</span><span class="nv">$1</span><span class="s1">&#39;/ { print $1 }&#39;</span><span class="k">)</span>
+    <span class="k">if</span> <span class="o">[</span> ! -n <span class="s2">&quot;$SESSION&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">        </span>screen -d -m -S <span class="nv">$1</span> sh -c <span class="s1">&#39;script /dev/null&#39;</span>
+        sleep  1.5
     <span class="k">fi</span>
-    screen -S <span class="nv">$1</span> -p <span class="m">0</span> -X stuff <span class="s2">&quot;</span><span class="nv">$2$NL</span><span class="s2">&quot;</span>
+<span class="k">    </span>screen -S <span class="nv">$1</span> -p 0 -X stuff <span class="s2">&quot;$2$NL&quot;</span>
 <span class="o">}</span>
-<span class="k">function</span> get_screen_pid <span class="o">{</span>
-    screen -ls <span class="p">|</span> awk <span class="s1">&#39;/[0-9].&#39;</span><span class="nv">$1</span><span class="s1">&#39;/ { print $1 }&#39;</span> <span class="p">|</span> awk -F <span class="s1">&#39;.&#39;</span> <span class="s1">&#39;{print $1}&#39;</span>
+<span class="k">function </span>get_screen_pid <span class="o">{</span>
+    screen -ls | awk <span class="s1">&#39;/[0-9].&#39;</span><span class="nv">$1</span><span class="s1">&#39;/ { print $1 }&#39;</span> | awk -F <span class="s1">&#39;.&#39;</span> <span class="s1">&#39;{print $1}&#39;</span>
 <span class="o">}</span>
 
-<span class="k">function</span> start_service <span class="o">()</span> <span class="o">{</span>
-    <span class="nb">local</span> <span class="nv">URL</span><span class="o">=</span><span class="nv">$1</span>
-    <span class="nb">local</span> <span class="nv">SERVICE</span><span class="o">=</span><span class="nv">$2</span>
-    <span class="nb">local</span> <span class="nv">CMD</span><span class="o">=</span><span class="nv">$3</span>
-    <span class="nb">local</span> <span class="nv">NO_CHECK</span><span class="o">=</span><span class="nv">$4</span>
+<span class="k">function </span>start_service <span class="o">()</span> <span class="o">{</span>
+    <span class="nb">local </span><span class="nv">URL</span><span class="o">=</span><span class="nv">$1</span>
+    <span class="nb">local </span><span class="nv">SERVICE</span><span class="o">=</span><span class="nv">$2</span>
+    <span class="nb">local </span><span class="nv">CMD</span><span class="o">=</span><span class="nv">$3</span>
+    <span class="nb">local </span><span class="nv">NO_CHECK</span><span class="o">=</span><span class="nv">$4</span>
 
-    <span class="k">if</span> <span class="o">[[</span> <span class="nv">$NO_CHECK</span> <span class="o">=</span> <span class="s2">&quot;NO_CHECK&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-    screen_it <span class="nv">$SERVICE</span> <span class="s2">&quot;</span><span class="nv">$CMD</span><span class="s2">&quot;</span>
-    <span class="nb">echo</span> <span class="s2">&quot;</span><span class="nv">$SERVICE</span><span class="s2"> started successfully&quot;</span>
+    <span class="k">if</span> <span class="o">[[</span> <span class="nv">$NO_CHECK</span> <span class="o">=</span> <span class="s2">&quot;NO_CHECK&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
+<span class="k">    </span>screen_it <span class="nv">$SERVICE</span> <span class="s2">&quot;$CMD&quot;</span>
+    <span class="nb">echo</span> <span class="s2">&quot;$SERVICE started successfully&quot;</span>
     <span class="k">return</span>
-    <span class="k">fi</span>
+<span class="k">    fi</span>
 
-    <span class="k">if</span> ! quick_check_service <span class="nv">$URL</span><span class="p">;</span> <span class="k">then</span>
-        screen_it <span class="nv">$SERVICE</span> <span class="s2">&quot;</span><span class="nv">$CMD</span><span class="s2">&quot;</span>
-        sleep <span class="m">1</span>
-        <span class="nb">local</span> <span class="nv">MAX_TRIES</span><span class="o">=</span><span class="m">300</span>
-        <span class="nb">local</span> <span class="nv">TRIES</span><span class="o">=</span><span class="m">0</span>
+<span class="k">    if</span> ! quick_check_service <span class="nv">$URL</span>; <span class="k">then</span>
+<span class="k">        </span>screen_it <span class="nv">$SERVICE</span> <span class="s2">&quot;$CMD&quot;</span>
+        sleep 1
+        <span class="nb">local </span><span class="nv">MAX_TRIES</span><span class="o">=</span>300
+        <span class="nb">local </span><span class="nv">TRIES</span><span class="o">=</span>0
         <span class="k">while</span> <span class="o">((</span> <span class="nv">$TRIES</span> &lt; <span class="nv">$MAX_TRIES</span> <span class="o">))</span>
         <span class="k">do</span>
-            <span class="nb">local</span> <span class="nv">PID</span><span class="o">=</span><span class="k">$(</span>pgrep -P <span class="k">$(</span>pgrep -P <span class="k">$(</span>get_screen_pid <span class="nv">$SERVICE</span><span class="k">)))</span>
-            <span class="k">if</span> <span class="o">[[</span> -z <span class="s2">&quot;</span><span class="nv">$PID</span><span class="s2">&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-                <span class="nb">echo</span> <span class="s2">&quot;Failed to start </span><span class="nv">$SERVICE</span><span class="s2">&quot;</span>
-                <span class="nb">exit</span> <span class="m">1</span>
+<span class="k">            </span><span class="nb">local </span><span class="nv">PID</span><span class="o">=</span><span class="k">$(</span>pgrep -P <span class="k">$(</span>pgrep -P <span class="k">$(</span>get_screen_pid <span class="nv">$SERVICE</span><span class="k">)))</span>
+            <span class="k">if</span> <span class="o">[[</span> -z <span class="s2">&quot;$PID&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
+<span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;Failed to start $SERVICE&quot;</span>
+                <span class="nb">exit </span>1
             <span class="k">fi</span>
 
-            <span class="nv">TRIES</span><span class="o">=</span><span class="k">$((</span> TRIES+1 <span class="k">))</span>
-            <span class="k">if</span> check_service <span class="nv">$URL</span> <span class="m">1</span><span class="p">;</span> <span class="k">then</span>
-                <span class="nb">echo</span> <span class="s2">&quot;</span><span class="nv">$SERVICE</span><span class="s2"> started successfully&quot;</span>
+<span class="k">            </span><span class="nv">TRIES</span><span class="o">=</span><span class="k">$((</span> TRIES+1 <span class="k">))</span>
+            <span class="k">if </span>check_service <span class="nv">$URL</span> 1; <span class="k">then</span>
+<span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;$SERVICE started successfully&quot;</span>
                 <span class="nv">TRIES</span><span class="o">=</span><span class="k">$((</span> MAX_TRIES <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
             <span class="k">else</span>
-                sleep <span class="m">1</span>
+<span class="k">                </span>sleep 1
             <span class="k">fi</span>
-        <span class="k">done</span>
-        <span class="k">if</span> <span class="o">[</span> <span class="nv">$TRIES</span> -eq <span class="nv">$MAX_TRIES</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-            <span class="nb">echo</span> <span class="s2">&quot;Failed to start </span><span class="nv">$SERVICE</span><span class="s2">&quot;</span>
-            <span class="nb">exit</span> <span class="m">1</span>
+<span class="k">        done</span>
+<span class="k">        if</span> <span class="o">[</span> <span class="nv">$TRIES</span> -eq <span class="nv">$MAX_TRIES</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Failed to start $SERVICE&quot;</span>
+            <span class="nb">exit </span>1
         <span class="k">fi</span>
-    <span class="k">else</span>
-        <span class="nb">echo</span> <span class="s2">&quot;</span><span class="nv">$SERVICE</span><span class="s2"> is running&quot;</span>
+<span class="k">    else</span>
+<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;$SERVICE is running&quot;</span>
     <span class="k">fi</span>
 <span class="o">}</span>
 </pre></div>
@@ -146,38 +146,38 @@ $ readlink -f /usr/bin/awk
 <h1 id="shell">shell 各种判断</h1>
 <p>Shell判断</p>
 <h2 id="_1">按照文件类型进行判断</h2>
-<p>-b 判断文件是否存在，并且是否为快设备文件（是块设备文件为真）<br />
--c 判断文件是否存在，并且是否为字符设备文件（是字符设备文件为真）<br />
--d 判断文件是否存在，并且是否为目录文件（是目录为真）<br />
--e 判断文件是否存在，存在为真<br />
--f 判断文件是否存在，并且是否为普通文件（存在为真）<br />
--L 判断文件是否存在，并且是否为符号链接文件（是符号链接文件为真）<br />
--p 判断文件是否存在，并且是否为管道文件（是管道文件为真）<br />
--s 判断文件是否存在，并且是否为空（非空为真）<br />
+<p>-b 判断文件是否存在，并且是否为快设备文件（是块设备文件为真）
+-c 判断文件是否存在，并且是否为字符设备文件（是字符设备文件为真）
+-d 判断文件是否存在，并且是否为目录文件（是目录为真）
+-e 判断文件是否存在，存在为真
+-f 判断文件是否存在，并且是否为普通文件（存在为真）
+-L 判断文件是否存在，并且是否为符号链接文件（是符号链接文件为真）
+-p 判断文件是否存在，并且是否为管道文件（是管道文件为真）
+-s 判断文件是否存在，并且是否为空（非空为真）
 -S 判断文件是否存在，并且是否为套接字文件（是套接字文件为真）</p>
 <h2 id="_2">按照文件权限进行判断</h2>
-<p>-r 判断文档是否有读权限<br />
--w 判断是否有写权限<br />
+<p>-r 判断文档是否有读权限
+-w 判断是否有写权限
 -x 判断是否可执行</p>
 <h2 id="_3">两个文件之间的比较</h2>
-<p>文件1 -nt 文件2 判断文件1的修改时间是否比文件2的新（如果新为真）<br />
-文件1 -ot 文件2 判断文件1的修改时间是否比文件2的旧（如果旧为真）<br />
+<p>文件1 -nt 文件2 判断文件1的修改时间是否比文件2的新（如果新为真）
+文件1 -ot 文件2 判断文件1的修改时间是否比文件2的旧（如果旧为真）
 文件1 -ef 文件2 判断文件1是否和文件2的inode号一致，可以理解为两个文件是否为同一个文件，这个判断是判断硬链接的最好方法</p>
 <h2 id="_4">两个整数之间的比较</h2>
-<p>-eq 判断两个数值是否相等<br />
--ne 判断两个数值是否不相等<br />
--gt 判断是否大于<br />
--lt 判断是否小于<br />
--ge 判断是否大于等于<br />
+<p>-eq 判断两个数值是否相等
+-ne 判断两个数值是否不相等
+-gt 判断是否大于
+-lt 判断是否小于
+-ge 判断是否大于等于
 -le 判断是否小于等于</p>
 <h2 id="_5">字符串之间的判断</h2>
-<p>-z 判断字符串是否为空<br />
--n 判断字符串是否为非空<br />
-字符串1 == 2 判断字符串1是否和字符串2相等 <br />
+<p>-z 判断字符串是否为空
+-n 判断字符串是否为非空
+字符串1 == 2 判断字符串1是否和字符串2相等 
 字符串1 != 2 判断字符串1是否和字符串2不相等</p>
 <h2 id="_6">多重条件判断</h2>
-<p>判断1 -a 判断2 逻辑与，判断1和判断2都成立，最终结果为真<br />
-判断1 -o 判断2 逻辑或，判断1和判断2有一个成立，结果为真<br />
+<p>判断1 -a 判断2 逻辑与，判断1和判断2都成立，最终结果为真
+判断1 -o 判断2 逻辑或，判断1和判断2有一个成立，结果为真
 ！判断 逻辑非  使原始的判断式取反</p>
 <h2 id="_7">判断条件</h2>
 <ol>
@@ -188,53 +188,53 @@ $ readlink -f /usr/bin/awk
 <p>其中”[“是启动测试命令，”]”要与之配对，而且”[“和”]”前后的空格必不可少</p>
 <p>此方式常作为流程控制语句的判断条件</p>
 <h3 id="21">2.1 字符串判断</h3>
-<p>str1 = str2　　　　　　当两个串有相同内容、长度时为真 <br />
-str1 != str2　　　　　  当串str1和str2不等时为真 <br />
--n str1　　　　　　　 当串的长度大于0时为真(串非空) <br />
+<p>str1 = str2　　　　　　当两个串有相同内容、长度时为真 
+str1 != str2　　　　　  当串str1和str2不等时为真 
+-n str1　　　　　　　 当串的长度大于0时为真(串非空) 
 -z str1　　　　　　　 当串的长度为0时为真(空串)</p>
 <p>这个地方有必要举个小例子，我们编程的时候经常做一些使用喜欢使用空格表示空</p>
 <p>但shell中空格会被判断成一个字符,比如：</p>
-<p>[  -n  ” ” ]  这个值echo $?会返回0，说明字符串不为空。<br />
+<p>[  -n  ” ” ]  这个值echo $?会返回0，说明字符串不为空。
 [  -z  ”  ” ] 这个值echo $?会返回非空，说明里边不是空。</p>
 <h3 id="22">2.2 数字的判断</h3>
-<p>int1 -eq int2　　　　两数相等为真 <br />
-int1 -ne int2　　　　两数不等为真 <br />
-int1 -gt int2　　　　int1大于int2为真 <br />
-int1 -ge int2　　　   int1大于等于int2为真 <br />
-int1 -lt int2　　　　 int1小于int2为真 <br />
+<p>int1 -eq int2　　　　两数相等为真 
+int1 -ne int2　　　　两数不等为真 
+int1 -gt int2　　　　int1大于int2为真 
+int1 -ge int2　　　   int1大于等于int2为真 
+int1 -lt int2　　　　 int1小于int2为真 
 int1 -le int2　　　    int1小于等于int2为真 </p>
 <h3 id="23">2.3 文件的判断</h3>
-<p>-e file                                                    若文件存在，则为真 <br />
--d file                                                    若文件存在且是一个目录，则为真<br />
--b file                                                    若文件存在且是一个块特殊文件，则为真<br />
--c file            若文件存在且是一个字符特殊文件，则为真<br />
--f file            若文件存在且是一个规则文件，则为真<br />
--g file            若文件存在且设置了SGID位的值，则为真<br />
--h file            若文件存在且为一个符合链接，则为真<br />
--k file            若文件存在且设置了“sticky”位的值<br />
--p file            若文件存在且为一已命名管道，则为真<br />
--r file            若文件存在且可读，则为真<br />
--s file            若文件存在且其大小大于零，则为真<br />
--u file            若文件存在且设置了SUID位，则为真<br />
--w file            若文件存在且可写，则为真<br />
--x file            若文件存在且可执行，则为真<br />
+<p>-e file                                                    若文件存在，则为真 
+-d file                                                    若文件存在且是一个目录，则为真
+-b file                                                    若文件存在且是一个块特殊文件，则为真
+-c file            若文件存在且是一个字符特殊文件，则为真
+-f file            若文件存在且是一个规则文件，则为真
+-g file            若文件存在且设置了SGID位的值，则为真
+-h file            若文件存在且为一个符合链接，则为真
+-k file            若文件存在且设置了“sticky”位的值
+-p file            若文件存在且为一已命名管道，则为真
+-r file            若文件存在且可读，则为真
+-s file            若文件存在且其大小大于零，则为真
+-u file            若文件存在且设置了SUID位，则为真
+-w file            若文件存在且可写，则为真
+-x file            若文件存在且可执行，则为真
 -o file            若文件存在且被有效用户ID所拥有，则为真 </p>
 <h3 id="24">2.4 逻辑判断</h3>
-<p>!expr                                                      若expr为假则复合表达式为真，expr可以是任何有效的测试表达式<br />
-expr1 -a expr2         若expr1和expr2都为真则整式为真<br />
+<p>!expr                                                      若expr为假则复合表达式为真，expr可以是任何有效的测试表达式
+expr1 -a expr2         若expr1和expr2都为真则整式为真
 expr1 -o expr2         若expr1和expr2有一个为真则整式为真  </p>
 <p>补充： 系统变量 </p>
 <p>$n                 该变量与脚本被激活时所带的参数相对应</p>
-<div class="hlcode"><pre><span></span>              .n是正整数，与参数位置相对应($1,$2…)
+<div class="hlcode"><pre>              <span class="p">.</span><span class="n">n</span><span class="err">是正整数，与参数位置相对应</span><span class="p">(</span><span class="err">$</span><span class="mi">1</span><span class="p">,</span><span class="err">$</span><span class="mi">2</span><span class="err">…</span><span class="p">)</span>
 </pre></div>
 
 
-<p>$?                                                                    前一个命令执行后的退出状态<br />
-$#                 提供脚本的参数号<br />
-$<em>                 所有这些参数都被双引号引住。若一个脚本接收两个参数，$</em>等于$1$2 <br />
-$0                 正在被执行命令的名字。对于shell脚本而言，这是被激活命令的路径<br />
-$@                 所有这些参数都分别被双引号引住。若一个脚本接收到两个参数，$@等价于$1$2<br />
-$$                 当前shell的进程号。对于shell脚本，这是其正在执行时的进程ID<br />
+<p>$?                                                                    前一个命令执行后的退出状态
+$#                 提供脚本的参数号
+$<em>                 所有这些参数都被双引号引住。若一个脚本接收两个参数，$</em>等于$1$2 
+$0                 正在被执行命令的名字。对于shell脚本而言，这是被激活命令的路径
+$@                 所有这些参数都分别被双引号引住。若一个脚本接收到两个参数，$@等价于$1$2
+$$                 当前shell的进程号。对于shell脚本，这是其正在执行时的进程ID
 $!                 前一个后台命令的进程号</p>
 <h3 id="_8">退出状态</h3>
 <ol>
@@ -250,7 +250,7 @@ $!                 前一个后台命令的进程号</p>
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

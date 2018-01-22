@@ -27,24 +27,24 @@
 
   <h1 id="python-thread">python thread</h1>
 <p>python 中有 thread 和 threading两个模块， thread是比较基础的模块，可以参考<a href="https://docs.python.org/2/library/thread.html#module-thread">文档</a>只提供了几个最基础的线程功能，分配锁和开启新线程； threading 模块就是在 thread 基础上封装出来的更友好的线程模块。 下面是 thread 的例子，</p>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">thread</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">thread</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
 <span class="n">a_lock</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">allocate_lock</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">a_lock</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s2">&quot;a_lock is locked while this executes&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;a_lock is locked while this executes&quot;</span>
 
 <span class="k">def</span> <span class="nf">do_something_in_new_thread</span><span class="p">(</span><span class="n">tname</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s2">&quot;Hello, I am in thread&quot;</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">number</span>
-    <span class="k">print</span> <span class="s2">&quot;I will interrupt main thread after 5 sec.&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;Hello, I am in thread&quot;</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">number</span>
+    <span class="k">print</span> <span class="s">&quot;I will interrupt main thread after 5 sec.&quot;</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">interrupt_main</span><span class="p">()</span>
 
-<span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="n">do_something_in_new_thread</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;thread-1&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="n">do_something_in_new_thread</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;thread-1&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
 <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s2">&quot;I am main thread, I will sleep 2 sec.&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;I am main thread, I will sleep 2 sec.&quot;</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
@@ -69,11 +69,11 @@
 <h3 id="unix-daemon-process">unix daemon process</h3>
 <p>首先，注意不要把守护线程和UNIX守护进程混淆，这是两个不同的概念。UNIX守护进程也叫daemon，但是他指的是那些脱离终端即不受终端控制的后台进程；UNIX进程中有会话，进程组，进程的概念，一个会话和一个（伪）终端关联，而一个会话包含多个进程组，会话中的进程组分前台进程组和后台进程组，前台进程组会接受来自终端的ctrl+c 等中断信号，但是他们并未脱离终端，只有脱离了终端的后台进程才是守护进程；守护进程主要做一些</p>
 <h3 id="daemon-thread">daemon thread</h3>
-<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">threading</span>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">threading</span>
 
 <span class="k">class</span> <span class="nc">DaemonizableThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DaemonizableThread</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DaemonizableThread</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="bp">False</span>
 
@@ -84,13 +84,13 @@
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span><span class="p">:</span>
             <span class="n">threading</span><span class="o">.</span><span class="n">_sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">2</span>
-            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; sleeping </span><span class="si">%s</span><span class="s1"> seconds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; sleeping </span><span class="si">%s</span><span class="s"> seconds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
 
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="bp">True</span>
 
-<span class="n">t</span> <span class="o">=</span> <span class="n">DaemonizableThread</span><span class="p">(</span><span class="s1">&#39;demon&#39;</span><span class="p">)</span>
-<span class="c1">#t.setDaemon(True)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">DaemonizableThread</span><span class="p">(</span><span class="s">&#39;demon&#39;</span><span class="p">)</span>
+<span class="c">#t.setDaemon(True)</span>
 
 <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -100,18 +100,18 @@
     <span class="n">t</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 
-<span class="c1"># import sys</span>
-<span class="c1"># import signal</span>
-<span class="c1"># def terminate_handler(sig, frame):</span>
-<span class="c1">#     print &quot;Caught signal: %s &quot; % sig</span>
-<span class="c1">#     sys.exit(0)</span>
+<span class="c"># import sys</span>
+<span class="c"># import signal</span>
+<span class="c"># def terminate_handler(sig, frame):</span>
+<span class="c">#     print &quot;Caught signal: %s &quot; % sig</span>
+<span class="c">#     sys.exit(0)</span>
 
-<span class="c1"># signal.signal(signal.SIGTERM, terminate_handler)</span>
+<span class="c"># signal.signal(signal.SIGTERM, terminate_handler)</span>
 </pre></div>
 
 
 <p>这里需要注意的是，主线程会因为join操作而直接阻塞，导致无法接受到中断信号，所以使用　ctrl+c　也无法使得主线程退出，目前的做法是</p>
-<div class="hlcode"><pre><span></span><span class="k">try</span><span class="p">:</span>
+<div class="hlcode"><pre><span class="k">try</span><span class="p">:</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">isAlive</span><span class="p">:</span>
@@ -124,7 +124,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>
