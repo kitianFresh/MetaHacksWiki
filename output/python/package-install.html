@@ -26,41 +26,41 @@
 <div class="page_title">package-install</div>
 
   <h2 id="_1">安装图像处理模块</h2>
-<div class="hlcode"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">Pillow</span>
-<span class="o">//</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="err">库</span>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">Pillow</span>
+<span class="c1">//tesseract-ocr库</span>
 <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span>
-<span class="o">//</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span> <span class="n">pthon</span> <span class="n">wrapper</span>
+<span class="c1">// tesseract-ocr pthon wrapper</span>
 <span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pytesseract</span>
 
-<span class="o">//</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="err">默认没有中文字符集，下载中文字符集</span>
-<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span><span class="n">raw</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">chi_sim</span><span class="o">.</span><span class="n">traineddata</span>
+<span class="c1">//tesseract-ocr默认没有中文字符集，下载中文字符集</span>
+<span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/tesseract-ocr/tessdata/raw/master/chi_sim.traineddata</span>
 
-<span class="o">//</span><span class="err">然后</span><span class="n">copy</span><span class="err">到目录</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
-<span class="n">sudo</span> <span class="n">cp</span> <span class="n">chi_sim</span><span class="o">.</span><span class="n">traineddata</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
+<span class="c1">//然后copy到目录/usr/share/tesseract-ocr/tessdata/</span>
+<span class="n">sudo</span> <span class="n">cp</span> <span class="n">chi_sim</span><span class="p">.</span><span class="n">traineddata</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">/</span><span class="n">tessdata</span><span class="o">/</span>
 
-<span class="o">//</span><span class="n">example</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="kn">import</span> <span class="nn">pytesseract</span>
-<span class="k">print</span><span class="p">(</span><span class="n">pytesseract</span><span class="o">.</span><span class="n">image_to_string</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;血常规.jpg&#39;</span><span class="p">),</span> <span class="n">lang</span><span class="o">=</span><span class="s1">&#39;chi_sim&#39;</span><span class="p">))</span>
+<span class="c1">//example</span>
+<span class="n">from</span> <span class="n">PIL</span> <span class="n">import</span> <span class="n">Image</span>
+<span class="n">import</span> <span class="n">pytesseract</span>
+<span class="n">print</span><span class="p">(</span><span class="n">pytesseract</span><span class="p">.</span><span class="n">image_to_string</span><span class="p">(</span><span class="n">Image</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="err">&#39;血常规</span><span class="p">.</span><span class="n">jpg</span><span class="err">&#39;</span><span class="p">),</span> <span class="n">lang</span><span class="o">=</span><span class="err">&#39;</span><span class="n">chi_sim</span><span class="err">&#39;</span><span class="p">))</span>
 </pre></div>
 
 
 <h2 id="pythonpcv">安装Python机器视觉编程<a href="http://programmingcomputervision.com/">英文</a><a href="http://yongyuan.name/pcvwithpython/">中文</a>中PCV库</h2>
 <p>依赖</p>
-<div class="hlcode"><pre><span></span>sudo pip install numpy
-sudo pip install matplotlib
-sudo pip install scipy
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">numpy</span>
+<span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">matplotlib</span>
+<span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span>
 </pre></div>
 
 
 <p><a href="https://github.com/jesolem/PCV/zipball/master">下载库到本地</a></p>
-<div class="hlcode"><pre><span></span><span class="n">cd</span> <span class="n">jesolem</span><span class="o">-</span><span class="n">PCV</span><span class="o">-</span><span class="mi">376</span><span class="n">d597</span><span class="o">/</span>
-<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="hlcode"><pre><span class="n">cd</span> <span class="n">jesolem</span><span class="o">-</span><span class="n">PCV</span><span class="o">-</span><span class="mi">376</span><span class="n">d597</span><span class="o">/</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="p">.</span><span class="n">py</span> <span class="n">install</span>
 
-<span class="o">//</span><span class="err">以下命令可以用来确定</span><span class="n">Ubuntu</span><span class="err">系统拥有的字体和位置</span>
-<span class="n">fc</span><span class="o">-</span><span class="nb">list</span> <span class="p">:</span><span class="n">lang</span><span class="o">=</span><span class="n">zh</span> 
+<span class="c1">//以下命令可以用来确定Ubuntu系统拥有的字体和位置</span>
+<span class="n">fc</span><span class="o">-</span><span class="n">list</span> <span class="o">:</span><span class="n">lang</span><span class="o">=</span><span class="n">zh</span> 
 
-<span class="kn">import</span> <span class="nn">PCV</span>
+<span class="n">import</span> <span class="n">PCV</span>
 </pre></div>
 
 
@@ -69,33 +69,33 @@ sudo pip install scipy
 <li><a href="https://testerhome.com/topics/4615">基本的图像处理与 OCR 文字识别工具总结 (Python)</a></li>
 </ul>
 <h1 id="tensorflowmemoryerror">低配机器安装tensorflow出现MemoryError</h1>
-<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误<br />
-操作系统    Ubuntu Server 16.04.1 LTS 64位<br />
-CPU 1核<br />
-内存  1GB<br />
-系统盘 20GB(云硬盘)   disk-qy4kp18l<br />
+<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误
+操作系统    Ubuntu Server 16.04.1 LTS 64位
+CPU 1核
+内存  1GB
+系统盘 20GB(云硬盘)   disk-qy4kp18l
 公网带宽    1Mbps</p>
-<div class="hlcode"><pre><span></span>sudo pip  --no-cache-dir install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span>  <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">dir</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">https</span><span class="o">:</span><span class="c1">//storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl</span>
 </pre></div>
 
 
 <p>以下两者的区别，在翻墙的时候表现的就尤其明显，前者会非常慢，这里就是因为 后者 是package 安装形式，主要是从Ubuntu的软件源找包并安装，国内都会有相应的镜像，速度不慢，但是前者就会直接到Python的package站点下载，非常慢，基本下不动</p>
-<div class="hlcode"><pre><span></span>sudo pip install numpy
-sudo apt-get install python-numpy
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">numpy</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span>
 </pre></div>
 
 
 <p>基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package</p>
 <h1 id="mysql-python">MySQL-python 安装</h1>
 <p>centos 上安装的时候报错 <code>EnvironmentError: mysql_config not found</code>； 网上说 装 mysql-devel， 但是因为安装的 mysql 是 percona 因此装不了， 正确的安装姿势是</p>
-<p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。<br />
+<p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。
 安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64</p>
 <h1 id="pycurl">pycurl 失败</h1>
-<p><code>__main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory</code><br />
+<p><code>__main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory</code>
 sudo yum install libcurl-openssl-devel</p>
 <h1 id="pip">pip 安装走国内镜像源的方法</h1>
 <p>pip 安装python包其实可以添加参数 <code>pip install --index-url  http://pypi.douban.com/simple</code>， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:</p>
-<div class="hlcode"><pre><span></span><span class="p">[</span><span class="k">global</span><span class="p">]</span>
+<div class="hlcode"><pre><span class="p">[</span><span class="k">global</span><span class="p">]</span>
 <span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">pypi</span><span class="o">.</span><span class="n">douban</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">simple</span>
 <span class="n">trusted</span><span class="o">-</span><span class="n">host</span> <span class="o">=</span> <span class="n">pypi</span><span class="o">.</span><span class="n">douban</span><span class="o">.</span><span class="n">com</span>
 </pre></div>
@@ -106,23 +106,23 @@ sudo yum install libcurl-openssl-devel</p>
 <p>首先更新，必须的，不管安装什么， 要不然会出错。<code>yum update (apt-get update)</code>。 然后使用 <code>curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash</code> 安装 pyenv;</p>
 <p><code>pyenv versions</code> 查看版本，<code>pyenv global 2.7.13</code> 切换版本， 没有的话，需要先安装， <code>pyenv install 2.7.13</code> 可以安装各种版本以及Anaconda。</p>
 <p>但是一般你会安装的很慢，下载 python 安装包很慢。可以修改对应版本下的下载url。 在 <code>.pyenv/plugins/python-build/share/python-build/</code> 目录下修改对应安装版本的构建文件， 例如 2.7.13 就是 <code>.pyenv/plugins/python-build/share/python-build/2.7.13</code>；打开后编辑 url， 将原来的换成自己的一个可以很快下载的站点。</p>
-<div class="hlcode"><pre><span></span><span class="c1">#require_gcc</span>
-<span class="n">install_package</span> <span class="s2">&quot;openssl-1.0.2k&quot;</span> <span class="s2">&quot;https://www.openssl.org/source/openssl-1.0.2k.tar.gz#6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0&quot;</span> <span class="n">mac_openssl</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_openssl</span>
-<span class="n">install_package</span> <span class="s2">&quot;readline-6.3&quot;</span> <span class="s2">&quot;https://ftpmirror.gnu.org/readline/readline-6.3.tar.gz#56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43&quot;</span> <span class="n">standard</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_readline</span>
-<span class="c1">#if has_tar_xz_support; then</span>
-<span class="c1">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tar.xz#35d543986882f78261f97787fd3e06274bfa6df29fac9b4a94f73930ff98f731&quot; ldflags_dirs standard verify_py27 ensurepip</span>
-<span class="c1">#else</span>
-<span class="c1">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz#a4f05a0720ce0fd92626f0278b6b433eee9a6173ddf2bced7957dfb599a5ece1&quot; ldflags_dirs standard verify_py27 ensurepip</span>
-<span class="c1">#fi</span>
+<div class="hlcode"><pre><span class="c">#require_gcc</span>
+<span class="n">install_package</span> <span class="s">&quot;openssl-1.0.2k&quot;</span> <span class="s">&quot;https://www.openssl.org/source/openssl-1.0.2k.tar.gz#6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0&quot;</span> <span class="n">mac_openssl</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_openssl</span>
+<span class="n">install_package</span> <span class="s">&quot;readline-6.3&quot;</span> <span class="s">&quot;https://ftpmirror.gnu.org/readline/readline-6.3.tar.gz#56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43&quot;</span> <span class="n">standard</span> <span class="o">--</span><span class="k">if</span> <span class="n">has_broken_mac_readline</span>
+<span class="c">#if has_tar_xz_support; then</span>
+<span class="c">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tar.xz#35d543986882f78261f97787fd3e06274bfa6df29fac9b4a94f73930ff98f731&quot; ldflags_dirs standard verify_py27 ensurepip</span>
+<span class="c">#else</span>
+<span class="c">#  install_package &quot;Python-2.7.13&quot; &quot;https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz#a4f05a0720ce0fd92626f0278b6b433eee9a6173ddf2bced7957dfb599a5ece1&quot; ldflags_dirs standard verify_py27 ensurepip</span>
+<span class="c">#fi</span>
 
-<span class="n">install_package</span> <span class="s2">&quot;Python-2.7.13&quot;</span> <span class="s2">&quot;http://172.18.177.215:8000/Python-2.7.13.tar.xz&quot;</span> <span class="n">ldflags_dirs</span> <span class="n">standard</span> <span class="n">verify_py27</span> <span class="n">ensurepip</span>
+<span class="n">install_package</span> <span class="s">&quot;Python-2.7.13&quot;</span> <span class="s">&quot;http://172.18.177.215:8000/Python-2.7.13.tar.xz&quot;</span> <span class="n">ldflags_dirs</span> <span class="n">standard</span> <span class="n">verify_py27</span> <span class="n">ensurepip</span>
 </pre></div>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

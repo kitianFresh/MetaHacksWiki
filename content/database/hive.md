@@ -116,12 +116,14 @@ date: 2018-01-21 17:15
 ## 上述四种排序对应的 map reduce 实现方式
 ### sort by
 mapreduce 实现局部排序
+```python
 --------------------Map Phase---------------------------------|------------------------------Reduce Phase----------------------
 (map    ->    partition    ->    sort    ->  |-----------|)   ->    (shuffle    ->    merge sort    ->    group    ->    reduce)
  |              |                |           |split merge|                              |                  |               |
  |              |                |           |sort       |                              |                  |               |
 map()       Partitioner     SortComparator                                         SortComparator    GroupComparator    reduce()
 
+```
 其实 MapReduce 本身就已经是默认局部排序了， 只要实现自己的 key 的 Partitioner SortComparator 和 GroupComparator 即可自动 reduce 内部排序
 
 ### order by

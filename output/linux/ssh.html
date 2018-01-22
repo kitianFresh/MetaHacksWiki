@@ -28,31 +28,31 @@
   <h1 id="ssh-linux">ssh 设置 linux 主机互信，不输入密码</h1>
 <h2 id="_1">手动方式</h2>
 <p>将机器A 的公钥 <code>id_rsa.pub</code> 加入到 机器B的 <code>.ssh</code> 目录下的 <code>authorized_keys</code> 文件中即可； 但是一般使用 ssh-keygen 命令使用默认设置产生的密钥对<code>.ssh</code>目录里面没有 <code>authorized_keys</code>, 此时需要手动新建，这个时候很容易出错，新建之后，你会发现每次使用ssh登陆还是需要密码，重启 sshd 服务也不管用。</p>
-<p><code>ssh -v user@host</code> 去查看登陆过程的异常；<br />
+<p><code>ssh -v user@host</code> 去查看登陆过程的异常；
 这是因为 sshd 这个进程对 <code>authorized_keys</code> 有权限限制，如果<code>authorized_keys</code>文件、<code>$HOME/.ssh</code>目录 或 <code>$HOME</code>目录让本用户之外的用户有写权限，系统用户的ssh 在 <code>/etc/ssh/ssh_known_hosts</code> 目录下，那么sshd都会拒绝使用 <code>~/.ssh/authorized_keys</code> 文件中的key来进行认证的。因此你需要使用 <code>chmod 644 authorized_keys</code> 来修改文件读写权限，只有当前用户有写权限，其他只有读权限；使用 <code>man sshd</code> 查看相关手册；</p>
-<div class="hlcode"><pre><span></span>~/.ssh/authorized_keys
-             Lists the public keys <span class="o">(</span>RSA/ECDSA/DSA<span class="o">)</span> that can be used <span class="k">for</span> logging in as this user.  The format
+<div class="hlcode"><pre>~/.ssh/authorized_keys
+             Lists the public keys <span class="o">(</span>RSA/ECDSA/DSA<span class="o">)</span> that can be used <span class="k">for </span>logging in as this user.  The format
              of this file is described above.  The content of the file is not highly sensitive, but the recom-
-             mended permissions are read/write <span class="k">for</span> the user, and not accessible by others.
+             mended permissions are <span class="nb">read</span>/write <span class="k">for </span>the user, and not accessible by others.
 
              If this file, the ~/.ssh directory, or the user’s home directory are writable by other users,
-             <span class="k">then</span> the file could be modified or replaced by unauthorized users.  In this <span class="k">case</span>, sshd will not
-             allow it to be used unless the StrictModes option has been <span class="nb">set</span> to “no”.
+             <span class="k">then </span>the file could be modified or replaced by unauthorized users.  In this <span class="k">case</span>, sshd will not
+             allow it to be used unless the StrictModes option has been <span class="nb">set </span>to “no”.
 </pre></div>
 
 
 <h2 id="_2">自动方式</h2>
 <p><code>ssh-copy-id user@host</code> 是一个自动化以上过程的公钥拷贝+修改<code>authorized_keys</code> 命令，直接就解决了；查看手册：</p>
-<div class="hlcode"><pre><span></span>ssh-copy-id  is a script that uses ssh to log into a remote machine <span class="o">(</span>presumably using a login password,
-so password authentication should be enabled, unless you’ve <span class="k">done</span> some clever use  of  multiple  identi-
+<div class="hlcode"><pre>ssh-copy-id  is a script that uses ssh to log into a remote machine <span class="o">(</span>presumably using a login password,
+so password authentication should be enabled, unless you’ve <span class="k">done </span>some clever use  of  multiple  identi-
 ties<span class="o">)</span>  It also changes the permissions of the remote user’s home, ~/.ssh, and ~/.ssh/authorized_keys to
-remove group writability <span class="o">(</span>which would otherwise prevent you from logging in, <span class="k">if</span>  the  remote  sshd  has
-StrictModes  <span class="nb">set</span>  in its configuration<span class="o">)</span>.  If the -i option is given <span class="k">then</span> the identity file <span class="o">(</span>defaults to
+remove group writability <span class="o">(</span>which would otherwise prevent you from logging in, <span class="k">if  </span>the  remote  sshd  has
+StrictModes  <span class="nb">set  </span>in its configuration<span class="o">)</span>.  If the -i option is given <span class="k">then </span>the identity file <span class="o">(</span>defaults to
 ~/.ssh/id_rsa.pub<span class="o">)</span> is used, regardless of whether there are any keys in your ssh-agent.  Otherwise,  <span class="k">if</span>
 this:       ssh-add -L provides any output, it uses that in preference to the identity file.  If the -i
-option is used, or the ssh-add produced no output, <span class="k">then</span> it uses the  contents  of  the  identity  file.
+option is used, or the ssh-add produced no output, <span class="k">then </span>it uses the  contents  of  the  identity  file.
 Once  it  has  one or more fingerprints <span class="o">(</span>by whatever means<span class="o">)</span> it uses ssh to append them to ~/.ssh/autho-
-rized_keys on the remote machine <span class="o">(</span>creating the file, and directory, <span class="k">if</span> necessary<span class="o">)</span>
+rized_keys on the remote machine <span class="o">(</span>creating the file, and directory, <span class="k">if </span>necessary<span class="o">)</span>
 </pre></div>
 
 
@@ -62,35 +62,35 @@ rized_keys on the remote machine <span class="o">(</span>creating the file, and 
 <ol>
 <li>转发到远端：<code>ssh -C -f -N -g -L 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
 <li>转发到本地：<code>ssh -C -f -N -g –R 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
-<li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code><br />
-ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98<br />
+<li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code>
+ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98
 端口转发 ssh -p 44392 root@10.4.225.98</li>
 </ol>
 <h1 id="ssh">ssh</h1>
-<div class="hlcode"><pre><span></span>ssh -p user@host
-ssh -p 29911 root@hillsun.hacksmeta.com
+<div class="hlcode"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="n">user</span><span class="err">@</span><span class="n">host</span>
+<span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="mi">29911</span> <span class="n">root</span><span class="err">@</span><span class="n">hillsun</span><span class="p">.</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span>
 </pre></div>
 
 
 <p>密钥分发</p>
-<div class="hlcode"><pre><span></span>cat id_rsa.pub.bak | ssh kinny@ai.mc2lab.com &quot;cat &gt;&gt;  ~/.ssh/authorized_keys&quot;
+<div class="hlcode"><pre><span class="n">cat</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="o">|</span> <span class="n">ssh</span> <span class="n">kinny</span><span class="err">@</span><span class="n">ai</span><span class="p">.</span><span class="n">mc2lab</span><span class="p">.</span><span class="n">com</span> <span class="s">&quot;cat &gt;&gt;  ~/.ssh/authorized_keys&quot;</span>
 
-scp id_rsa.pub.bak kinny@hacksmeta.com:~/.ssh
+<span class="n">scp</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span><span class="n">bak</span> <span class="n">kinny</span><span class="err">@</span><span class="n">hacksmeta</span><span class="p">.</span><span class="n">com</span><span class="o">:~/</span><span class="p">.</span><span class="n">ssh</span>
 </pre></div>
 
 
 <h1 id="scpsecurity-copying">scp(Security Copying)</h1>
 <ol>
 <li>
-<p>文件从本机到服务器<br />
+<p>文件从本机到服务器
 <code>scp user_item_analysis.py ustc@192.168.231.97:~/kinny/</code></p>
 </li>
 <li>
-<p>文件从服务器下载到本地<br />
+<p>文件从服务器下载到本地
 <code>scp ustc@192.168.231.97:~/kinny/data/user_item_label_table.csv ./Study/competition/jd/JData/data</code></p>
 </li>
 <li>
-<p>目录<br />
+<p>目录
 加个 <code>-r</code> 参数 <code>scp -r</code> </p>
 </li>
 </ol>
@@ -99,7 +99,7 @@ scp id_rsa.pub.bak kinny@hacksmeta.com:~/.ssh
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>

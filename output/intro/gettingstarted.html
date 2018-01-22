@@ -44,9 +44,9 @@
 </ul>
 </div>
 <h1 id="simiki">Simiki</h1>
-<p><a href="https://pypi.python.org/pypi/simiki"><img alt="Latest Version" src="http://img.shields.io/pypi/v/simiki.svg" /></a><br />
-<a href="https://github.com/tankywoo/simiki/blob/master/LICENSE"><img alt="The MIT License" src="http://img.shields.io/badge/license-MIT-yellow.svg" /></a><br />
-<a href="https://travis-ci.org/tankywoo/simiki"><img alt="Build Status" src="https://travis-ci.org/tankywoo/simiki.svg" /></a><br />
+<p><a href="https://pypi.python.org/pypi/simiki"><img alt="Latest Version" src="http://img.shields.io/pypi/v/simiki.svg" /></a>
+<a href="https://github.com/tankywoo/simiki/blob/master/LICENSE"><img alt="The MIT License" src="http://img.shields.io/badge/license-MIT-yellow.svg" /></a>
+<a href="https://travis-ci.org/tankywoo/simiki"><img alt="Build Status" src="https://travis-ci.org/tankywoo/simiki.svg" /></a>
 <a href="https://coveralls.io/r/tankywoo/simiki"><img alt="Coverage Status" src="https://img.shields.io/coveralls/tankywoo/simiki.svg" /></a></p>
 <p>Simiki is a simple wiki framework, written in <a href="https://www.python.org/">Python</a>.</p>
 <ul>
@@ -59,33 +59,33 @@
 <p>Simiki is short for <code>Simple Wiki</code> :)</p>
 <h2 id="quick-start">Quick Start</h2>
 <h3 id="install">Install</h3>
-<div class="hlcode"><pre><span></span>pip install simiki
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">simiki</span>
 </pre></div>
 
 
 <h3 id="update">Update</h3>
-<div class="hlcode"><pre><span></span>pip install -U simiki
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">simiki</span>
 </pre></div>
 
 
 <h3 id="init-site">Init Site</h3>
-<div class="hlcode"><pre><span></span>mkdir mywiki &amp;&amp; cd mywiki
-simiki init
+<div class="hlcode"><pre><span class="n">mkdir</span> <span class="n">mywiki</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">mywiki</span>
+<span class="n">simiki</span> <span class="n">init</span>
 </pre></div>
 
 
 <h3 id="create-a-new-wiki">Create a new wiki</h3>
-<div class="hlcode"><pre><span></span>simiki n -t &#39;test&#39; -c linux
+<div class="hlcode"><pre><span class="n">simiki</span> <span class="n">n</span> <span class="o">-</span><span class="n">t</span> <span class="err">&#39;</span><span class="n">test</span><span class="err">&#39;</span> <span class="o">-</span><span class="n">c</span> <span class="n">linux</span>
 </pre></div>
 
 
 <h3 id="generate">Generate</h3>
-<div class="hlcode"><pre><span></span>simiki g
+<div class="hlcode"><pre><span class="n">simiki</span> <span class="n">g</span>
 </pre></div>
 
 
 <h3 id="preview">Preview</h3>
-<div class="hlcode"><pre><span></span>simiki p -w
+<div class="hlcode"><pre><span class="n">simiki</span> <span class="n">p</span> <span class="o">-</span><span class="n">w</span>
 </pre></div>
 
 
@@ -98,7 +98,7 @@ simiki init
 <li><a href="https://github.com/tankywoo/simiki/wiki/Simiki-Users">Simiki Users</a></li>
 </ul>
 <h2 id="github-page">github page的相关概念</h2>
-<p>Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。<code>User pages must be built from the master branch.</code><br />
+<p>Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。<code>User pages must be built from the master branch.</code>
 因此一个账户有且仅有一个 user pages. organization page 和 user pages 类似。那如何在一个账户创建多个 pages呢? 就是另一个 project pages 了。其实每一个项目都可以创建 project pages 来发布。对于project page，你可以选择 master 作为 githubpages 发布源，也可以选择 gh-pages 分支作为发布源，因为pages一般是用来说明项目的，因此项目一般不要使用主分支发布，直接使用 gh-pages 分支更好，这样就和你的 master 代码分开了。如果你就是想要在主分支发布，那么在主分支的root目录下必须要有一个 /docs 目录，发布源代码需要在 /docs 目录下。 自定义域名只要 在发布源的代码目录下面加入CNAME文件即可，里面只需要填写你的自定义域名！如果你的域名还未被DNS收录，那么github会发出警告消息。</p>
 <p>我的wiki就是使用 project page，然后 master 是所有的源文件代码目录和markdown笔记文件，但是这个并不是发布源，发布源使用 gh-pages 分支，每次只发布 output 目录下的东西，也就是说我的 gh-pages 分支，只有simiki 生成的output目录下的内容。主分支是整个内容。每次最终要发布的内容推送到 gh-pages 分支，然后备份是推送到 master 分支，这样我的md文件就不会丢失了！在其他电脑上我也可以下载下来编辑和修改，然后重新发布！</p>
 <h2 id="_1">配置参考</h2>
@@ -114,7 +114,7 @@ simiki init
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 11:18:02</p>
+        <p>Site Generated 2018-01-22 22:59:48</p>
       </span>
     </div>
   </body>
