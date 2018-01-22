@@ -31,7 +31,6 @@
 <p>race condition dead lock</p>
 <h2 id="_3">流水线并行</h2>
 <p>non-blocking io event-driven system</p>
-<h2 id="functional-parallelism">函数式并行(Functional Parallelism)</h2>
 <p>单个任务可以被拆分成多个部分来处理，每个部分都是一个函数，数据经过这些函数的时候是并行处理的，其实就是流水线<br />
 mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比如 web server database server 都是不适合用函数式并行的，因为cpu本来就在处理多任务</p>
 <p>多线程线程池并发的缺点就在于，第一，池子本身有限制，第二线程虽小但是还是耗费资源的，当用户量达到一定程度的时候，可能资源紧张无法创建线程了，而且切换开销也变得很大，多线程就无法解决问题了。第三，对于IO密集的任务，开启线程来处理，可能大多数线程是在阻塞而不是在计算，CPU资源大大浪费，而且还占用内存等各种资源。在多线程并发服务模型当中，主线程相当于流水线第一级，所有的从线程相当于流水线第二级，流水2级+从线程并行得以提高效率。线程池主要是去掉了线程的创建销毁开销时间。这种模型适合用户请求的计算密集任务（前提是多线程能真的充分利用多核并行计算，任务之间最好还没有相关性）。在 Python 中由于多线程有GIL，因此计算密集型的任务反而不合适，对于IO需求型的任务，由于Python线程在底层调用C的IO时候会释放GIL，反而效率比做计算密集型任务更好(计算密集在Python中最好使用多进程)。</p>
@@ -41,7 +40,7 @@ mapreduce; 但是对于本来就运行多个不同类型的任务的系统，比
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-08 10:24:10</p>
+        <p>Site Generated 2018-01-22 11:18:02</p>
       </span>
     </div>
   </body>

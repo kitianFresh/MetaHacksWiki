@@ -185,3 +185,7 @@ function python_style_check() {
 python_style_check
 ```
 不设置的话，直接去掉这个文件即可。
+
+java 多核和单核对int类型的存储有什么区别？
+Java concurrentHashMap 实现， 分段+读写分离的锁
+SQL 求
