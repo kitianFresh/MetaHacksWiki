@@ -243,6 +243,159 @@ Runnable和Callable都代表那些要在不同的线程中执行的任务。Runn
 ## 7. Java中CyclicBarrier 和 CountDownLatch 有什么不同?
 CyclicBarrier 和 CountDownLatch 都可以用来让一组线程等待其它线程。与 CyclicBarrier 不同的是，CountdownLatch 不能重新使用. [教程](http://javarevisited.blogspot.com/2012/07/cyclicbarrier-example-java-5-concurrency-tutorial.html)
 
+CountDownLatch 一般就是一个线程等待所有线程完成之后，主线程开始后续动作；比如服务退出时候，主线程需要等待所有子线程完成任务退出之后才能退出，服务启动的时候，主线程需要等待所有子线程先启动子服务之后才能继续启动；应用非常广泛，python 中可以自己实现；
+```java
+import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Java program to demonstrate How to use CountDownLatch in Java. CountDownLatch is
+ * useful if you want to start main processing thread once its dependency is completed
+ * as illustrated in this CountDownLatch Example
+ * 
+ * @author Javin Paul
+ */
+public class CountDownLatchDemo {
+
+    public static void main(String args[]) {
+       final CountDownLatch latch = new CountDownLatch(3);
+       Thread cacheService = new Thread(new Service("CacheService", 1000, latch));
+       Thread alertService = new Thread(new Service("AlertService", 1000, latch));
+       Thread validationService = new Thread(new Service("ValidationService", 1000, latch));
+      
+       cacheService.start(); //separate thread will initialize CacheService
+       alertService.start(); //another thread for AlertService initialization
+       validationService.start();
+      
+       // application should not start processing any thread until all service is up
+       // and ready to do there job.
+       // Countdown latch is idle choice here, main thread will start with count 3
+       // and wait until count reaches zero. each thread once up and read will do
+       // a count down. this will ensure that main thread is not started processing
+       // until all services is up.
+      
+       //count is 3 since we have 3 Threads (Services)
+      
+       try{
+            latch.await();  //main thread is waiting on CountDownLatch to finish
+            System.out.println("All services are up, Application is starting now");
+       }catch(InterruptedException ie){
+           ie.printStackTrace();
+       }
+      
+    }
+  
+}
+
+/**
+ * Service class which will be executed by Thread using CountDownLatch synchronizer.
+ */
+class Service implements Runnable{
+    private final String name;
+    private final int timeToStart;
+    private final CountDownLatch latch;
+  
+    public Service(String name, int timeToStart, CountDownLatch latch){
+        this.name = name;
+        this.timeToStart = timeToStart;
+        this.latch = latch;
+    }
+  
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(timeToStart);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println( name + " is Up");
+        latch.countDown(); //reduce count of CountDownLatch by 1
+    }
+  
+}
+
+Output:
+ValidationService is Up
+AlertService is Up
+CacheService is Up
+All services are up, Application is starting now
+```
+
+CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．
+CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDownLatch 也可以；
+```java
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Java program to demonstrate how to use CyclicBarrier in Java. CyclicBarrier is a
+ * new Concurrency Utility added in Java 5 Concurrent package.
+ *
+ * @author Javin Paul
+ */
+public class CyclicBarrierExample {
+
+    //Runnable task for each thread
+    private static class Task implements Runnable {
+
+        private CyclicBarrier barrier;
+
+        public Task(CyclicBarrier barrier) {
+            this.barrier = barrier;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.println(Thread.currentThread().getName() + " is waiting on barrier");
+                barrier.await();
+                System.out.println(Thread.currentThread().getName() + " has crossed the barrier");
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CyclicBarrierExample.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BrokenBarrierException ex) {
+                Logger.getLogger(CyclicBarrierExample.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public static void main(String args[]) {
+
+        //creating CyclicBarrier with 3 parties i.e. 3 Threads needs to call await()
+        final CyclicBarrier cb = new CyclicBarrier(3, new Runnable(){
+            @Override
+            public void run(){
+                //This task will be executed once all thread reaches barrier
+                System.out.println("All parties are arrived at barrier, lets play");
+            }
+        });
+
+        //starting each of thread
+        Thread t1 = new Thread(new Task(cb), "Thread 1");
+        Thread t2 = new Thread(new Task(cb), "Thread 2");
+        Thread t3 = new Thread(new Task(cb), "Thread 3");
+
+        t1.start();
+        t2.start();
+        t3.start();
+      
+    }
+}
+
+Output:
+Thread 1 is waiting on barrier
+Thread 3 is waiting on barrier
+Thread 2 is waiting on barrier
+All parties have arrived at barrier, lets play
+Thread 3 has crossed the barrier
+Thread 1 has crossed the barrier
+Thread 2 has crossed the barrier
+```
+
+
 ## 8. <del>Java 内存模型?(<<Java并发编程实践>>第16章)</del>
 
 ## 9. Java 的 `volatile` 变量是什么?
@@ -584,33 +737,126 @@ public final int incrementAndGet(){
             return next;
     }
 }
+
+ public final int getAndIncrement() {
+    for (;;) {
+        int current = get();
+        int next = current + 1;
+        if (compareAndSet(current, next))
+            return current;
+    }
+}
+
+public final boolean compareAndSet(int expect, int update) {
+    return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
+}
 ```
 CAS模拟
 ```java
 
-public class SimulatedCAS {
-    private int value;
+class SimulatedCAS {
+	private long value;
+	
+	public synchronized long get() {
+		return value;
+	}
+	
+	public synchronized boolean compareAndSwapLong(long expected, long newValue) {
+		long oldValue = value;
+		if (oldValue == expected) {
+			value = newValue;
+			return true;
+		}
+		return false;
+	}
+	
+}
 
-    public synchronized int get(){
-        return value;
-    }
-
-    public synchronized int compareAndSwap(int expectedValue, int newValue){
-        int oldValue = value;
-        if (oldValue == expectedValue){
-            value = newValue;
-        }
-        return oldValue;
-    }
-
-    public synchronized boolean compareAndSet(int expectedValue, int newValue){
-        return (expectedValue == compareAndSwap(expectedValue,newValue));
-    }
+class SimulatedCASCounter {
+	private SimulatedCAS value;
+	
+	public final long getCounter() {
+		return value.get();
+	}
+	
+	public long incrementAndGet() {
+		for (;;) {
+			long expected = value.get();
+			long next = expected + 1;
+			if (value.compareAndSwapLong(expected, next)) {
+				return next;
+			}
+		}
+	}
+	
+	public long getAndIncrement() {
+		for (;;) {
+			long expected = value.get();
+			long next = expected + 1;
+			if (value.compareAndSwapLong(expected, next)) {
+				return expected;
+			}
+		}
+	}
+	
 }
 ```
+
+使用sun.misc.Unsafe 实现CASCounter
+```java
+public class CASCounter {
+	private Unsafe unsafe;
+	private volatile long counter = 0;
+	private long offset;
+	
+	private Unsafe getUnsafe() throws IllegalAccessException, NoSuchFieldException {
+		Field f = Unsafe.class.getDeclaredField("theUnsafe");
+		f.setAccessible(true);
+		return (Unsafe) f.get(null);
+	}
+	
+	public CASCounter() throws Exception {
+		unsafe = getUnsafe();
+		offset = unsafe.objectFieldOffset(CASCounter.class.getDeclaredField("counter"));
+	}
+	
+	public void increment(){
+		long expected = counter;
+		while (!unsafe.compareAndSwapLong(this, offset, expected, expected+1)) {
+			expected = counter;
+		}
+	}
+	
+	public long incrementAndGet(){
+		long expected = counter;
+		while (!unsafe.compareAndSwapLong(this, offset, expected, expected+1)) {
+			expected = counter;
+		}
+		return expected + 1;
+	}
+	
+	public long getAndIncrement() {
+		long expected = counter;
+		while (!unsafe.compareAndSwapLong(this, offset, expected, expected+1)) {
+			expected = counter;
+		}
+		return expected;
+	}
+	public long getCounter() {
+		return counter;
+	}
+}
+``` 
 
 ### CountDownLatch 和 CyclicBarrier
 
 - [Java concurrency – CountDownLatch Example](https://howtodoinjava.com/core-java/multi-threading/when-to-use-countdownlatch-java-concurrency-example-tutorial/)
 - [CountDownLatch](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html)
 - [CyclicBarrier](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CyclicBarrier.html)
+
+### sun.misc.Unsafe
+- [Guide to sun.misc.Unsafe](http://www.baeldung.com/java-unsafe)
+- [Understanding sun.misc.Unsafe](https://dzone.com/articles/understanding-sunmiscunsafe)
+- [Java Magic. Part 4: sun.misc.Unsafe](http://mishadoff.com/blog/java-magic-part-4-sun-dot-misc-dot-unsafe/)
+- [Java Magic. Part 5: SecurityManager](http://mishadoff.com/blog/java-magic-part-5-securitymanager/)
+- [Java Magic. Part 3: Finally](http://mishadoff.com/blog/java-magic-part-3-finally/)
