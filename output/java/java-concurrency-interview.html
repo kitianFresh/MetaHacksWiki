@@ -276,6 +276,158 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 <p>Runnable和Callable都代表那些要在不同的线程中执行的任务。Runnable从JDK1.0开始就有了，Callable是在JDK1.5增加的。它们的主要区别是<strong>Callable的 call() 方法可以返回值和抛出异常</strong>，而<strong>Runnable的run()方法没有这些功能。Callable可以返回装载有计算结果的Future对象.</strong></p>
 <h2 id="7-javacyclicbarrier-countdownlatch">7. Java中CyclicBarrier 和 CountDownLatch 有什么不同?</h2>
 <p>CyclicBarrier 和 CountDownLatch 都可以用来让一组线程等待其它线程。与 CyclicBarrier 不同的是，CountdownLatch 不能重新使用. <a href="http://javarevisited.blogspot.com/2012/07/cyclicbarrier-example-java-5-concurrency-tutorial.html">教程</a></p>
+<p>CountDownLatch 一般就是一个线程等待所有线程完成之后，主线程开始后续动作；比如服务退出时候，主线程需要等待所有子线程完成任务退出之后才能退出，服务启动的时候，主线程需要等待所有子线程先启动子服务之后才能继续启动；应用非常广泛，python 中可以自己实现；</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.CountDownLatch</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.logging.Level</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.logging.Logger</span><span class="o">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Java program to demonstrate How to use CountDownLatch in Java. CountDownLatch is</span>
+<span class="cm"> * useful if you want to start main processing thread once its dependency is completed</span>
+<span class="cm"> * as illustrated in this CountDownLatch Example</span>
+<span class="cm"> * </span>
+<span class="cm"> * @author Javin Paul</span>
+<span class="cm"> */</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CountDownLatchDemo</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+       <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">latch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+       <span class="n">Thread</span> <span class="n">cacheService</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Service</span><span class="o">(</span><span class="s">&quot;CacheService&quot;</span><span class="o">,</span> <span class="mi">1000</span><span class="o">,</span> <span class="n">latch</span><span class="o">));</span>
+       <span class="n">Thread</span> <span class="n">alertService</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Service</span><span class="o">(</span><span class="s">&quot;AlertService&quot;</span><span class="o">,</span> <span class="mi">1000</span><span class="o">,</span> <span class="n">latch</span><span class="o">));</span>
+       <span class="n">Thread</span> <span class="n">validationService</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Service</span><span class="o">(</span><span class="s">&quot;ValidationService&quot;</span><span class="o">,</span> <span class="mi">1000</span><span class="o">,</span> <span class="n">latch</span><span class="o">));</span>
+
+       <span class="n">cacheService</span><span class="o">.</span><span class="na">start</span><span class="o">();</span> <span class="c1">//separate thread will initialize CacheService</span>
+       <span class="n">alertService</span><span class="o">.</span><span class="na">start</span><span class="o">();</span> <span class="c1">//another thread for AlertService initialization</span>
+       <span class="n">validationService</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+
+       <span class="c1">// application should not start processing any thread until all service is up</span>
+       <span class="c1">// and ready to do there job.</span>
+       <span class="c1">// Countdown latch is idle choice here, main thread will start with count 3</span>
+       <span class="c1">// and wait until count reaches zero. each thread once up and read will do</span>
+       <span class="c1">// a count down. this will ensure that main thread is not started processing</span>
+       <span class="c1">// until all services is up.</span>
+
+       <span class="c1">//count is 3 since we have 3 Threads (Services)</span>
+
+       <span class="k">try</span><span class="o">{</span>
+            <span class="n">latch</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>  <span class="c1">//main thread is waiting on CountDownLatch to finish</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;All services are up, Application is starting now&quot;</span><span class="o">);</span>
+       <span class="o">}</span><span class="k">catch</span><span class="o">(</span><span class="n">InterruptedException</span> <span class="n">ie</span><span class="o">){</span>
+           <span class="n">ie</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+       <span class="o">}</span>
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Service class which will be executed by Thread using CountDownLatch synchronizer.</span>
+<span class="cm"> */</span>
+<span class="kd">class</span> <span class="nc">Service</span> <span class="kd">implements</span> <span class="n">Runnable</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">timeToStart</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">latch</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Service</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="kt">int</span> <span class="n">timeToStart</span><span class="o">,</span> <span class="n">CountDownLatch</span> <span class="n">latch</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">timeToStart</span> <span class="o">=</span> <span class="n">timeToStart</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">latch</span> <span class="o">=</span> <span class="n">latch</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">timeToStart</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">Service</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">log</span><span class="o">(</span><span class="n">Level</span><span class="o">.</span><span class="na">SEVERE</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&quot; is Up&quot;</span><span class="o">);</span>
+        <span class="n">latch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span> <span class="c1">//reduce count of CountDownLatch by 1</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="nl">Output:</span>
+<span class="n">ValidationService</span> <span class="n">is</span> <span class="n">Up</span>
+<span class="n">AlertService</span> <span class="n">is</span> <span class="n">Up</span>
+<span class="n">CacheService</span> <span class="n">is</span> <span class="n">Up</span>
+<span class="n">All</span> <span class="n">services</span> <span class="n">are</span> <span class="n">up</span><span class="o">,</span> <span class="n">Application</span> <span class="n">is</span> <span class="n">starting</span> <span class="n">now</span>
+</pre></div>
+
+
+<p>CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．
+CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDownLatch 也可以；</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">java.util.concurrent.BrokenBarrierException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.CyclicBarrier</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.logging.Level</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.logging.Logger</span><span class="o">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Java program to demonstrate how to use CyclicBarrier in Java. CyclicBarrier is a</span>
+<span class="cm"> * new Concurrency Utility added in Java 5 Concurrent package.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @author Javin Paul</span>
+<span class="cm"> */</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CyclicBarrierExample</span> <span class="o">{</span>
+
+    <span class="c1">//Runnable task for each thread</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Task</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+
+        <span class="kd">private</span> <span class="n">CyclicBarrier</span> <span class="n">barrier</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="nf">Task</span><span class="o">(</span><span class="n">CyclicBarrier</span> <span class="n">barrier</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">barrier</span> <span class="o">=</span> <span class="n">barrier</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; is waiting on barrier&quot;</span><span class="o">);</span>
+                <span class="n">barrier</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; has crossed the barrier&quot;</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">CyclicBarrierExample</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">log</span><span class="o">(</span><span class="n">Level</span><span class="o">.</span><span class="na">SEVERE</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">BrokenBarrierException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">CyclicBarrierExample</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">log</span><span class="o">(</span><span class="n">Level</span><span class="o">.</span><span class="na">SEVERE</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+
+        <span class="c1">//creating CyclicBarrier with 3 parties i.e. 3 Threads needs to call await()</span>
+        <span class="kd">final</span> <span class="n">CyclicBarrier</span> <span class="n">cb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CyclicBarrier</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="k">new</span> <span class="n">Runnable</span><span class="o">(){</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">(){</span>
+                <span class="c1">//This task will be executed once all thread reaches barrier</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;All parties are arrived at barrier, lets play&quot;</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+
+        <span class="c1">//starting each of thread</span>
+        <span class="n">Thread</span> <span class="n">t1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Task</span><span class="o">(</span><span class="n">cb</span><span class="o">),</span> <span class="s">&quot;Thread 1&quot;</span><span class="o">);</span>
+        <span class="n">Thread</span> <span class="n">t2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Task</span><span class="o">(</span><span class="n">cb</span><span class="o">),</span> <span class="s">&quot;Thread 2&quot;</span><span class="o">);</span>
+        <span class="n">Thread</span> <span class="n">t3</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Task</span><span class="o">(</span><span class="n">cb</span><span class="o">),</span> <span class="s">&quot;Thread 3&quot;</span><span class="o">);</span>
+
+        <span class="n">t1</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+        <span class="n">t2</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+        <span class="n">t3</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nl">Output:</span>
+<span class="n">Thread</span> <span class="mi">1</span> <span class="n">is</span> <span class="n">waiting</span> <span class="n">on</span> <span class="n">barrier</span>
+<span class="n">Thread</span> <span class="mi">3</span> <span class="n">is</span> <span class="n">waiting</span> <span class="n">on</span> <span class="n">barrier</span>
+<span class="n">Thread</span> <span class="mi">2</span> <span class="n">is</span> <span class="n">waiting</span> <span class="n">on</span> <span class="n">barrier</span>
+<span class="n">All</span> <span class="n">parties</span> <span class="n">have</span> <span class="n">arrived</span> <span class="n">at</span> <span class="n">barrier</span><span class="o">,</span> <span class="n">lets</span> <span class="n">play</span>
+<span class="n">Thread</span> <span class="mi">3</span> <span class="n">has</span> <span class="n">crossed</span> <span class="n">the</span> <span class="n">barrier</span>
+<span class="n">Thread</span> <span class="mi">1</span> <span class="n">has</span> <span class="n">crossed</span> <span class="n">the</span> <span class="n">barrier</span>
+<span class="n">Thread</span> <span class="mi">2</span> <span class="n">has</span> <span class="n">crossed</span> <span class="n">the</span> <span class="n">barrier</span>
+</pre></div>
+
+
 <h2 id="8-java-16">8. <del>Java 内存模型?(&lt;<Java并发编程实践>&gt;第16章)</del></h2>
 <h2 id="9-java-volatile">9. Java 的 <code>volatile</code> 变量是什么?</h2>
 <p><strong><code>volatile</code>修饰符只能修饰成员变量, 他使得多线程环境下一个线程对变量的写操作对其他读线程立即可见!相当于指明变量不经允许缓存cache.</strong> <code>volatile</code>变量可以保证下一个读取操作会在前一个写操作之后发生，就是上一题的<code>volatile</code>变量规则。仅仅<strong>当只有一个写线程,其他都是读线程的并发环境下,才能只用该变量而不用枷锁来实现线程安全!</strong></p>
@@ -578,27 +730,113 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
             <span class="k">return</span> <span class="n">next</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span>
+
+ <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="nf">getAndIncrement</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">current</span> <span class="o">=</span> <span class="n">get</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">next</span> <span class="o">=</span> <span class="n">current</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">compareAndSet</span><span class="o">(</span><span class="n">current</span><span class="o">,</span> <span class="n">next</span><span class="o">))</span>
+            <span class="k">return</span> <span class="n">current</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">final</span> <span class="kt">boolean</span> <span class="nf">compareAndSet</span><span class="o">(</span><span class="kt">int</span> <span class="n">expect</span><span class="o">,</span> <span class="kt">int</span> <span class="n">update</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">unsafe</span><span class="o">.</span><span class="na">compareAndSwapInt</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">valueOffset</span><span class="o">,</span> <span class="n">expect</span><span class="o">,</span> <span class="n">update</span><span class="o">);</span>
+<span class="o">}</span>
 </pre></div>
 
 
 <p>CAS模拟</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SimulatedCAS</span> <span class="o">{</span>
-    <span class="kd">private</span> <span class="kt">int</span> <span class="n">value</span><span class="o">;</span>
+<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">SimulatedCAS</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
 
-    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">get</span><span class="o">(){</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">long</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
         <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
     <span class="o">}</span>
 
-    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">compareAndSwap</span><span class="o">(</span><span class="kt">int</span> <span class="n">expectedValue</span><span class="o">,</span> <span class="kt">int</span> <span class="n">newValue</span><span class="o">){</span>
-        <span class="kt">int</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">oldValue</span> <span class="o">==</span> <span class="n">expectedValue</span><span class="o">){</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">boolean</span> <span class="nf">compareAndSwapLong</span><span class="o">(</span><span class="kt">long</span> <span class="n">expected</span><span class="o">,</span> <span class="kt">long</span> <span class="n">newValue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">oldValue</span> <span class="o">==</span> <span class="n">expected</span><span class="o">)</span> <span class="o">{</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">newValue</span><span class="o">;</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
         <span class="o">}</span>
-        <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
     <span class="o">}</span>
 
-    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">boolean</span> <span class="nf">compareAndSet</span><span class="o">(</span><span class="kt">int</span> <span class="n">expectedValue</span><span class="o">,</span> <span class="kt">int</span> <span class="n">newValue</span><span class="o">){</span>
-        <span class="k">return</span> <span class="o">(</span><span class="n">expectedValue</span> <span class="o">==</span> <span class="n">compareAndSwap</span><span class="o">(</span><span class="n">expectedValue</span><span class="o">,</span><span class="n">newValue</span><span class="o">));</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">SimulatedCASCounter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">SimulatedCAS</span> <span class="n">value</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kd">final</span> <span class="kt">long</span> <span class="nf">getCounter</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">incrementAndGet</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+            <span class="kt">long</span> <span class="n">expected</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+            <span class="kt">long</span> <span class="n">next</span> <span class="o">=</span> <span class="n">expected</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">compareAndSwapLong</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">next</span><span class="o">))</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">next</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">getAndIncrement</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+            <span class="kt">long</span> <span class="n">expected</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+            <span class="kt">long</span> <span class="n">next</span> <span class="o">=</span> <span class="n">expected</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">compareAndSwapLong</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">next</span><span class="o">))</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">expected</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+
+<p>使用sun.misc.Unsafe 实现CASCounter</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CASCounter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Unsafe</span> <span class="n">unsafe</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">long</span> <span class="n">offset</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="n">Unsafe</span> <span class="nf">getUnsafe</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IllegalAccessException</span><span class="o">,</span> <span class="n">NoSuchFieldException</span> <span class="o">{</span>
+        <span class="n">Field</span> <span class="n">f</span> <span class="o">=</span> <span class="n">Unsafe</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;theUnsafe&quot;</span><span class="o">);</span>
+        <span class="n">f</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">Unsafe</span><span class="o">)</span> <span class="n">f</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">CASCounter</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">unsafe</span> <span class="o">=</span> <span class="n">getUnsafe</span><span class="o">();</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">unsafe</span><span class="o">.</span><span class="na">objectFieldOffset</span><span class="o">(</span><span class="n">CASCounter</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;counter&quot;</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">increment</span><span class="o">(){</span>
+        <span class="kt">long</span> <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(!</span><span class="n">unsafe</span><span class="o">.</span><span class="na">compareAndSwapLong</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">expected</span><span class="o">,</span> <span class="n">expected</span><span class="o">+</span><span class="mi">1</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">incrementAndGet</span><span class="o">(){</span>
+        <span class="kt">long</span> <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(!</span><span class="n">unsafe</span><span class="o">.</span><span class="na">compareAndSwapLong</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">expected</span><span class="o">,</span> <span class="n">expected</span><span class="o">+</span><span class="mi">1</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">expected</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">getAndIncrement</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(!</span><span class="n">unsafe</span><span class="o">.</span><span class="na">compareAndSwapLong</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">expected</span><span class="o">,</span> <span class="n">expected</span><span class="o">+</span><span class="mi">1</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">counter</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">expected</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">getCounter</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">counter</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span>
 </pre></div>
@@ -610,12 +848,20 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 <li><a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html">CountDownLatch</a></li>
 <li><a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CyclicBarrier.html">CyclicBarrier</a></li>
 </ul>
+<h3 id="sunmiscunsafe">sun.misc.Unsafe</h3>
+<ul>
+<li><a href="http://www.baeldung.com/java-unsafe">Guide to sun.misc.Unsafe</a></li>
+<li><a href="https://dzone.com/articles/understanding-sunmiscunsafe">Understanding sun.misc.Unsafe</a></li>
+<li><a href="http://mishadoff.com/blog/java-magic-part-4-sun-dot-misc-dot-unsafe/">Java Magic. Part 4: sun.misc.Unsafe</a></li>
+<li><a href="http://mishadoff.com/blog/java-magic-part-5-securitymanager/">Java Magic. Part 5: SecurityManager</a></li>
+<li><a href="http://mishadoff.com/blog/java-magic-part-3-finally/">Java Magic. Part 3: Finally</a></li>
+</ul>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-22 22:59:48</p>
+        <p>Site Generated 2018-01-24 23:42:45</p>
       </span>
     </div>
   </body>
