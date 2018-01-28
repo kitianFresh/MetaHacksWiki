@@ -17,6 +17,8 @@ default_ext: md
 pygments: true
 debug: false
 
+theme: simple
+
 deploy:
   - type: git
     remote: origin
