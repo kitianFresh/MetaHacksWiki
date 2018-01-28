@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>flask - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-web">python-web</a>&nbsp;»&nbsp;flask</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">flask</div>
+<div id="content">
+  <h1 id="flaskr">flaskr 开发笔记</h1>
+<h2 id="python">Python 虚拟环境使用</h2>
+<p>虚拟环境很好使，推荐使用，他不会影响你的Ubuntu自带的Python环境，相当于重新创建了一个Python环境，然后在这个环境下进行包的安装和开发！以下是简单的安装和使用方法</p>
+<div class="hlcode"><pre><span class="c1">// 可能没得virtaualenv，先安装</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">pip</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span> <span class="n">python</span><span class="o">-</span><span class="n">virtualenv</span>
+<span class="c1">// 然后新建一个目录,比如你的项目</span>
+<span class="n">mkdir</span> <span class="n">todo</span><span class="o">-</span><span class="n">api</span>
+<span class="n">cd</span> <span class="n">todo</span><span class="o">-</span><span class="n">api</span>
+<span class="c1">// 该句会创建一个flask目录，就是一个新的Python虚拟环境，里面的目录结构其实和主机上Python目录结构很类似，都有bin目录下的命令，比如pip，python，activate等</span>
+<span class="n">virtualenv</span> <span class="n">flask</span>
+<span class="c1">//然后你可以使用flask/bin/pip安装项目需要的依赖包，此时安装的就是Flask包了，他在flask/lib/python2.7/site-packages目录下面，不会影响local Python的。</span>
+<span class="n">flask</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="n">flask</span>
+<span class="c1">//如果你想要运行.py文件，可以直接使用</span>
+<span class="n">flask</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python</span> <span class="n">app</span><span class="p">.</span><span class="n">py</span>
+<span class="c1">//当然还可以使用</span>
+<span class="n">chmod</span> <span class="n">a</span><span class="o">+</span><span class="n">x</span> <span class="n">app</span><span class="p">.</span><span class="n">py</span>
+<span class="p">.</span><span class="o">/</span><span class="n">app</span><span class="p">.</span><span class="n">py</span>
+</pre></div>
+
+
+<h2 id="web-app">web app 配置方式</h2>
+<blockquote>
+<p>Flask allows you to import multiple configurations and it will use the setting defined in the last import. 
+从文件导入配置</p>
+</blockquote>
+<div class="hlcode"><pre><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_pyfile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<p>从对象导入配置</p>
+<div class="hlcode"><pre><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">string</span><span class="p">,</span> <span class="err">叫这个名字的模块会被</span><span class="n">import</span><span class="p">,</span><span class="err">也可以是一个直接已经导入的</span><span class="nb">object</span>
+</pre></div>
+
+
+<p>从环境变量指定的地方导入</p>
+<div class="hlcode"><pre><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_envvar</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<p>从一个词典导入，运行时更新</p>
+<div class="hlcode"><pre><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="flask">flask 引入上下文的概念</h2>
+<p>为了保证同一个请求共享数据库连接，而不是反复connect_db(),flask引入applocation context的概念，g 是全局共享的</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">get_db</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Opens a new database connection if there is none yet for the</span>
+<span class="sd">    current application context.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s">&#39;sqlite_db&#39;</span><span class="p">):</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">sqlite_db</span> <span class="o">=</span> <span class="n">connect_db</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">sqlite_db</span>
+</pre></div>
+
+
+<h2 id="flask-app">flask 提供命令行接口，并可以读取APP资源</h2>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">init_db</span><span class="p">()</span><span class="o">:</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">get_db</span><span class="p">()</span>
+    <span class="n">with</span> <span class="n">app</span><span class="p">.</span><span class="n">open_resource</span><span class="p">(</span><span class="err">&#39;</span><span class="n">schema</span><span class="p">.</span><span class="n">sql</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="sc">&#39;r&#39;</span><span class="p">)</span> <span class="n">as</span> <span class="n">f</span><span class="o">:</span>
+        <span class="n">db</span><span class="p">.</span><span class="n">cursor</span><span class="p">().</span><span class="n">executescript</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">db</span><span class="p">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="cp"># flask的命令行接口创建数据库</span>
+<span class="err">@</span><span class="n">app</span><span class="p">.</span><span class="n">cli</span><span class="p">.</span><span class="n">command</span><span class="p">(</span><span class="err">&#39;</span><span class="n">initdb</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="n">def</span> <span class="n">initdb_command</span><span class="p">()</span><span class="o">:</span>
+    <span class="n">init_db</span><span class="p">()</span>
+    <span class="n">print</span> <span class="err">&#39;</span><span class="n">Initialized</span> <span class="n">the</span> <span class="n">database</span><span class="p">.</span><span class="err">&#39;</span>
+</pre></div>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2017-04-23 21:23 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'flask',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/tracholar/wiki" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>pandas - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;pandas</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">pandas</div>
+<div id="content">
+  <h2></h2>
+<p>遍历 pandas.DataFrame 所有行的方式</p>
+<p><a href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.iterrows.html">DataFrame.iterrows()</a></p>
+<div class="hlcode"><pre><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="n">in</span> <span class="n">df</span><span class="p">.</span><span class="n">iterrows</span><span class="p">()</span><span class="o">:</span>
+    <span class="n">print</span> <span class="n">row</span><span class="p">[</span><span class="s">&quot;c1&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s">&quot;c2&quot;</span><span class="p">]</span>
+</pre></div>
+
+
+<p><a href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.itertuples.html">DataFrame.itertuples()</a></p>
+<div class="hlcode"><pre><span class="k">for</span> <span class="n">row</span> <span class="n">in</span> <span class="n">df</span><span class="p">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="err">&#39;</span><span class="n">Pandas</span><span class="err">&#39;</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span> <span class="n">getattr</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="s">&quot;c1&quot;</span><span class="p">),</span> <span class="n">getattr</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="s">&quot;c2&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="pandas">pandas</h2>
+<div class="hlcode"><pre><span class="c"># To select rows whose column value equals a scalar, some_value, use ==:</span>
+
+<span class="c"># df.loc[df[&#39;column_name&#39;] == some_value]</span>
+<span class="c"># To select rows whose column value is in an iterable, some_values, use isin:</span>
+
+<span class="c"># df.loc[df[&#39;column_name&#39;].isin(some_values)]</span>
+<span class="c"># Combine multiple conditions with &amp;:</span>
+
+<span class="c"># df.loc[(df[&#39;column_name&#39;] == some_value) &amp; df[&#39;other_column&#39;].isin(some_values)]</span>
+<span class="c"># To select rows whose column value does not equal some_value, use !=:</span>
+
+<span class="c"># df.loc[df[&#39;column_name&#39;] != some_value]</span>
+<span class="c"># isin returns a boolean Series, so to select rows whose value is not in some_values, negate the boolean Series using ~:</span>
+
+<span class="c"># df.loc[~df[&#39;column_name&#39;].isin(some_values)]</span>
+
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">&#39;similar_reduced_by_gb_name.csv&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
+
+<span class="c"># print df[df[&#39;similar_names&#39;] == &#39;[]&#39;].count()</span>
+<span class="c"># df = df[df[&#39;similar_names&#39;] != &#39;[]&#39;]</span>
+<span class="c"># df.to_csv(&#39;similar_reduced_by_gb_name.csv&#39;, index=False)</span>
+
+<span class="c"># ValueError: cannot index with vector containing NA / NaN values</span>
+<span class="c"># df_A = df.loc[df.icd_code.str.contains(&#39;A&#39;)]</span>
+</pre></div>
+
+
+<h2 id="python-dump-json-file">python dump json file</h2>
+<p>将 dict 直接 dump 到文件中, 会出现 <strong>json.dump　的　ensure_ascii 会把非ascii码变通过转义字符的形式写出去</strong>，因此会出现　<code>\uXXXX</code>　字符串;
+因此如果需要 <code>.json</code> 文件看到正确的字符串, 需要先把 dict 变成 Unicode str, 然后以写文件的形式将字符串写出即可;</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">save_by_gb_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;similar_by_gb_name.json&#39;</span><span class="p">):</span>
+    <span class="c"># json.dump　的　ensure_ascii 会把非ascii码变通过转义字符的形式写出去，因此会出现　\uXXXX　字符串</span>
+    <span class="c">#If ensure_ascii is true (the default), all non-ASCII characters in the output are escaped with \uXXXX sequences, and the result is a str instance consisting of ASCII characters only. If ensure_ascii is False, some chunks written to fp may be unicode instances. This usually happens because the input contains unicode strings or the encoding parameter is used. Unless fp.write() explicitly understands unicode (as in codecs.getwriter) this is likely to cause an error.</span>
+    <span class="c"># 这里可以先通过　dumps 变成 python unicode string,然后把　unicode string 写入文件即可</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+        <span class="n">unicode_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">json_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">unicode_str</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+    <span class="c"># print df.head()</span>
+    <span class="c"># print df.tail()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&#39;similar_by_gb_name.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="pandas_1">pandas</h2>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">&#39;similar_by_gb_name.csv&#39;</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;similar_names&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;[]&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;icd_code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;icd_code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&#39;similar_gb_name/similar_reduced_by_gb_name.tmp.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># ValueError: cannot index with vector containing NA / NaN values</span>
+<span class="c"># df_A = df.loc[df.icd_code.str.contains(&#39;A&#39;)]</span>
+
+
+<span class="c"># 不能进行比较大小  </span>
+<span class="c"># df_A = df[df.icd_code.str[0] &gt;= &#39;A00&#39; &amp; df.icd_code.str[0] &lt;= &#39;B99&#39;]</span>
+<span class="c"># print df.dtypes</span>
+
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">&#39;similar_gb_name/similar_reduced_by_gb_name.tmp.csv&#39;</span><span class="p">)</span>
+<span class="n">class_maps</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;A00-B99&#39;</span><span class="p">:</span> <span class="s">&#39;Certain infectious and parasitic diseases&#39;</span><span class="p">,</span>
+    <span class="s">&#39;C00-D49&#39;</span><span class="p">:</span> <span class="s">&#39;Neoplasms&#39;</span><span class="p">,</span>
+    <span class="s">&#39;D50-D89&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism&#39;</span><span class="p">,</span>
+    <span class="s">&#39;E00-E89&#39;</span><span class="p">:</span> <span class="s">&#39;Endocrine, nutritional and metabolic diseases&#39;</span><span class="p">,</span>
+    <span class="s">&#39;F01-F99&#39;</span><span class="p">:</span> <span class="s">&#39;Mental, Behavioral and Neurodevelopmental disorders&#39;</span><span class="p">,</span>
+    <span class="s">&#39;G00-G99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the nervous system&#39;</span><span class="p">,</span>
+    <span class="s">&#39;H00-H59&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the eye and adnexa&#39;</span><span class="p">,</span>
+    <span class="s">&#39;H60-H95&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the ear and mastoid process&#39;</span><span class="p">,</span>
+    <span class="s">&#39;I00-I99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the circulatory system&#39;</span><span class="p">,</span>
+    <span class="s">&#39;J00-J99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the respiratory system&#39;</span><span class="p">,</span>
+    <span class="s">&#39;K00-K95&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the digestive system&#39;</span><span class="p">,</span>
+    <span class="s">&#39;L00-L99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the skin and subcutaneous tissue&#39;</span><span class="p">,</span>
+    <span class="s">&#39;M00-M99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the musculoskeletal system and connective tissue&#39;</span><span class="p">,</span>
+    <span class="s">&#39;N00-N99&#39;</span><span class="p">:</span> <span class="s">&#39;Diseases of the genitourinary system&#39;</span><span class="p">,</span>
+    <span class="s">&#39;O00-O9A&#39;</span><span class="p">:</span> <span class="s">&#39;Pregnancy, childbirth and the puerperium&#39;</span><span class="p">,</span>
+    <span class="s">&#39;P00-P96&#39;</span><span class="p">:</span> <span class="s">&#39;Certain conditions originating in the perinatal period&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Q00-Q99&#39;</span><span class="p">:</span> <span class="s">&#39;Congenital malformations, deformations and chromosomal abnormalities&#39;</span><span class="p">,</span>
+    <span class="s">&#39;R00-R99&#39;</span><span class="p">:</span> <span class="s">&#39;Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified&#39;</span><span class="p">,</span>
+    <span class="s">&#39;S00-T88&#39;</span><span class="p">:</span> <span class="s">&#39;Injury, poisoning and certain other consequences of external causes&#39;</span><span class="p">,</span>
+    <span class="s">&#39;V00-Y99&#39;</span><span class="p">:</span> <span class="s">&#39;External causes of morbidity&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Z00-Z99&#39;</span><span class="p">:</span> <span class="s">&#39;Factors influencing health status and contact with health services&#39;</span>
+<span class="p">}</span>
+
+<span class="c"># 必须要转换成字符串, 否则会被认为是 float</span>
+<span class="c"># indexer = df[&#39;icd_code&#39;].apply(lambda x: x[0:4] &gt;= &#39;A00&#39; and x[0:4] &lt;= &#39;B99&#39;)</span>
+<span class="c"># indexer = df[&#39;icd_code&#39;].astype(str).apply(lambda x: x[0:4] &gt;= &#39;A00&#39; and x[0:4] &lt;= &#39;B99&#39;)</span>
+<span class="c"># df_A = df.loc[indexer]</span>
+<span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">class_maps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)</span>
+    <span class="n">indexer</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;icd_code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">low</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="p">)</span>
+    <span class="n">df_temp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">indexer</span><span class="p">]</span>
+    <span class="c"># print len(df_temp.index)</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_temp</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_temp</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&#39;similar_gb_name/&#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s">&#39;_similar_by_gb_name.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;sum: &#39;</span><span class="p">,</span> <span class="n">s</span>
+
+
+
+<span class="c"># keep = [] #hold all the rows you want to keep</span>
+<span class="c"># for key in frame_dict.keys():</span>
+<span class="c">#     frame = frame_dict[key]</span>
+<span class="c">#     keep.append(</span>
+<span class="c">#         frame[frame[&#39;A&#39;].astype(str).str.contains(&#39;^\d\d02&#39;, regex=True)].copy()</span>
+<span class="c">#     ) #append the rows matching regex for start of word (^), digit (\d), digit (\d), 02 </span>
+<span class="c"># final = pd.concat(keep) #concatenate the matching rows</span>
+</pre></div>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2017-04-02 10:59 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'pandas',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/tracholar/wiki" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

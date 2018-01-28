@@ -1,0 +1,680 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>python-logging - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-system-program">python-system-program</a>&nbsp;»&nbsp;python-logging</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python-logging</div>
+<div id="content">
+  <h1 id="tornado">关于tornado的疑惑</h1>
+<h2 id="tornadowebapp">为什么运行在tornado之上的webapp可以同时把日志输出到控制台和日志文件</h2>
+<p>tornado 的日志模块有一个默认日志配置函数，有关于日志配置选项。这个函数是在 tornado.options 模块中被全局初始化调用的；</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">define_logging_options</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add logging-related flags to ``options``.</span>
+
+<span class="sd">    These options are present automatically on the default options instance;</span>
+<span class="sd">    this method is only necessary if you have created your own `.OptionParser`.</span>
+
+<span class="sd">    .. versionadded:: 4.2</span>
+<span class="sd">        This function existed in prior versions but was broken and undocumented until 4.2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># late import to prevent cycle</span>
+        <span class="kn">import</span> <span class="nn">tornado.options</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">options</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;logging&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;info&quot;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;Set the Python log level. If &#39;none&#39;, tornado won&#39;t touch the &quot;</span>
+                         <span class="s">&quot;logging configuration.&quot;</span><span class="p">),</span>
+                   <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;debug|info|warning|error|none&quot;</span><span class="p">)</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_to_stderr&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;Send log output to stderr (colorized if possible). &quot;</span>
+                         <span class="s">&quot;By default use stderr if --log_file_prefix is not set and &quot;</span>
+                         <span class="s">&quot;no other logging is configured.&quot;</span><span class="p">))</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_file_prefix&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;PATH&quot;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;Path prefix for log files. &quot;</span>
+                         <span class="s">&quot;Note that if you are running multiple tornado processes, &quot;</span>
+                         <span class="s">&quot;log_file_prefix must be different for each of them (e.g. &quot;</span>
+                         <span class="s">&quot;include the port number)&quot;</span><span class="p">))</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_file_max_size&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;max size of log files before rollover&quot;</span><span class="p">)</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_file_num_backups&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;number of log files to keep&quot;</span><span class="p">)</span>
+
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_rotate_when&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;midnight&#39;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;specify the type of TimedRotatingFileHandler interval &quot;</span>
+                         <span class="s">&quot;other options:(&#39;S&#39;, &#39;M&#39;, &#39;H&#39;, &#39;D&#39;, &#39;W0&#39;-&#39;W6&#39;)&quot;</span><span class="p">))</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_rotate_interval&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;The interval value of timed rotating&quot;</span><span class="p">)</span>
+
+    <span class="n">options</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s">&quot;log_rotate_mode&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;size&#39;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;The mode of rotating files(time or size)&quot;</span><span class="p">)</span>
+
+    <span class="n">options</span><span class="o">.</span><span class="n">add_parse_callback</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">enable_pretty_logging</span><span class="p">(</span><span class="n">options</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">enable_pretty_logging</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Turns on formatted logging output as configured.</span>
+
+<span class="sd">    This is called automatically by `tornado.options.parse_command_line`</span>
+<span class="sd">    and `tornado.options.parse_config_file`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">tornado.options</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">options</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">logging</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;none&#39;</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">log_file_prefix</span><span class="p">:</span>
+        <span class="n">rotate_mode</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">log_rotate_mode</span>
+        <span class="k">if</span> <span class="n">rotate_mode</span> <span class="o">==</span> <span class="s">&#39;size&#39;</span><span class="p">:</span>
+            <span class="n">channel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_file_prefix</span><span class="p">,</span>
+                <span class="n">maxBytes</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_file_max_size</span><span class="p">,</span>
+                <span class="n">backupCount</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_file_num_backups</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rotate_mode</span> <span class="o">==</span> <span class="s">&#39;time&#39;</span><span class="p">:</span>
+            <span class="n">channel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">TimedRotatingFileHandler</span><span class="p">(</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_file_prefix</span><span class="p">,</span>
+                <span class="n">when</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_rotate_when</span><span class="p">,</span>
+                <span class="n">interval</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_rotate_interval</span><span class="p">,</span>
+                <span class="n">backupCount</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_file_num_backups</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s">&#39;The value of log_rotate_mode option should be &#39;</span> <span class="o">+</span>\
+                            <span class="s">&#39;&quot;size&quot; or &quot;time&quot;, not &quot;</span><span class="si">%s</span><span class="s">&quot;.&#39;</span> <span class="o">%</span> <span class="n">rotate_mode</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+        <span class="n">channel</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">log_to_stderr</span> <span class="ow">or</span>
+            <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">log_to_stderr</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">)):</span>
+        <span class="c"># Set up color if we are in a tty and curses is installed</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">channel</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+</pre></div>
+
+
+<p>但是这个函数只是注册了一个回调函数；<code>enable_pretty_logging</code>，回调函数被触发调用是在 tornado.options 中通过一个参数被触发的；并且这两个函数是通过外部调用的，也就是说用户决定是否触发；另外 tornado.options 模块中的 options 变量是一个全局变量；可以看到如果 <code>enable_pretty_logging</code> 如果被调用，就会通过 <code>options.log_file_prefix</code> 参数来设置logging(其实这里是root Logger) handler 为日志文件处理handler。这个就让系统logging可以把日志输出到<code>log_file_prefix</code>文件中; 并且此时还会决定是否设置一个控制台输出，这里没有给出 <code>log_to_stderr</code> 并且logger 的handler已经不是0了，因为不会设置；那么为什么logging还可以输出到控制台？ 因为在还没使用tornado.options 来设置日志的时候，logging 就被调用了，一旦调用，默认root 首次调用就会调用 basicConfig 来初始化handler，这个handler就是控制台的 logging.StreamHandler; 这里用户使用的 <code>logging.info('Use config file: %s' % conf_file)</code> 就是；</p>
+<div class="hlcode"><pre><span class="n">options</span> <span class="o">=</span> <span class="n">OptionParser</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;Global options object.</span>
+
+<span class="sd">All defined options are available as attributes on this object.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">parse_command_line</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses global options from the command line.</span>
+
+<span class="sd">    See `OptionParser.parse_command_line`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">options</span><span class="o">.</span><span class="n">parse_command_line</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="n">final</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">parse_config_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses global options from a config file.</span>
+
+<span class="sd">    See `OptionParser.parse_config_file`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">options</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="n">final</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parse_command_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses all options given on the command line (defaults to</span>
+<span class="sd">    `sys.argv`).</span>
+
+<span class="sd">    Note that ``args[0]`` is ignored since it is the program name</span>
+<span class="sd">    in `sys.argv`.</span>
+
+<span class="sd">    We return a list of all arguments that are not parsed as options.</span>
+
+<span class="sd">    If ``final`` is ``False``, parse callbacks will not be run.</span>
+<span class="sd">    This is useful for applications that wish to combine configurations</span>
+<span class="sd">    from multiple sources.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+    <span class="n">remaining</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)):</span>
+        <span class="c"># All things after the last option are command line arguments</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">):</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;--&quot;</span><span class="p">:</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+            <span class="k">break</span>
+        <span class="n">arg</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">equals</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&quot;=&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_options</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">Error</span><span class="p">(</span><span class="s">&#39;Unrecognized command line option: </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">equals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">option</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&quot;true&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">Error</span><span class="p">(</span><span class="s">&#39;Option </span><span class="si">%r</span><span class="s"> requires a value&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">option</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">final</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_parse_callbacks</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">remaining</span>
+<span class="k">def</span> <span class="nf">parse_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses and loads the Python config file at the given path.</span>
+
+<span class="sd">    If ``final`` is ``False``, parse callbacks will not be run.</span>
+<span class="sd">    This is useful for applications that wish to combine configurations</span>
+<span class="sd">    from multiple sources.</span>
+
+<span class="sd">    .. versionchanged:: 4.1</span>
+<span class="sd">        Config files are now always interpreted as utf-8 instead of</span>
+<span class="sd">        the system default encoding.</span>
+
+<span class="sd">    .. versionchanged:: 4.4</span>
+<span class="sd">        The special variable ``__file__`` is available inside config</span>
+<span class="sd">        files, specifying the absolute path to the config file itself.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;__file__&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)}</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">exec_in</span><span class="p">(</span><span class="n">native_str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()),</span> <span class="n">config</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalized</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_options</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_options</span><span class="p">[</span><span class="n">normalized</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">final</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_parse_callbacks</span><span class="p">()</span>
+</pre></div>
+
+
+<p>我们可以看到，用户通过调用 <code>parse_config_file()</code> 或者 <code>parse_command_line()</code> 传递进来的 final 参数来决定是否配置 tornado 的 <code>enable_pretty_logging()</code> 回调函数，来决定日志的配置。下面是一个简单的使用。</p>
+<div class="hlcode"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="k">def</span> <span class="nf">check_options</span><span class="p">(</span><span class="n">mandates</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mandates</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">mandates</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">,</span> <span class="s">&#39;auth_uri&#39;</span><span class="p">,</span> <span class="s">&#39;admin_user&#39;</span><span class="p">,</span> <span class="s">&#39;admin_password&#39;</span><span class="p">,</span>
+                <span class="s">&#39;admin_tenant_name&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">mandates</span><span class="p">:</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;No option </span><span class="si">%s</span><span class="s"> provided&quot;</span> <span class="o">%</span> <span class="n">var_name</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Register all configurable variables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">config_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">conf_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">search_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;~/xxx&#39;</span><span class="p">,</span> <span class="s">&#39;/usr/local/etc/xxx&#39;</span><span class="p">,</span> <span class="s">&#39;/etc/xxx&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">search_paths</span><span class="p">:</span>
+            <span class="n">tmp_conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">conf_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tmp_conf</span><span class="p">):</span>
+                <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">tmp_conf</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Use default config </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">config_path</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&quot;config_file&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Configuration file&quot;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;supervision_mode&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;To running services controlled by manager&#39;</span><span class="p">)</span>
+    <span class="c"># define(&#39;debug&#39;, type=bool, default=False,</span>
+    <span class="c">#         help=&#39;To run service in debug mode&#39;)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;include_config_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;Extra config file for redefining params&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;include_config_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;Extra config file dir for redefining params&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&quot;pid_file&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&quot;Pid file&quot;</span><span class="p">)</span>
+
+    <span class="n">project_root_dir</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))))</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;locale_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="n">project_root_dir</span> <span class="o">+</span> <span class="s">&#39;/locale/&#39;</span><span class="p">),</span>
+           <span class="n">help</span><span class="o">=</span><span class="s">&#39;tornado i18n internationalization support&#39;</span><span class="p">)</span>
+    <span class="n">setup_locale_translation</span><span class="p">(</span><span class="s">&#39;cloud&#39;</span><span class="p">,</span> <span class="s">&#39;zh_CN&#39;</span><span class="p">)</span>
+
+    <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">parse_command_line</span><span class="p">(</span><span class="n">final</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">conf_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">config_file</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Use config file: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">conf_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">conf_file</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
+        <span class="n">conf_file</span> <span class="o">=</span> <span class="s">&#39;/dev/null&#39;</span>
+    <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="c">#tornado.options.parse_command_line()</span>
+
+    <span class="n">include_conf_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">include_config_file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">include_conf_file</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">include_conf_file</span><span class="p">):</span>
+        <span class="n">include_conf_file</span> <span class="o">=</span> <span class="s">&#39;/dev/null&#39;</span>
+    <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="n">include_conf_file</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">include_config_dir</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">include_config_dir</span>
+    <span class="k">if</span> <span class="n">include_config_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">include_config_dir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">each</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">include_config_dir</span><span class="p">):</span>
+            <span class="n">each_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">include_config_dir</span><span class="p">,</span> <span class="n">each</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">each_path</span><span class="p">):</span>
+                <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="n">each_path</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">tornado</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="s">&#39;/dev/null&#39;</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="python-logging">python logging 模块</h1>
+<h2 id="_1">日志处理</h2>
+<p>Logger: 应用程序日志模块接口, Logger 可以添加 Filter 和 Handler
+Filter: 日志记录过滤器，决定哪些日志记录可以发送给 Handler 处理
+Handler: 日志处理器，处理 Logger 发送来的 日志记录，决定日志输出到哪里，console、stream、socket等
+Formatter: 日志格式器，决定发送给 Handler 的 LogRecord 以什么样式输出</p>
+<h3 id="_2">日志级别</h3>
+<p>日志级别，用来设置Logger的日志级别 或者 Handler 的日志处理级别。Logger 自己设置日志级别，可以决定自己到底发不发送该信息给 Handler，Handler设置日志处理级别，决定如果 Logger 发出的 LogRecord 日志级别低于 Handler 自己的日志处理级别， Logger 还是不给 Handler 处理的。</p>
+<div class="hlcode"><pre><span class="n">CRITICAL</span> <span class="o">=</span> <span class="mi">50</span>       <span class="c">#logging.critical</span>
+<span class="n">FATAL</span> <span class="o">=</span> <span class="n">CRITICAL</span>    <span class="c">#logging.fatal</span>
+<span class="n">ERROR</span> <span class="o">=</span> <span class="mi">40</span>          <span class="c">#logging.error</span>
+<span class="n">WARNING</span> <span class="o">=</span> <span class="mi">30</span>        <span class="c">#logging.warning</span>
+<span class="n">WARN</span> <span class="o">=</span> <span class="n">WARNING</span>      <span class="c">#logging.warn</span>
+<span class="n">INFO</span> <span class="o">=</span> <span class="mi">20</span>           <span class="c">#logging.info</span>
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="mi">10</span>          <span class="c">#logging.debug</span>
+<span class="n">NOTSET</span> <span class="o">=</span> <span class="mi">0</span>          
+</pre></div>
+
+
+<p>Logger日志级别判断过程的主要代码如下， 只以 info 为例， 其他类似：</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log &#39;msg % args&#39; with severity &#39;INFO&#39;.</span>
+
+<span class="sd">    To pass exception information, use the keyword argument exc_info with</span>
+<span class="sd">    a true value, e.g.</span>
+
+<span class="sd">    logger.info(&quot;Houston, we have a %s&quot;, &quot;interesting problem&quot;, exc_info=1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">INFO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">isEnabledFor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Is this logger enabled for level &#39;level&#39;?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">disable</span> <span class="o">&gt;=</span> <span class="n">level</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">getEffectiveLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the effective level for this logger.</span>
+
+<span class="sd">    Loop through this logger and its parents in the logger hierarchy,</span>
+<span class="sd">    looking for a non-zero logging level. Return the first one found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span>
+    <span class="k">while</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">return</span> <span class="n">NOTSET</span>
+
+<span class="k">def</span> <span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Low-level logging routine which creates a LogRecord and then calls</span>
+<span class="sd">    all the handlers of this logger to handle the record.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_srcfile</span><span class="p">:</span>
+        <span class="c">#IronPython doesn&#39;t track Python frames, so findCaller raises an</span>
+        <span class="c">#exception on some versions of IronPython. We trap it here so that</span>
+        <span class="c">#IronPython can use logging.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fn</span><span class="p">,</span> <span class="n">lno</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findCaller</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">fn</span><span class="p">,</span> <span class="n">lno</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="s">&quot;(unknown file)&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;(unknown function)&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fn</span><span class="p">,</span> <span class="n">lno</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="s">&quot;(unknown file)&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;(unknown function)&quot;</span>
+    <span class="k">if</span> <span class="n">exc_info</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc_info</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">exc_info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+    <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">lno</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+</pre></div>
+
+
+<p>我们可以看到每一个 Logger 构造出来的 LogRecord 其实都有个名字，并且这个名字是和 Logger 同名的，也就是说哪个 Logger 输出的日志，就叫什么名字，这个名字是有用处的，除了可以新建不同的 Logger，还可以产生 Logger 的继承关系（并非python代码中的继承），过滤器就是根据自己的名字和 LogRecord 的名字进行过滤操作的;</p>
+<p>当然在 Logger 和 Handler 之间可以加过滤器 Filter， 并且过滤器可以加在 Logger 中， 也可以加在 Handler 中。以下是 Logger 的处理代码， 根据加入的 Filter 决定是否把 LogRecord 发给 Handler 处理；</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call the handlers for the specified record.</span>
+
+<span class="sd">    This method is used for unpickled records received from a socket, as</span>
+<span class="sd">    well as those created locally. Logger-level filtering is applied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">disabled</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callHandlers</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">callHandlers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pass a record to all relevant handlers.</span>
+
+<span class="sd">    Loop through all handlers for this logger and its parents in the</span>
+<span class="sd">    logger hierarchy. If no handler was found, output a one-off error</span>
+<span class="sd">    message to sys.stderr. Stop searching up the hierarchy whenever a</span>
+<span class="sd">    logger with the &quot;propagate&quot; attribute set to zero is found - that</span>
+<span class="sd">    will be the last logger whose handlers are called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">c</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">hdlr</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">found</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">&gt;=</span> <span class="n">hdlr</span><span class="o">.</span><span class="n">level</span><span class="p">:</span>
+                <span class="n">hdlr</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">propagate</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">None</span>    <span class="c">#break out</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">found</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">raiseExceptions</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">emittedNoHandlerWarning</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;No handlers could be found for logger&quot;</span>
+                            <span class="s">&quot; </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">emittedNoHandlerWarning</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>以下是 Handler 自己的处理代码，也就是 Filter 加在 Handler 中；可以看到， Handler 自己也会根据加入到自己的 Filter 进行选择处理；</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Conditionally emit the specified logging record.</span>
+
+<span class="sd">    Emission depends on filters which may have been added to the handler.</span>
+<span class="sd">    Wrap the actual emission of the record with acquisition/release of</span>
+<span class="sd">    the I/O thread lock. Returns whether the filter passed the record for</span>
+<span class="sd">    emission.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rv</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">rv</span>
+</pre></div>
+
+
+<p>为什么 Logger 和 Handler 都有 self.filter self.addFilter self.removeFilter 方法，因为 他们都继承了 Filterer 类，该类用来维护和管理 Filter；这个 Filterer 类类似于 Java 中的接口；</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Filterer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">addFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">removeFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if a record is loggable by consulting all the filters.</span>
+
+<span class="sd">        The default is to allow the record to be logged; any filter can veto</span>
+<span class="sd">        this and the record is then dropped. Returns a zero value if a record</span>
+<span class="sd">        is to be dropped, else non-zero.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">rv</span>
+</pre></div>
+
+
+<h3 id="logger">Logger 继承关系</h3>
+<p>有时候我们直接使用 logging.xxx 就可以输出日志，这是为什么？因为 logging 模块封装了几个日志处理函数，他们都是这样的, 其实默认都使用了 RootLogger. root 是在 logging 模块导入的时候就初始化了； Python 模块中经常使用这种写法，把一个默认的全局对象实例使用全局函数包装起来方便用户使用；</p>
+<div class="hlcode"><pre><span class="n">root</span> <span class="o">=</span> <span class="n">RootLogger</span><span class="p">(</span><span class="n">WARNING</span><span class="p">)</span>
+<span class="n">Logger</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+<span class="n">Logger</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">Logger</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log a message with severity &#39;WARNING&#39; on the root logger.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">basicConfig</span><span class="p">()</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a logger with the specified name, creating it if necessary.</span>
+
+<span class="sd">    If no name is specified, return the root logger.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">root</span>
+
+<span class="k">def</span> <span class="nf">basicConfig</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Do basic configuration for the logging system.</span>
+
+<span class="sd">    This function does nothing if the root logger already has handlers</span>
+<span class="sd">    configured. It is a convenience method intended for use by simple scripts</span>
+<span class="sd">    to do one-shot configuration of the logging package.</span>
+
+<span class="sd">    The default behaviour is to create a StreamHandler which writes to</span>
+<span class="sd">    sys.stderr, set a formatter using the BASIC_FORMAT format string, and</span>
+<span class="sd">    add the handler to the root logger.</span>
+
+<span class="sd">    A number of optional keyword arguments may be specified, which can alter</span>
+<span class="sd">    the default behaviour.</span>
+
+<span class="sd">    filename  Specifies that a FileHandler be created, using the specified</span>
+<span class="sd">              filename, rather than a StreamHandler.</span>
+<span class="sd">    filemode  Specifies the mode to open the file, if filename is specified</span>
+<span class="sd">              (if filemode is unspecified, it defaults to &#39;a&#39;).</span>
+<span class="sd">    format    Use the specified format string for the handler.</span>
+<span class="sd">    datefmt   Use the specified date/time format.</span>
+<span class="sd">    level     Set the root logger level to the specified level.</span>
+<span class="sd">    stream    Use the specified stream to initialize the StreamHandler. Note</span>
+<span class="sd">              that this argument is incompatible with &#39;filename&#39; - if both</span>
+<span class="sd">              are present, &#39;stream&#39; is ignored.</span>
+
+<span class="sd">    Note that you could specify a stream created using open(filename, mode)</span>
+<span class="sd">    rather than passing the filename and mode in. However, it should be</span>
+<span class="sd">    remembered that StreamHandler does not close its stream (since it may be</span>
+<span class="sd">    using sys.stdout or sys.stderr), whereas FileHandler closes its stream</span>
+<span class="sd">    when the handler is closed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Add thread safety in case someone mistakenly calls</span>
+    <span class="c"># basicConfig() from multiple threads</span>
+    <span class="n">_acquireLock</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;filename&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;filemode&quot;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
+                <span class="n">hdlr</span> <span class="o">=</span> <span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stream</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;stream&quot;</span><span class="p">)</span>
+                <span class="n">hdlr</span> <span class="o">=</span> <span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span> <span class="n">BASIC_FORMAT</span><span class="p">)</span>
+            <span class="n">dfs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;datefmt&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="n">Formatter</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">dfs</span><span class="p">)</span>
+            <span class="n">hdlr</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+            <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">hdlr</span><span class="p">)</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">root</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">_releaseLock</span><span class="p">()</span>
+</pre></div>
+
+
+<p>我们看到 Manager 其实是个日志工厂，使用 logging.getLogger() 方法其实是通过 Manager 获得的，他是通过一个词典维护Logger实例的；上面的代码中， 如果 root.handlers == 0, 还会调用 logging.basicConfig() 方法，这个方法其实是配置 root 的 Handler 用的；默认使用 StreamHandler，StreamHandler 默认会使用控制台输出的；如果想要同时输出到控制台和日志文件，就需要自己手动添加 Handler 给 RootLogger 或者自己新建的 Logger；</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+                   <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;./log.txt&#39;</span><span class="p">,</span>
+                   <span class="n">filemode</span> <span class="o">=</span> <span class="s">&#39;a&#39;</span><span class="p">,</span>
+                   <span class="c">#stream = sys.stdout,</span>
+                   <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%(levelname)s</span><span class="s">:</span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">,</span>
+                   <span class="n">datefmt</span> <span class="o">=</span> <span class="s">&#39;%m/</span><span class="si">%d</span><span class="s">/%Y %I:%M:%S&#39;</span><span class="p">,</span>
+                   <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+                    <span class="p">)</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;10&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;20&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;30&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;30&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;40&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s">&#39;40&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="s">&#39;50&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&#39;50&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>除了 RootLogger， 其他有名字的Logger是如何构造出来的？他们的继承关系是怎么样的？其实是通过简单的名字来判断继承关系。在获取 Logger 的时候，如果这个Logger 还不存在即没有记录在词典中，那么就直接生成新Logger，并且跟踪父子关系。如果已经存在，首先判断是不是一个PlaceHolder，就是还没有这个 Logger，但是为了维持父子关系，需要一个占位节点，然后跟踪记录父子关系。</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a logger with the specified name (channel name), creating it</span>
+<span class="sd">    if it doesn&#39;t yet exist. This name is a dot-separated hierarchical</span>
+<span class="sd">    name, such as &quot;a&quot;, &quot;a.b&quot;, &quot;a.b.c&quot; or similar.</span>
+
+<span class="sd">    If a PlaceHolder existed for the specified name [i.e. the logger</span>
+<span class="sd">    didn&#39;t exist but a child of it did], replace it with the created</span>
+<span class="sd">    logger and fix up the parent/child references which pointed to the</span>
+<span class="sd">    placeholder to now point to the logger.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;A logger name must be string or Unicode&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="n">_acquireLock</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">:</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rv</span><span class="p">,</span> <span class="n">PlaceHolder</span><span class="p">):</span>
+                <span class="n">ph</span> <span class="o">=</span> <span class="n">rv</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loggerClass</span> <span class="ow">or</span> <span class="n">_loggerClass</span><span class="p">)(</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">rv</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rv</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fixupChildren</span><span class="p">(</span><span class="n">ph</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fixupParents</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loggerClass</span> <span class="ow">or</span> <span class="n">_loggerClass</span><span class="p">)(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">rv</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rv</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixupParents</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">_releaseLock</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">rv</span>
+
+<span class="k">def</span> <span class="nf">_fixupParents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alogger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ensure that there are either loggers or placeholders all the way</span>
+<span class="sd">    from the specified logger to the root of the logger hierarchy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">alogger</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rv</span><span class="p">:</span>
+        <span class="n">substr</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">substr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="n">substr</span><span class="p">]</span> <span class="o">=</span> <span class="n">PlaceHolder</span><span class="p">(</span><span class="n">alogger</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="n">substr</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Logger</span><span class="p">):</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">PlaceHolder</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alogger</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rv</span><span class="p">:</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+    <span class="n">alogger</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">rv</span>
+</pre></div>
+
+
+<p>最后， Logger 还有一个 propagate 属性，决定callHandler的时候，是否将LogRecord 发送给 父亲的Handler继续处理。</p>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2017-08-23 11:32 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'python-logging',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/tracholar/wiki" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

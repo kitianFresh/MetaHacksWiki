@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>bigdata-interview.md - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#bigdata">bigdata</a>&nbsp;»&nbsp;bigdata-interview.md</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">bigdata-interview.md</div>
+<div id="content">
+  <h1 id="hive-sql">hive sql　的执行流程</h1>
+<h1 id="java">java 中抽象类和接口的区别</h1>
+<p>类如果要实现一个接口，它必须要实现接口声明的所有方法。但是，类可以不实现抽象类声明的所有方法，当然，在这种情况下，类也必须得声明成是抽象的。抽象类可以在不提供接口方法实现的情况下实现接口。Java接口中声明的变量默认都是final的。抽象类可以包含非final的变量。Java接口中的成员函数默认是public的。抽象类的成员函数可以是private，protected或者是public。接口是绝对抽象的，不可以被实例化。抽象类也不可以被实例化，但是，如果它包含main方法的话是可以被调用的。</p>
+<p>-[参考]https://www.zhihu.com/question/20149818/answer/97282207）</p>
+<h1 id="hadoop-mapreduce">hadoop mapreduce 如何解决数据倾斜</h1>
+<h1 id="_1">数据划分并采用堆进行排序</h1>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">sort users&#39; queries by frequency</span>
+<span class="sd">1. hashing queries and dividing into 10 files. (hash(query)%10)</span>
+<span class="sd">2. counting the number queries and sorting in each file using hashtable.</span>
+<span class="sd">3. merging files using heap queue algorithm.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">datadir</span>  <span class="o">=</span> <span class="s">&quot;d:/querysort/data/&quot;</span>
+<span class="n">tempdir</span>  <span class="o">=</span> <span class="s">&quot;d:/querysort/temp/&quot;</span>
+<span class="n">destfile</span> <span class="o">=</span> <span class="s">&quot;d:/querysort/sorted.txt&quot;</span>
+
+<span class="k">def</span> <span class="nf">hashfiles</span><span class="p">():</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">tempdir</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">datadir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">fs</span><span class="p">[</span><span class="nb">hash</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">%</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>          
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
+         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">sortqueryinfile</span><span class="p">():</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;r+&#39;</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">D</span><span class="p">:</span>
+                <span class="n">D</span><span class="p">[</span><span class="n">query</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">D</span><span class="p">[</span><span class="n">query</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">sorted_D</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">truncate</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sorted_D</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">decorated_file</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Yields an easily sortable tuple. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">count</span><span class="p">,</span> <span class="n">query</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">),</span> <span class="n">query</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">mergefiles</span><span class="p">():</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">tempdir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s">&#39;r+&#39;</span><span class="p">))</span>
+    <span class="n">f_dest</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">destfile</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">lines_written</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">heapq</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">decorated_file</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">]):</span>
+        <span class="n">f_dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">lines_written</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">lines_written</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">hashfiles</span><span class="p">()</span>
+    <span class="n">sortqueryinfile</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;sorting completed, total queries: &quot;</span><span class="p">,</span> <span class="n">mergefiles</span><span class="p">()</span>
+</pre></div>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2017-05-19 21:12 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'bigdata-interview.md',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/tracholar/wiki" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

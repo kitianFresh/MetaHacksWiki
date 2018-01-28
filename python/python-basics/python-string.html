@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>python-string - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-basics">python-basics</a>&nbsp;»&nbsp;python-string</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python-string</div>
+<div id="content">
+  <h2 id="_1">格式字符串手册</h2>
+<p>数字格式化</p>
+<p>下面的表格展示了使用Python的后起新秀str.format()格式化数字的多种方法，包含浮点数格式化与整数格式化示例。可使用 print("FORMAT".format(NUMBER)); 来运行示例，因此你可以运行： print("{:.2f}".format(3.1415926)); 来得到第一个示例的输出。</p>
+<div class="hlcode"><pre>    <span class="err">数字</span>  <span class="err">格式</span>  <span class="err">输出</span>  <span class="err">描述</span>
+    <span class="mf">3.1415926</span>   <span class="p">{</span><span class="o">:</span><span class="mf">.2f</span><span class="p">}</span>  <span class="mf">3.14</span>    <span class="err">保留小数点后两位</span>
+    <span class="mf">3.1415926</span>   <span class="p">{</span><span class="o">:+</span><span class="mf">.2f</span><span class="p">}</span> <span class="o">+</span><span class="mf">3.14</span>   <span class="err">带符号保留小数点后两位</span>
+    <span class="o">-</span><span class="mi">1</span>  <span class="p">{</span><span class="o">:+</span><span class="mf">.2f</span><span class="p">}</span> <span class="o">-</span><span class="mf">1.00</span>   <span class="err">带符号保留小数点后两位</span>
+    <span class="mf">2.71828</span> <span class="p">{</span><span class="o">:</span><span class="mf">.0f</span><span class="p">}</span>  <span class="mi">3</span>   <span class="err">不带小数</span>
+    <span class="mi">5</span>   <span class="p">{</span><span class="o">:</span><span class="mi">0</span><span class="o">&gt;</span><span class="mi">2</span><span class="n">d</span><span class="p">}</span> <span class="mo">05</span>  <span class="err">数字补零</span> <span class="p">(</span><span class="err">填充左边</span><span class="p">,</span> <span class="err">宽度为</span><span class="mi">2</span><span class="p">)</span>
+    <span class="mi">5</span>   <span class="p">{</span><span class="o">:</span><span class="n">x</span><span class="o">&lt;</span><span class="mi">4</span><span class="n">d</span><span class="p">}</span> <span class="mi">5</span><span class="n">xxx</span>    <span class="err">数字补</span><span class="n">x</span> <span class="p">(</span><span class="err">填充右边</span><span class="p">,</span> <span class="err">宽度为</span><span class="mi">4</span><span class="p">)</span>
+    <span class="mi">10</span>  <span class="p">{</span><span class="o">:</span><span class="n">x</span><span class="o">&lt;</span><span class="mi">4</span><span class="n">d</span><span class="p">}</span> <span class="mi">10</span><span class="n">xx</span>    <span class="err">数字补</span><span class="n">x</span> <span class="p">(</span><span class="err">填充右边</span><span class="p">,</span> <span class="err">宽度为</span><span class="mi">4</span><span class="p">)</span>
+    <span class="mi">1000000</span> <span class="p">{</span><span class="o">:</span><span class="p">,}</span>    <span class="mi">1</span><span class="p">,</span><span class="mo">000</span><span class="p">,</span><span class="mo">000</span>   <span class="err">以逗号分隔的数字格式</span>
+    <span class="mf">0.25</span>    <span class="p">{</span><span class="o">:</span><span class="mf">.2</span><span class="o">%</span><span class="p">}</span>  <span class="mf">25.00</span><span class="o">%</span>  <span class="err">百分比格式</span>
+    <span class="mi">1000000000</span>  <span class="p">{</span><span class="o">:</span><span class="mf">.2</span><span class="n">e</span><span class="p">}</span>  <span class="mf">1.00e+09</span>    <span class="err">指数记法</span>
+    <span class="mi">13</span>  <span class="p">{</span><span class="o">:</span><span class="mi">10</span><span class="n">d</span><span class="p">}</span>          <span class="mi">13</span>  <span class="err">右对齐</span> <span class="p">(</span><span class="err">默认</span><span class="p">,</span> <span class="err">宽度为</span><span class="mi">10</span><span class="p">)</span>
+    <span class="mi">13</span>  <span class="p">{</span><span class="o">:&lt;</span><span class="mi">10</span><span class="n">d</span><span class="p">}</span> <span class="mi">13</span>  <span class="err">左对齐</span> <span class="p">(</span><span class="err">宽度为</span><span class="mi">10</span><span class="p">)</span>
+    <span class="mi">13</span>  <span class="p">{</span><span class="o">:^</span><span class="mi">10</span><span class="n">d</span><span class="p">}</span>     <span class="mi">13</span>  <span class="err">中间对齐</span> <span class="p">(</span><span class="err">宽度为</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="pythonapplication">Python获取application运行的路径</h2>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">def</span> <span class="nf">is_packaged</span><span class="p">():</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s">&#39;frozen&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">frozen</span>
+
+    <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="k">def</span> <span class="nf">get_root</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_MEIPASS</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">pyinstaller</span>
+
+
+<span class="k">def</span> <span class="nf">get_mclouds_root</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">pyinstaller</span><span class="o">.</span><span class="n">is_packaged</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">pyinstaller</span><span class="o">.</span><span class="n">get_root</span><span class="p">()</span>
+
+    <span class="n">cur_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span>
+    <span class="n">cur_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">cur_path</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">cur_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;clouds/common&#39;</span><span class="p">))</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">cur_path</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&#39;meituan/server&#39;</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cur_path</span><span class="p">[:</span><span class="n">pos</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_mclouds_scripts_path</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_mclouds_root</span><span class="p">(),</span> <span class="s">&#39;meituan/scripts&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_mclouds_workspace_path</span><span class="p">():</span>
+    <span class="n">root_path</span> <span class="o">=</span> <span class="n">get_mclouds_root</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pyinstaller</span><span class="o">.</span><span class="n">is_packaged</span><span class="p">():</span>
+        <span class="n">root_path</span> <span class="o">=</span> <span class="s">&#39;/opt/cloud/&#39;</span>
+
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s">&#39;workspace&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="chroot">chroot机制可以更改当前程序运行的参考根目录</h2>
+<p>chroot 可以实现安全隔离，从新制造一个新的根目录，并且程序只对该目新的根目录具有权限，其他目录对该进程就不可见了。从而实现安全隔离，但是如果程序还想要访问其他的库，命令，需要组织根目录，把相应的库文件放到相应的目录下面，可以用 busybox实现这个功能。就是有制造出一个linux系统资源目录出来给某个进程使用，类似容器隔离技术。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="n">newroot</span> <span class="o">=</span> <span class="s">&#39;/Users/kiki/tmp&#39;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">newroot</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">newroot</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chroot</span><span class="p">(</span><span class="n">newroot</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">__file__</span>
+<span class="k">print</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="argparse-metavar-actionstore_true">argparse 中 <code>metavar</code> 不能和<code>action=store_true</code> 同时用。</h2>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2017-04-30 11:22 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'python-string',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/tracholar/wiki" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
