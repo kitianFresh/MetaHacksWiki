@@ -32,45 +32,52 @@
 <li><a href="https://help.github.com/articles/creating-a-pull-request/">creating-a-pull-request</a></li>
 </ul>
 <h1 id="gitmergepull">Git出现merge或者pull与本地工作区状态冲突</h1>
-<div class="hlcode"><pre><span class="n">Updating</span> <span class="n">c5ba2bc</span><span class="p">..</span><span class="n">ad63656</span>
-<span class="nl">error:</span> <span class="n">Your</span> <span class="n">local</span> <span class="n">changes</span> <span class="n">to</span> <span class="n">the</span> <span class="n">following</span> <span class="n">files</span> <span class="n">would</span> <span class="n">be</span> <span class="n">overwritten</span> <span class="n">by</span> <span class="n">merge</span><span class="o">:</span>
-    <span class="n">BloodTestReportOCR</span><span class="o">/</span><span class="k">static</span><span class="o">/</span><span class="n">index</span><span class="p">.</span><span class="n">html</span>
-    <span class="n">BloodTestReportOCR</span><span class="o">/</span><span class="n">view</span><span class="p">.</span><span class="n">py</span>
-<span class="n">Please</span><span class="p">,</span> <span class="n">commit</span> <span class="n">your</span> <span class="n">changes</span> <span class="n">or</span> <span class="n">stash</span> <span class="n">them</span> <span class="n">before</span> <span class="n">you</span> <span class="n">can</span> <span class="n">merge</span><span class="p">.</span>
-<span class="n">Aborting</span>
+<div class="hlcode"><pre><span></span>Updating c5ba2bc..ad63656
+error: Your local changes to the following files would be overwritten by merge:
+    BloodTestReportOCR/static/index.html
+    BloodTestReportOCR/view.py
+Please, commit your changes or stash them before you can merge.
+Aborting
 </pre></div>
 
 
 <p>方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">stash</span>
-<span class="n">git</span> <span class="n">merge</span>
+<div class="hlcode"><pre><span></span>git stash
+git merge
 
-<span class="n">git</span> <span class="n">stash</span> <span class="n">list</span><span class="err">：</span> <span class="err">所有保存的</span><span class="n">git</span><span class="err">栈内的备份</span>
-<span class="n">git</span> <span class="n">stash</span> <span class="n">pop</span><span class="err">：</span> <span class="err">弹出栈顶内容</span>
-<span class="n">git</span> <span class="n">stash</span> <span class="n">clear</span><span class="err">：</span> <span class="err">清空</span><span class="n">Git</span><span class="err">栈</span>
+git stash list： 所有保存的git栈内的备份
+git stash pop： 弹出栈顶内容
+git stash clear： 清空Git栈
 </pre></div>
 
 
 <p>方案2：放弃本地修改就可以了</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span>
+<div class="hlcode"><pre><span></span>git reset --hard
+git pull
+</pre></div>
+
+
+<h1 id="git-checkout-branch-error-the-following-untracked-working-tree-files-would-be-overwritten-by-checkout">git checkout branch 出现 <code>error: The following untracked working tree files would be overwritten by checkout</code></h1>
+<div class="hlcode"><pre><span></span><span class="n">git</span> <span class="n">add</span> <span class="o">*</span> 
+<span class="n">git</span> <span class="n">stash</span>
 <span class="n">git</span> <span class="n">pull</span>
 </pre></div>
 
 
 <h1 id="http-git-push">解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题</h1>
 <p>由于实验楼git服务器使用的是http协议而不是git或者ssh协议（希望实验楼能提供ssh协议的支持吧，这7样就可以把自己的公钥上传了）导致每一次本地git push都要输入用户名和密码；可以使用git config来配置；由于这是实验楼的一个项目，所以使用local就行了；命令如下：</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">cache</span> <span class="p">(</span><span class="err">这个默认密码只保存</span><span class="mi">15</span><span class="err">分钟的</span><span class="p">)</span>
-<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="err">&#39;</span><span class="n">cache</span> <span class="o">--</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600</span><span class="err">&#39;</span> <span class="p">(</span><span class="err">可以添加时间参数修改保存时间</span><span class="p">)</span>
-<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">local</span> <span class="n">credential</span><span class="p">.</span><span class="n">helper</span> <span class="n">store</span> <span class="p">(</span><span class="err">长期存储密码</span><span class="p">)</span>
+<div class="hlcode"><pre><span></span>git config --local credential.helper cache (这个默认密码只保存15分钟的)
+git config --local credential.helper &#39;cache --timeout=3600&#39; (可以添加时间参数修改保存时间)
+git config --local credential.helper store (长期存储密码)
 </pre></div>
 
 
 <h1 id="git-commit">Git 切换到某一个 commit 版本</h1>
 <p>如果使用 <code>git reset --hard HEAD^</code>（这是切换到上一个commit）, 导致当前workspace 更改, 可以使用 </p>
-<div class="hlcode"><pre><span class="c1">// 先找到commit id</span>
-<span class="n">git</span> <span class="n">reflog</span>
-<span class="c1">// 切换到那个版本，但是workspace 是干净的，即commit-id 后面的提交修改，在workspace也是没有的</span>
-<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="mh">3628164</span>
+<div class="hlcode"><pre><span></span>// 先找到commit id
+git reflog
+// 切换到那个版本，但是workspace 是干净的，即commit-id 后面的提交修改，在workspace也是没有的
+git reset --hard 3628164
 </pre></div>
 
 
@@ -79,29 +86,29 @@
 <p><code>git blame meituan/server/clouds/common/macutils.py</code></p>
 <h1 id="git-rebase">git rebase</h1>
 <p>做merge、pull之前一定要先把自己的更改备份，可以使用以下方法</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">tianqi05</span><span class="o">/</span><span class="n">deploy</span><span class="o">-</span><span class="n">binary</span><span class="o">-</span><span class="mf">1.2.3</span>
-<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="n">origin</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="mf">1.2.3</span>
-<span class="n">git</span> <span class="n">diff</span> <span class="o">&gt;&gt;</span> <span class="n">a</span><span class="p">.</span><span class="n">diff</span>
-<span class="n">git</span> <span class="n">apply</span> <span class="n">a</span><span class="p">.</span><span class="n">diff</span>
+<div class="hlcode"><pre><span></span>git checkout -b tianqi05/deploy-binary-1.2.3
+git reset --hard origin/release/1.2.3
+git diff &gt;&gt; a.diff
+git apply a.diff
 </pre></div>
 
 
 <h2 id="rebase">rebase操作做合并</h2>
 <p>第一种是为了保持和远程主分支或者某个分支的一致，不至于落后主分支太多（因为主分支还有其他人在不断的commit），使用 rebase 操作, 这样你的分支就在主分支前面，主分支合并你的分支的时候，就不容易产生冲突了。</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">checkout</span> <span class="n">experiment</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="o">-</span><span class="n">i</span> <span class="n">origin</span><span class="o">/</span><span class="n">master</span>
+<div class="hlcode"><pre><span></span>git checkout experiment
+git rebase -i origin/master
 </pre></div>
 
 
 <p>假设master 和 experiment的公共祖先节点是 a， 以上两句是将 experiment 分支首先 git diff 保存从 a 开始的 变化，然后重置到 a， 执行master从a开始的变化，最后apply diff。然后 push 你的分支到远程repo，提交pr合并到主分支（在团队和公司都是这样的）</p>
 <p>自己的项目，也可以在本地主分支local/master上合并，然后直接push 主分支到 origin/master; 切回主分支，执行合并操作，将开发分支合并到主分支，此时，就不用处理合并冲突了，因为此时的 experiment是在master的前面。</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">merge</span> <span class="n">experiment</span>
+<div class="hlcode"><pre><span></span>git checkout master
+git merge experiment
 </pre></div>
 
 
 <h2 id="git-rebase-i-squash-commitcommit">git rebase -i &amp; squash 重演合并多个commit信息成为一个commit信息</h2>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">rebase</span> <span class="o">-</span><span class="n">i</span> <span class="mi">2323123</span>
+<div class="hlcode"><pre><span></span>git rebase -i 2323123
 </pre></div>
 
 
@@ -109,76 +116,76 @@
 <p>如果rebase 失败，出现冲突，看git提示，要么修改冲突，提交之后，然后<code>git rebase --continue</code>; 要么跳过这些有冲突的 commit， <code>git rebase --skip</code>; 要么直接不做了，回到以前，<code>git rebase --abort</code>;</p>
 <h1 id="git-track">git track</h1>
 <p>pull默认是fetch和merge加起来操作，所以一般先使用 fetch 比较好</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">pull</span> <span class="o">=</span> <span class="n">git</span> <span class="n">fetch</span> <span class="o">+</span> <span class="n">git</span> <span class="n">merge</span><span class="p">(</span><span class="err">但是仅仅只是当前分支的信息</span><span class="p">)</span>
-<span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">pull</span> <span class="n">team1</span> <span class="n">dev</span>
+<div class="hlcode"><pre><span></span>git pull = git fetch + git merge(但是仅仅只是当前分支的信息)
+git pull origin master
+git pull team1 dev
 </pre></div>
 
 
 <p>默认推送当前名字叫 master 的本地分支到 origin/master</p>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">tracking</span><span class="o">:</span><span class="n">upstream</span>
+<div class="hlcode"><pre><span></span>git push origin master
+git push origin tracking:upstream
 </pre></div>
 
 
-<p>本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）
-git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master
-跟踪方法：
-1. 首先拉取远程分支信息
-<code>git fetch</code>
-2. 新建一个新的本地分支跟踪一个远程分支
-<code>git checkout -b localbranchname origin/dev</code>
-3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)
-<code>git branch --set-upstream-to=origin/branch currentbranch</code>
-4. 删除远程分支
-<code>git push origin --delete branchname</code>
-5. 展示分支详细信息
+<p>本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）<br />
+git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master<br />
+跟踪方法：<br />
+1. 首先拉取远程分支信息<br />
+<code>git fetch</code><br />
+2. 新建一个新的本地分支跟踪一个远程分支<br />
+<code>git checkout -b localbranchname origin/dev</code><br />
+3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)<br />
+<code>git branch --set-upstream-to=origin/branch currentbranch</code><br />
+4. 删除远程分支<br />
+<code>git push origin --delete branchname</code><br />
+5. 展示分支详细信息<br />
 <code>git branch -vv</code></p>
 <h1 id="git-tag">git tag</h1>
 <p>又用到了删除git仓库的tags， 删除本地tag: git tag -d v0.1 只删除本地的没有用，下次fetch的时候还会拉下来，再删除远程仓库中的tag，跟删除远程分支的语法类似git push origin :refs/tags/v0.1.</p>
 <h1 id="git-diff">git diff 支持通配符</h1>
-<div class="hlcode"><pre><span class="n">git</span> <span class="n">diff</span> <span class="o">--</span><span class="n">cached</span> <span class="n">origin</span>
-<span class="n">git</span> <span class="n">diff</span> <span class="o">--*</span><span class="p">.</span><span class="n">m</span>
+<div class="hlcode"><pre><span></span>git diff --cached origin
+git diff --*.m
 </pre></div>
 
 
-<p>git apply -v changes.diff 失败
-可以patch成功的，失败的手动改
+<p>git apply -v changes.diff 失败<br />
+可以patch成功的，失败的手动改<br />
 git apply --reject --whitespace=fix mypatch.patch</p>
 <h1 id="git-revert-merge">git revert 去掉某一次merge（慎用，很容易冲突）</h1>
 <h1 id="ssh-rsync">本地编辑代码直接推送到服务器上调试（ssh &amp; rsync）</h1>
 <p>sync.sh用来做文件同步的，可以方便本地修改代码同步到远程服务器，然后在远程服务器上调试</p>
-<div class="hlcode"><pre><span class="c">#!/bin/bash</span>
-<span class="nv">action</span><span class="o">=</span><span class="k">${</span><span class="nv">1</span><span class="k">:-</span><span class="s2">&quot;upload&quot;</span><span class="k">}</span>
+<div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">action</span><span class="o">=</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="s2">&quot;upload&quot;</span><span class="si">}</span>
 
 <span class="nb">declare</span> -A hosts
 <span class="nv">hosts</span><span class="o">=(</span>
 
-<span class="c"># 网络测试环境</span>
+<span class="c1"># 网络测试环境</span>
 <span class="o">[</span><span class="s2">&quot;yf-cloud-netctr03&quot;</span><span class="o">]=</span><span class="s2">&quot;10.4.225.98&quot;</span>
-<span class="c">#[&quot;yf-mos-test-net09&quot;]=&quot;10.4.253.23&quot;</span>
-<span class="c">#[&quot;yf-mos-corp-host47&quot;]=&quot;10.4.250.37&quot;</span>
+<span class="c1">#[&quot;yf-mos-test-net09&quot;]=&quot;10.4.253.23&quot;</span>
+<span class="c1">#[&quot;yf-mos-corp-host47&quot;]=&quot;10.4.250.37&quot;</span>
 
 <span class="o">)</span>
 
 
-<span class="k">if</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;upload&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
-<span class="k">    </span><span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-    <span class="k">for </span>host in <span class="s2">&quot;${!hosts[@]}&quot;</span>; <span class="k">do</span>
-<span class="k">        </span>prompt+<span class="o">=</span><span class="s2">&quot;$host &quot;</span>
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;upload&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> host in <span class="s2">&quot;</span><span class="si">${</span><span class="p">!hosts[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="k">do</span>
+        <span class="nv">prompt</span><span class="o">+=</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2"> &quot;</span>
     <span class="k">done</span>
-<span class="k">    </span><span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;The hosts you are going to deploy are:\033[32m $prompt \033[0m&quot;</span>
+    <span class="nv">prompt</span><span class="o">=</span><span class="s2">&quot;The hosts you are going to deploy are:\033[32m </span><span class="nv">$prompt</span><span class="s2"> \033[0m&quot;</span>
     <span class="nb">echo</span> -e <span class="nv">$prompt</span>
     <span class="nb">read</span> -p <span class="s2">&quot;Continue (y/n)&quot;</span> answer
-    <span class="k">if</span> <span class="o">[[</span> ! <span class="nv">$answer</span> <span class="o">=</span>~ ^<span class="o">(</span>y|Y<span class="o">)</span><span class="nv">$ </span><span class="o">]]</span>; <span class="k">then</span>
-<span class="k">        </span><span class="nb">exit </span>1
+    <span class="k">if</span> <span class="o">[[</span> ! <span class="nv">$answer</span> <span class="o">=</span>~ ^<span class="o">(</span>y<span class="p">|</span>Y<span class="o">)</span>$ <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">exit</span> <span class="m">1</span>
     <span class="k">fi</span>
-<span class="k">    for </span>host in <span class="s2">&quot;${!hosts[@]}&quot;</span>; <span class="k">do</span>
-<span class="k">        </span><span class="nb">echo</span> <span class="nv">$host</span> <span class="k">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;$host&quot;</span><span class="p">]</span><span class="k">}</span>
-        rsync -av -e <span class="s1">&#39;ssh -p 44392&#39;</span> --exclude <span class="s1">&#39;*.pyc&#39;</span>  --exclude <span class="s1">&#39;contrib&#39;</span> --exclude <span class="s1">&#39;workspace/*&#39;</span> --exclude <span class="s1">&#39;.git/*&#39;</span> --exclude <span class="s1">&#39;backup&#39;</span>  . tianqi05@<span class="k">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;$host&quot;</span><span class="p">]</span><span class="k">}</span>:/data/cloud
-        <span class="c">#rsync -av -e &#39;ssh -p 44392&#39; --exclude &#39;*.pyc&#39; ./contrib/glance sankuai@${hosts[&quot;$host&quot;]}:/opt/cloud/contrib/</span>
+    <span class="k">for</span> host in <span class="s2">&quot;</span><span class="si">${</span><span class="p">!hosts[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="k">do</span>
+        <span class="nb">echo</span> <span class="nv">$host</span> <span class="si">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2">&quot;</span><span class="p">]</span><span class="si">}</span>
+        rsync -av -e <span class="s1">&#39;ssh -p 44392&#39;</span> --exclude <span class="s1">&#39;*.pyc&#39;</span>  --exclude <span class="s1">&#39;contrib&#39;</span> --exclude <span class="s1">&#39;workspace/*&#39;</span> --exclude <span class="s1">&#39;.git/*&#39;</span> --exclude <span class="s1">&#39;backup&#39;</span>  . tianqi05@<span class="si">${</span><span class="nv">hosts</span><span class="p">[</span><span class="s2">&quot;</span><span class="nv">$host</span><span class="s2">&quot;</span><span class="p">]</span><span class="si">}</span>:/data/cloud
+        <span class="c1">#rsync -av -e &#39;ssh -p 44392&#39; --exclude &#39;*.pyc&#39; ./contrib/glance sankuai@${hosts[&quot;$host&quot;]}:/opt/cloud/contrib/</span>
     <span class="k">done</span>
-<span class="k">elif</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;download&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
+<span class="k">elif</span> <span class="o">[[</span> <span class="nv">$action</span> <span class="o">==</span> <span class="s2">&quot;download&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
     ::
 <span class="k">fi</span>
 </pre></div>
@@ -186,33 +193,33 @@ git apply --reject --whitespace=fix mypatch.patch</p>
 
 <h2 id="_1">代码风格检查</h2>
 <p>这个可以不用设置，要不然 git commit 的时候对于不严格的风格会失败。在 <code>.git/hooks/</code> 目录下加入<code>pre-commit</code>文件内容如下，需要事先安装好 flake8 和 pep8 两个包。</p>
-<div class="hlcode"><pre><span class="c">#!/bin/bash</span>
-<span class="k">function </span>python_style_check<span class="o">()</span> <span class="o">{</span>
-    <span class="c">#check python code in a git repo</span>
+<div class="hlcode"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="k">function</span> python_style_check<span class="o">()</span> <span class="o">{</span>
+    <span class="c1">#check python code in a git repo</span>
     <span class="nv">root</span><span class="o">=</span><span class="sb">`</span>git rev-parse --show-toplevel<span class="sb">`</span>
-    <span class="nb">exit</span><span class="o">=</span>0
-    <span class="k">for </span>file in <span class="sb">`</span>git diff --name-only --cached --diff-filter<span class="o">=</span>ACMRTUXB HEAD|grep <span class="s1">&#39;\.py$&#39;</span><span class="sb">`</span>; <span class="k">do</span>
-<span class="k">        </span>flake8 --config<span class="o">=</span><span class="nv">$root</span>/.flake8 <span class="nv">$root</span>/<span class="nv">$file</span>
-        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -ne 0 <span class="o">]</span>; <span class="k">then</span>
-<span class="k">            </span><span class="nb">let exit</span><span class="o">=</span>1
+    <span class="nv">exit</span><span class="o">=</span><span class="m">0</span>
+    <span class="k">for</span> file in <span class="sb">`</span>git diff --name-only --cached --diff-filter<span class="o">=</span>ACMRTUXB HEAD<span class="p">|</span>grep <span class="s1">&#39;\.py$&#39;</span><span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+        flake8 --config<span class="o">=</span><span class="nv">$root</span>/.flake8 <span class="nv">$root</span>/<span class="nv">$file</span>
+        <span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -ne <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+            <span class="nb">let</span> <span class="nv">exit</span><span class="o">=</span><span class="m">1</span>
         <span class="k">fi</span>
-<span class="k">    done</span>
-<span class="k">    </span><span class="nb">exit</span> <span class="nv">$exit</span>
+    <span class="k">done</span>
+    <span class="nb">exit</span> <span class="nv">$exit</span>
 <span class="o">}</span>
 python_style_check
 </pre></div>
 
 
 <p>不设置的话，直接去掉这个文件即可。</p>
-<p>java 多核和单核对int类型的存储有什么区别？
-Java concurrentHashMap 实现， 分段+读写分离的锁
+<p>java 多核和单核对int类型的存储有什么区别？<br />
+Java concurrentHashMap 实现， 分段+读写分离的锁<br />
 SQL 求</p>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-24 23:42:45</p>
+        <p>Site Generated 2018-01-29 18:46:54</p>
       </span>
     </div>
   </body>

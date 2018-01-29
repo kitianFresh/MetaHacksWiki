@@ -27,15 +27,15 @@
 
   <h1 id="java-jar">Java 打包成 jar</h1>
 <p>注意 manifest 文件的写法, 必须是 <code>property:+space+value+\n</code>; 另外, 类名需要写全名才行!</p>
-<div class="hlcode"><pre><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
-<span class="n">Premain</span><span class="o">-</span><span class="nl">Class:</span> <span class="n">test</span><span class="o">.</span><span class="na">ObjectSizeFetcher</span>
+<div class="hlcode"><pre><span></span><span class="n">Manifest</span><span class="o">-</span><span class="n">Version</span><span class="o">:</span> <span class="mf">1.0</span>
+<span class="n">Premain</span><span class="o">-</span><span class="n">Class</span><span class="o">:</span> <span class="n">test</span><span class="o">.</span><span class="na">ObjectSizeFetcher</span>
 </pre></div>
 
 
 <h2 id="agent-jar">打包代理 agent jar</h2>
 <p>比如打包 test 包下面的 ObjectSizeFetcher 类, 需要 manifest 文件内容如下: </p>
-<div class="hlcode"><pre><span class="n">Manifest</span><span class="o">-</span><span class="n">Version</span><span class="o">:</span> <span class="mf">1.0</span>
-<span class="n">Premain</span><span class="o">-</span><span class="n">Class</span><span class="o">:</span> <span class="n">test</span><span class="p">.</span><span class="n">ObjectSizeFetcher</span>
+<div class="hlcode"><pre><span></span>Manifest-Version: 1.0
+Premain-Class: test.ObjectSizeFetcher
 </pre></div>
 
 
@@ -45,7 +45,7 @@
 <li><a href="http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html">Package java.lang.instrument Description</a></li>
 </ul>
 <h1 id="java-string-format">Java String Format</h1>
-<div class="hlcode"><pre><span class="o">/</span> <span class="nl">better:</span> <span class="k">do</span>
+<div class="hlcode"><pre><span></span><span class="o">/</span> <span class="n">better</span><span class="o">:</span> <span class="k">do</span>
 <span class="n">SumThread</span> <span class="n">left</span>  <span class="o">=</span> <span class="err">…</span>
 <span class="n">SumThread</span> <span class="n">right</span> <span class="o">=</span> <span class="err">…</span>
 <span class="c1">// order of next 4 lines</span>
@@ -57,7 +57,7 @@
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">padRight</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">padRight</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
      <span class="k">return</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;%1$-&quot;</span> <span class="o">+</span> <span class="n">n</span> <span class="o">+</span> <span class="s">&quot;s&quot;</span><span class="o">,</span> <span class="n">s</span><span class="o">);</span>  
 <span class="o">}</span>
 
@@ -76,7 +76,7 @@
 
 <h1 id="java-sorted-index">java Sorted Index</h1>
 <p>Concise way of achieving this with Java 8 Stream API,</p>
-<div class="hlcode"><pre><span class="kd">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">strArr</span> <span class="o">=</span> <span class="o">{</span><span class="s">&quot;France&quot;</span><span class="o">,</span> <span class="s">&quot;Spain&quot;</span><span class="o">,</span> <span class="s">&quot;France&quot;</span><span class="o">};</span>
+<div class="hlcode"><pre><span></span><span class="kd">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">strArr</span> <span class="o">=</span> <span class="o">{</span><span class="s">&quot;France&quot;</span><span class="o">,</span> <span class="s">&quot;Spain&quot;</span><span class="o">,</span> <span class="s">&quot;France&quot;</span><span class="o">};</span>
 <span class="kt">int</span><span class="o">[]</span> <span class="n">sortedIndices</span> <span class="o">=</span> <span class="n">IntStream</span><span class="o">.</span><span class="na">range</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">strArr</span><span class="o">.</span><span class="na">length</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">boxed</span><span class="o">().</span><span class="na">sorted</span><span class="o">((</span><span class="n">i</span><span class="o">,</span> <span class="n">j</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">strArr</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">compareTo</span><span class="o">(</span><span class="n">strArr</span><span class="o">[</span><span class="n">j</span><span class="o">])</span> <span class="o">)</span>
                 <span class="o">.</span><span class="na">mapToInt</span><span class="o">(</span><span class="n">ele</span> <span class="o">-&gt;</span> <span class="n">ele</span><span class="o">).</span><span class="na">toArray</span><span class="o">();</span>
@@ -84,7 +84,7 @@
 
 
 <p>map</p>
-<div class="hlcode"><pre><span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;();</span>
+<div class="hlcode"><pre><span></span><span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TreeMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Int</span><span class="o">&gt;();</span>
 <span class="k">for</span><span class="o">(</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">indexes</span> <span class="o">)</span> <span class="o">{</span>
     <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span> <span class="n">stringarray</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="n">i</span> <span class="o">);</span>
 <span class="o">}</span>
@@ -92,7 +92,7 @@
 
 
 <p>comparator 交换的是索引, 但是比较标准是原数组</p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">ArrayIndexComparator</span> <span class="kd">implements</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">ArrayIndexComparator</span> <span class="kd">implements</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span>
 <span class="o">{</span>
     <span class="kd">private</span> <span class="kd">final</span> <span class="kt">double</span><span class="o">[]</span> <span class="n">array</span><span class="o">;</span>
 
@@ -116,7 +116,7 @@
     <span class="o">{</span>
          <span class="c1">// Autounbox from Integer to int to use as array indexes</span>
         <span class="k">if</span> <span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">array</span><span class="o">[</span><span class="n">index2</span><span class="o">])</span> <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
-        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">&gt;</span> <span class="n">array</span><span class="o">[</span><span class="n">index2</span><span class="o">])</span> <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">&gt;</span> <span class="n">array</span><span class="o">[</span><span class="n">index2</span><span class="o">])</span> <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
         <span class="k">else</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span>
@@ -131,7 +131,7 @@
 
 <h1 id="java-cpu">Java 线程CPU占用率</h1>
 <p>查看线程cpu核占用率</p>
-<div class="hlcode"><pre><span class="n">top</span> <span class="o">-</span><span class="n">H</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">pid</span><span class="p">]</span>
+<div class="hlcode"><pre><span></span>top -H -p [pid]
 </pre></div>
 
 
@@ -147,7 +147,7 @@
 <ol>
 <li>分离错误处理代码和正常的逻辑代码;</li>
 </ol>
-<div class="hlcode"><pre> <span class="n">readFile</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span> <span class="n">readFile</span> <span class="o">{</span>
     <span class="n">open</span> <span class="n">the</span> <span class="n">file</span><span class="o">;</span>
     <span class="n">determine</span> <span class="n">its</span> <span class="n">size</span><span class="o">;</span>
     <span class="n">allocate</span> <span class="n">that</span> <span class="n">much</span> <span class="n">memory</span><span class="o">;</span>
@@ -157,7 +157,7 @@
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="n">errorCodeType</span> <span class="n">readFile</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="n">errorCodeType</span> <span class="n">readFile</span> <span class="o">{</span>
     <span class="n">initialize</span> <span class="n">errorCode</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 
     <span class="n">open</span> <span class="n">the</span> <span class="n">file</span><span class="o">;</span>
@@ -190,7 +190,7 @@
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="n">readFile</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="n">readFile</span> <span class="o">{</span>
     <span class="k">try</span> <span class="o">{</span>
         <span class="n">open</span> <span class="n">the</span> <span class="n">file</span><span class="o">;</span>
         <span class="n">determine</span> <span class="n">its</span> <span class="n">size</span><span class="o">;</span>
@@ -215,62 +215,62 @@
 <ol>
 <li>通过调用栈传递错误异常</li>
 </ol>
-<div class="hlcode"><pre><span class="n">method1</span> <span class="p">{</span>
-    <span class="n">call</span> <span class="n">method2</span><span class="p">;</span>
-<span class="p">}</span>
+<div class="hlcode"><pre><span></span>method1 {
+    call method2;
+}
 
-<span class="n">method2</span> <span class="p">{</span>
-    <span class="n">call</span> <span class="n">method3</span><span class="p">;</span>
-<span class="p">}</span>
+method2 {
+    call method3;
+}
 
-<span class="n">method3</span> <span class="p">{</span>
-    <span class="n">call</span> <span class="n">readFile</span><span class="p">;</span>
-<span class="p">}</span>
+method3 {
+    call readFile;
+}
 
-<span class="c1">// if else</span>
-<span class="n">method1</span> <span class="p">{</span>
-    <span class="n">errorCodeType</span> <span class="n">error</span><span class="p">;</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="n">call</span> <span class="n">method2</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span>
-        <span class="n">doErrorProcessing</span><span class="p">;</span>
-    <span class="k">else</span>
-        <span class="n">proceed</span><span class="p">;</span>
-<span class="p">}</span>
+// if else
+method1 {
+    errorCodeType error;
+    error = call method2;
+    if (error)
+        doErrorProcessing;
+    else
+        proceed;
+}
 
-<span class="n">errorCodeType</span> <span class="n">method2</span> <span class="p">{</span>
-    <span class="n">errorCodeType</span> <span class="n">error</span><span class="p">;</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="n">call</span> <span class="n">method3</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">error</span><span class="p">;</span>
-    <span class="k">else</span>
-        <span class="n">proceed</span><span class="p">;</span>
-<span class="p">}</span>
+errorCodeType method2 {
+    errorCodeType error;
+    error = call method3;
+    if (error)
+        return error;
+    else
+        proceed;
+}
 
-<span class="n">errorCodeType</span> <span class="n">method3</span> <span class="p">{</span>
-    <span class="n">errorCodeType</span> <span class="n">error</span><span class="p">;</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="n">call</span> <span class="n">readFile</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">error</span><span class="p">;</span>
-    <span class="k">else</span>
-        <span class="n">proceed</span><span class="p">;</span>
-<span class="p">}</span>
+errorCodeType method3 {
+    errorCodeType error;
+    error = call readFile;
+    if (error)
+        return error;
+    else
+        proceed;
+}
 
-<span class="c1">// try catch</span>
-<span class="n">method1</span> <span class="p">{</span>
-    <span class="n">try</span> <span class="p">{</span>
-        <span class="n">call</span> <span class="n">method2</span><span class="p">;</span>
-    <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">exception</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">doErrorProcessing</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+// try catch
+method1 {
+    try {
+        call method2;
+    } catch (exception e) {
+        doErrorProcessing;
+    }
+}
 
-<span class="n">method2</span> <span class="n">throws</span> <span class="n">exception</span> <span class="p">{</span>
-    <span class="n">call</span> <span class="n">method3</span><span class="p">;</span>
-<span class="p">}</span>
+method2 throws exception {
+    call method3;
+}
 
-<span class="n">method3</span> <span class="n">throws</span> <span class="n">exception</span> <span class="p">{</span>
-    <span class="n">call</span> <span class="n">readFile</span><span class="p">;</span>
-<span class="p">}</span>
+method3 throws exception {
+    call readFile;
+}
 </pre></div>
 
 
@@ -278,7 +278,7 @@
 <li><a href="http://docs.oracle.com/javase/tutorial/essential/exceptions/advantages.html">Advantages of Exceptions</a></li>
 </ul>
 <h3 id="catch">catch 捕获异常</h3>
-<div class="hlcode"><pre><span class="k">try</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="k">try</span> <span class="o">{</span>
 
 <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IndexOutOfBoundsException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;IndexOutOfBoundsException: &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
@@ -289,7 +289,7 @@
 
 
 <p>JDK1.7 映引入, 一个 catch 可以传入多种 Exception</p>
-<div class="hlcode"><pre><span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span><span class="o">|</span><span class="n">SQLException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span><span class="o">|</span><span class="n">SQLException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
     <span class="k">throw</span> <span class="n">ex</span><span class="o">;</span>
 <span class="o">}</span>
@@ -297,7 +297,7 @@
 
 
 <p>Finally 不管异常是否发生,都会执行!一下最后返回2; 前一个return 的值被后面的覆盖了!</p>
-<div class="hlcode"><pre>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
         <span class="k">try</span> <span class="o">{</span>
             <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
         <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
@@ -308,7 +308,7 @@
 
 
 <h3 id="_3">例子</h3>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeList</span><span class="o">()</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeList</span><span class="o">()</span> <span class="o">{</span>
     <span class="n">PrintWriter</span> <span class="n">out</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
 
     <span class="k">try</span> <span class="o">{</span>
@@ -339,7 +339,7 @@
 
 
 <h3 id="specify">specify 申明某函数会抛出异常</h3>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeList</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">IndexOutOfBoundsException</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeList</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">IndexOutOfBoundsException</span> <span class="o">{</span>
 
 <span class="c1">//Remember that IndexOutOfBoundsException is an unchecked exception; including it in the throws clause is not mandatory. You could just write the following.</span>
 
@@ -349,7 +349,7 @@
 
 <h3 id="chained-exceptions">chained exceptions</h3>
 <p>访问栈调用轨迹</p>
-<div class="hlcode"><pre><span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">cause</span><span class="o">)</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">cause</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">StackTraceElement</span> <span class="n">elements</span><span class="o">[]</span> <span class="o">=</span> <span class="n">cause</span><span class="o">.</span><span class="na">getStackTrace</span><span class="o">();</span>
     <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>       
         <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">getFileName</span><span class="o">()</span>
@@ -364,7 +364,7 @@
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-24 23:42:45</p>
+        <p>Site Generated 2018-01-29 18:46:54</p>
       </span>
     </div>
   </body>

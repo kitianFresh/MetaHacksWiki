@@ -34,6 +34,13 @@ git reset --hard
 git pull
 ```
 
+# git checkout branch 出现 `error: The following untracked working tree files would be overwritten by checkout`
+```python
+git add * 
+git stash
+git pull
+```
+
 # 解决在只能使用 HTTP 协议时候自己电脑上git push每次都要输入用户名密码问题
 由于实验楼git服务器使用的是http协议而不是git或者ssh协议（希望实验楼能提供ssh协议的支持吧，这7样就可以把自己的公钥上传了）导致每一次本地git push都要输入用户名和密码；可以使用git config来配置；由于这是实验楼的一个项目，所以使用local就行了；命令如下：
 

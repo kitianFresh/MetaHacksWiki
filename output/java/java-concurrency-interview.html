@@ -28,7 +28,7 @@
   <h1 id="java-basics">Java Basics</h1>
 <h2 id="1-equalshashcode">1. equals/'=='/hashCode()</h2>
 <p><strong><code>==</code> 其实是真正比较等式两边的值，值无非就是基本数据类型，或者是指针即引用．</strong>使用 <code>==</code> 比较对象引用其实就是比较的对象地址，因此两个不同的对象　<code>==</code> 必定为false;</p>
-<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------string--------------&quot;</span><span class="o">);</span>
+<div class="hlcode"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------string--------------&quot;</span><span class="o">);</span>
 <span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;abc&quot;</span><span class="o">;</span>
 <span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;abc&quot;</span><span class="o">;</span>
 <span class="n">String</span> <span class="n">s3</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">);</span>
@@ -45,22 +45,22 @@
 </pre></div>
 
 
-<p><code>o1.equals(o2)</code> 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．
+<p><code>o1.equals(o2)</code> 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．<br />
 由于 java 对于一些基础类重写，因此有些类使用的时候就不是比较地址了，比如 <strong>String 类，基本数据类型对应的类Byte/Character/Short/Integer/Long/Float/Double 都重写了 <code>equals</code></strong></p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">return</span> <span class="o">(</span><span class="k">this</span> <span class="o">==</span> <span class="n">obj</span><span class="o">);</span>
 <span class="o">}</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span> <span class="c1">//true</span>
+<div class="hlcode"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span> <span class="c1">//true</span>
 </pre></div>
 
 
-<p><strong><code>hashCode()</code> 方法和<code>equals</code>一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, <code>equals()</code> 和　<code>hashCode()</code> 必须要保持一致性，因此重写　equals 的必须重写　hashCode().</strong>
-String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,
+<p><strong><code>hashCode()</code> 方法和<code>equals</code>一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, <code>equals()</code> 和　<code>hashCode()</code> 必须要保持一致性，因此重写　equals 的必须重写　hashCode().</strong><br />
+String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,<br />
 才确定key是否相同.</strong></p>
-<div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------integer--------------&quot;</span><span class="o">);</span>
+<div class="hlcode"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------integer--------------&quot;</span><span class="o">);</span>
 <span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
 <span class="n">Integer</span> <span class="n">a2</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
 <span class="n">Integer</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
@@ -82,18 +82,18 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 
 <h2 id="2-compareble-comparator">2. compareble 和 comparator 区别</h2>
-<p>Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。
+<p>Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。<br />
 而Comparator是比较器；我们若需要控制某个类的次序，可以建立一个“该类的比较器”来进行排序。</p>
 <p>我们不难发现：Comparable相当于“内部比较器”，而Comparator相当于“外部比较器”。</p>
 <h2 id="3">3. 深度拷贝和浅层拷贝</h2>
-<p>深度拷贝: 指的是对象中成员变量引用的对象也拷贝一份新的.
+<p>深度拷贝: 指的是对象中成员变量引用的对象也拷贝一份新的.<br />
 浅层拷贝: 指的是只拷贝对象的第一层次的数据, 对象中成员变量引用的对象不做拷贝, Java 中基类Object的 clone 默认就是浅层拷贝, 并且这是一个本地方法.</p>
-<div class="hlcode"><pre><span class="kd">protected</span> <span class="kd">native</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">CloneNotSupportedException</span><span class="o">;</span>
+<div class="hlcode"><pre><span></span><span class="kd">protected</span> <span class="kd">native</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">CloneNotSupportedException</span><span class="o">;</span>
 </pre></div>
 
 
 <p>并且, 一个对象要想进行clone, 必须申明实现 Cloneable 接口, 否则会抛出异常. <code>First, if the class of this object does not implement the interface Cloneable, then a CloneNotSupportedException is thrown.</code></p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
  <span class="kd">public</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span> <span class="o">{</span>
             <span class="n">Object</span> <span class="n">o</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
             <span class="k">try</span> <span class="o">{</span>
@@ -110,7 +110,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 <h3 id="java">Java中实现深度拷贝的两种方式:</h3>
 <p>改写clone, 递归的进行浅层次复制. Cloneable 接口也是个空接口. </p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
         <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
         <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
         <span class="kd">private</span> <span class="n">Professor</span> <span class="n">pro</span><span class="o">;</span>
@@ -136,7 +136,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 
 <p>使用 Serializable 进行. Java 中 Serialization 和 Deserialization 会默认进行深层拷贝, 只要对象申明实现 Serializable 接口, 这个接口是个空接口, 没有实现. 主要通过 Object Stream 中的 <code>writeObject()</code> 和 <code>readObject()</code> 改写.</p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Serializable</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Serializable</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
     <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
     <span class="n">Professor</span> <span class="n">pro</span><span class="o">;</span>
@@ -171,7 +171,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 <h1 id="java-collection-framework">Java Collection Framework</h1>
 <h2 id="1">1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?</h2>
 <p>内部基于数组实现的集合, 理论上容量不超过 Integer.MAX_VALUE, 因为数组下标必须是 int 类型, 这些集合包括 ArrayList, ArrayQueue, EnumMap, PriorityQueue</p>
-<div class="hlcode"><pre><span class="cm">/**</span>
+<div class="hlcode"><pre><span></span><span class="cm">/**</span>
 <span class="cm">     * The maximum size of array to allocate.</span>
 <span class="cm">     * Some VMs reserve some header words in an array.</span>
 <span class="cm">     * Attempts to allocate larger arrays may result in</span>
@@ -220,7 +220,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </ol>
 <h2 id="2">2. 类加载机制?</h2>
 <p><strong>加载, 连接(验证/准备/解析), 初始化, 使用, 卸载. 初始化的时候,按照static block 和 static statement出现的顺序一次执行语句. 对于采用类加载机制的单例模式, 如果私有构造器需要对静态成员变量进行赋值, 我们一定要把 构造单列的语句放在最后面!</strong></p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">SingleTon</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">SingleTon</span> <span class="o">{</span>
 
     <span class="kd">private</span> <span class="kd">static</span> <span class="n">SingleTon</span> <span class="n">singleTon</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SingleTon</span><span class="o">();</span>
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">count1</span><span class="o">;</span> <span class="c1">//在准备阶段value初始值为0</span>
@@ -253,7 +253,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 
 <h2 id="3-autoboxunbox">3. AutoBox/unbox技术?</h2>
-<div class="hlcode"><pre><span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+<div class="hlcode"><pre><span></span><span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
 <span class="n">Integer</span> <span class="n">a2</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
 <span class="n">Integer</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
 <span class="n">Integer</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">128</span><span class="o">;</span>
@@ -277,7 +277,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 <h2 id="7-javacyclicbarrier-countdownlatch">7. Java中CyclicBarrier 和 CountDownLatch 有什么不同?</h2>
 <p>CyclicBarrier 和 CountDownLatch 都可以用来让一组线程等待其它线程。与 CyclicBarrier 不同的是，CountdownLatch 不能重新使用. <a href="http://javarevisited.blogspot.com/2012/07/cyclicbarrier-example-java-5-concurrency-tutorial.html">教程</a></p>
 <p>CountDownLatch 一般就是一个线程等待所有线程完成之后，主线程开始后续动作；比如服务退出时候，主线程需要等待所有子线程完成任务退出之后才能退出，服务启动的时候，主线程需要等待所有子线程先启动子服务之后才能继续启动；应用非常广泛，python 中可以自己实现；</p>
-<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.concurrent.CountDownLatch</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.logging.Level</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.logging.Logger</span><span class="o">;</span>
@@ -356,9 +356,9 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </pre></div>
 
 
-<p>CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．
+<p>CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．<br />
 CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDownLatch 也可以；</p>
-<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">java.util.concurrent.BrokenBarrierException</span><span class="o">;</span>
+<div class="hlcode"><pre><span></span><span class="kn">import</span> <span class="nn">java.util.concurrent.BrokenBarrierException</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.concurrent.CyclicBarrier</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.logging.Level</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.logging.Logger</span><span class="o">;</span>
@@ -435,18 +435,18 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 <p><strong>多线程在运行同一段代码的时候, 每一次结果都和预期的一致, 就是线程安全的.</strong> 集合包括线程安全和不安全的, <code>Vector/Stack/HashTable</code> 都是通过同步方法实现了线程安全的集合.但是<strong>请注意的是, 集合本身线程安全并不代表直接使用他们的程序就是线程安全了.</strong></p>
 <h2 id="11-java-race-condition">11. Java中的 race condition 竞争条件?举例说明</h2>
 <p>竞态条件会导致程序在并发情况下出现一些bugs。多线程对一些资源的竞争的时候就会产生竞态条件，如果首先要执行的程序竞争失败排到后面执行了，那么整个程序就会出现一些不确定的bugs。这种bugs很难发现而且会重复出现，因为线程间的随机竞争。一个例子就是无序处理. 原因就是本来需要是原子操作的部分, 因为无序随机竞争而导致的</p>
-<div class="hlcode"><pre><span class="n">count</span><span class="o">++;</span>
+<div class="hlcode"><pre><span></span><span class="n">count</span><span class="o">++;</span>
 <span class="c1">// 拆分成指令</span>
-<span class="mi">1</span><span class="o">.</span> <span class="n">read</span> <span class="n">count</span> <span class="n">from</span> <span class="n">memory</span>
-<span class="mi">2</span><span class="o">.</span> <span class="n">update</span> <span class="n">count</span>
-<span class="mi">3</span><span class="o">.</span> <span class="n">write</span> <span class="n">updated</span> <span class="n">count</span> <span class="n">to</span> <span class="n">memory</span>
+<span class="mf">1.</span> <span class="n">read</span> <span class="n">count</span> <span class="n">from</span> <span class="n">memory</span>
+<span class="mf">2.</span> <span class="n">update</span> <span class="n">count</span>
+<span class="mf">3.</span> <span class="n">write</span> <span class="n">updated</span> <span class="n">count</span> <span class="n">to</span> <span class="n">memory</span>
 </pre></div>
 
 
 <p>以上三个部分每一句都可能被打断转而执行另一个线程.</p>
 <h3 id="check-and-act">check and act</h3>
 <p>经典的单例模式的错误写法. T1 执行比较后进入if, 此时  CPU 切换运行 T2, T2又发现是 null.</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="n">Singleton</span> <span class="nf">getInstance</span><span class="o">()</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="n">Singleton</span> <span class="nf">getInstance</span><span class="o">()</span> <span class="o">{</span>
     <span class="k">if</span> <span class="o">(</span><span class="n">_instance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span><span class="c1">// race condition if two threads sees _instance=null</span>
         <span class="n">_instance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="o">();</span>
     <span class="o">}</span>
@@ -456,7 +456,7 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 
 <h3 id="read-modify-update">read-modify-update</h3>
 <p>使用线程安全的集合,不加同步就一定能写出线程安全的代码吗?</p>
-<div class="hlcode"><pre><span class="k">if</span><span class="o">(!</span><span class="n">hashTable</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">key</span><span class="o">))</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="k">if</span><span class="o">(!</span><span class="n">hashTable</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">key</span><span class="o">))</span> <span class="o">{</span>
     <span class="n">hashTable</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span><span class="n">value</span><span class="o">);</span>
 <span class="o">}</span>
 </pre></div>
@@ -506,10 +506,10 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 <p>低级的办法是 wait/notify 方法, 高级的办法是 Semaphore 或者 BlockingQueue. <a href="http://javarevisited.blogspot.sg/2012/02/producer-consumer-design-pattern-with.html">教程</a></p>
 <h2 id="26">26. 如何避免死锁?</h2>
 <p>Java多线程中的死锁: 死锁是指两个或两个以上的进程在执行过程中, 因争夺资源而造成的一种相互等待的现象. 死锁会导致程序被挂起而无法执行.</p>
-<p>死锁发生的四个条件:
- - 互斥条件: 一个资源每次只能被一个进程使用.
- - 请求与保持条件: 一个进程因为请求资源而阻塞时, 对已获得的资源保持不放.
- - 不剥夺条件: 进程已获得的资源, 在未使用完之前, 不能强行剥夺.
+<p>死锁发生的四个条件:<br />
+ - 互斥条件: 一个资源每次只能被一个进程使用.<br />
+ - 请求与保持条件: 一个进程因为请求资源而阻塞时, 对已获得的资源保持不放.<br />
+ - 不剥夺条件: 进程已获得的资源, 在未使用完之前, 不能强行剥夺.<br />
  - 循环等待条件: 若干进程之间形成一种头尾相接的循环等待资源关系.</p>
 <p>避免死锁最简单的方法就是阻止循环等待条件.</p>
 <h2 id="27-java">27. Java 中的活锁和死锁有什么区别?</h2>
@@ -578,7 +578,7 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 <h2 id="_3">补充知识资深话题</h2>
 <p>java 现在的并发实现互斥和同步的机制对新手来说看起来非常混乱！新手大多知道 <code>synchronized/volatile</code> 关键字可以实现互斥，再辅以　<code>wait/notify/notifyAll</code> 就可以实现同步．以上可以认为是JVM内置的原生互斥同步实现．但是在　JDK 5以后，java.util.concurrent 包里面又实现了很多额外的机制，比如 Lock(ReentrantLock/ReentrantReadWriteLock),Semaphore,CountDownLatch, AtomicInteger等，其实这个并发包并不是替代内置枷锁的方法，而是当内置枷锁方法不使用的时候，作为一种可选择的高级功能．</p>
 <h2 id="locks">Locks</h2>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Counter</span><span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Counter</span><span class="o">{</span>
 
   <span class="kd">private</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 
@@ -591,7 +591,7 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 </pre></div>
 
 
-<div class="hlcode"><pre>  <span class="kd">private</span> <span class="n">Lock</span> <span class="n">lock</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Lock</span><span class="o">();</span>
+<div class="hlcode"><pre><span></span>  <span class="kd">private</span> <span class="n">Lock</span> <span class="n">lock</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Lock</span><span class="o">();</span>
   <span class="kd">private</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 
   <span class="kd">public</span> <span class="kt">int</span> <span class="nf">inc</span><span class="o">(){</span>
@@ -604,7 +604,7 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 </pre></div>
 
 
-<p><strong>并发包里的锁实际上可以通过 synchronized/wait/notify 来模拟实现同样的功能. 那这和直接用 synchronized/wait/notify有什么区别？</strong>
+<p><strong>并发包里的锁实际上可以通过 synchronized/wait/notify 来模拟实现同样的功能. 那这和直接用 synchronized/wait/notify有什么区别？</strong><br />
 synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你必须控制到代码块的枷锁粒度,并不是非常灵活,而且采用 synchronized 必定会造成阻塞, 因为JVM会把 synchronized 关键字翻译成也不能设置超时. </p>
 <p>Lock 就是更加灵活的选择, 他的实现在JDK中是通过 CAS 来做的, CAS 是cpu原语指令, 他是不需要经过操作系统去调度阻塞的,即 CAS 可以实现非阻塞的锁.</p>
 <ol>
@@ -621,7 +621,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 <blockquote>
 <p>Locks (and other more advanced synchronization mechanisms) are created using synchronized blocks, so it is not like we can get totally rid of the synchronized keyword.</p>
 </blockquote>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Lock</span><span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Lock</span><span class="o">{</span>
 
   <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
 
@@ -645,15 +645,15 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 <blockquote>
 <p>For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.</p>
 </blockquote>
-<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
+<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！<br />
 <a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
 <h3 id="semaphore">Semaphore</h3>
 <blockquote>
 <p>A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.</p>
 </blockquote>
-<p>信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.
+<p>信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.<br />
 简单版本的 Semaphore</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Semaphore</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Semaphore</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">signal</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
 
   <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">take</span><span class="o">()</span> <span class="o">{</span>
@@ -671,7 +671,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 
 
 <p>可以记录信号发送的信号个数(Counting Semaphore)</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CountingSemaphore</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CountingSemaphore</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="kt">int</span> <span class="n">signals</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 
   <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">take</span><span class="o">()</span> <span class="o">{</span>
@@ -687,7 +687,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 
 
 <p>带上界的(Bounded Semaphore)</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BoundedSemaphore</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BoundedSemaphore</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="kt">int</span> <span class="n">signals</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
   <span class="kd">private</span> <span class="kt">int</span> <span class="n">bound</span>   <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 
@@ -716,7 +716,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 <h3 id="synchronizednotify">生产者消费者模型(synchronized/notify实现)</h3>
 <h3 id="atomicinteger">AtomicInteger</h3>
 <p>AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS</p>
-<div class="hlcode"><pre><span class="c1">//使用volatile关键字保证线程可见性</span>
+<div class="hlcode"><pre><span></span><span class="c1">//使用volatile关键字保证线程可见性</span>
 <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">int</span> <span class="n">value</span><span class="o">;</span>
 <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="nf">get</span><span class="o">(){</span>
     <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
@@ -747,7 +747,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 
 
 <p>CAS模拟</p>
-<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">SimulatedCAS</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">class</span> <span class="nc">SimulatedCAS</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
 
     <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">long</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
@@ -797,7 +797,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 
 
 <p>使用sun.misc.Unsafe 实现CASCounter</p>
-<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CASCounter</span> <span class="o">{</span>
+<div class="hlcode"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CASCounter</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="n">Unsafe</span> <span class="n">unsafe</span><span class="o">;</span>
     <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
     <span class="kd">private</span> <span class="kt">long</span> <span class="n">offset</span><span class="o">;</span>
@@ -861,7 +861,7 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
       <span>
         <p>Copyright © 2018 田奇.
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2018-01-24 23:42:45</p>
+        <p>Site Generated 2018-01-29 18:46:54</p>
       </span>
     </div>
   </body>
