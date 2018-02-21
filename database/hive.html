@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -174,10 +175,10 @@
 <p>第一种方法是在正常的排序完成之后, 对第一阶段每一个 reducer 结果再次构造 MapReduce，但是该阶段只设置 一个 reducer， 那最后合并到一个reducer文件即可，但是当数量量很大，这个会导致某个reducer 压力很大；</p>
 <p>第二种方法就是，在操作partition 的时候， 让 reducer 组间 有序， 即 根据需要改写 Partitioner， 根据 key 范围进行划分不同的 reducer，保证 reducer 之间有序； 这个可以自己实现，但是hadoop 已经提供了一个 TotalOrderPartitioner 了， 采用 trie 树 采样达到负载均衡；</p>
 <h3 id="distribute-by_1">distribute by</h3>
-<p>MapReduce 实现组间排序
+<p>MapReduce 实现组间排序<br />
 只需要实现自定义的 Partitioner 即可实现组间排序；</p>
 <h3 id="cluster-by_1">cluster by</h3>
-<p>MapReduce 实现 聚集排序
+<p>MapReduce 实现 聚集排序<br />
 同时实现自定义 Partitioner SortComparator GroupComparator 即可；</p>
 <h3 id="secondary-sort">secondary sort</h3>
 <p>MapReduce 多级排序实现；</p>

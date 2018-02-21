@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -153,9 +154,9 @@
 
 
 <h1 id="mysql-csv">导出 Mysql 数据 到 csv</h1>
-<p>导出到csv时，需要注意分隔符和转义字符的问题；
- - Excel saves \r\n for line separators.
- - Excel saves \n for newline characters within column data
+<p>导出到csv时，需要注意分隔符和转义字符的问题；<br />
+ - Excel saves \r\n for line separators.<br />
+ - Excel saves \n for newline characters within column data<br />
  - Have to replace \r\n inside your data first otherwise Excel will think its a start of the next line.</p>
 <div class="hlcode"><pre><span class="n">USE</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
 <span class="k">SELECT</span>
@@ -238,22 +239,22 @@
 
 <h1 id="sql-join">SQL JOIN</h1>
 <ul>
-<li>inner join
+<li>inner join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>left join
+<li>left join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>right join
+<li>right join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>outer join
+<li>outer join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY</code></li>
-<li>left join excluding inner join
+<li>left join excluding inner join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL</code></li>
-<li>right join excluding inner join
+<li>right join excluding inner join<br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL</code></li>
-<li>outer join excluding inner join 
+<li>outer join excluding inner join <br />
 <code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL</code></li>
 </ul>
-<p>以上在SQLAlchemy中的对应关系
+<p>以上在SQLAlchemy中的对应关系<br />
 - <a href="https://www.codeproject.com/Articles/33052/Visual-Representation-of-SQL-Joins">Visual Representation of SQL Joins</a></p>
 <h1 id="sql">SQL 执行顺序</h1>
 <div class="hlcode"><pre><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">column</span><span class="p">,</span> <span class="n">AGG_FUNC</span><span class="p">(</span><span class="n">column_or_expression</span><span class="p">),</span> <span class="err">…</span>
@@ -268,8 +269,8 @@
 </pre></div>
 
 
-<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，
-FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET
+<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，<br />
+FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET<br />
 - <a href="https://sqlbolt.com/lesson/select_queries_order_of_execution">Order of execution of a Query</a></p>
 <h2 id="mysql_4">MySQL 聚合函数</h2>
 <p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>

@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -113,7 +114,7 @@
 
 
 <p><strong>但 YARN 主要是为集群提供更好的资源管理与任务调度，然而这在单机上体现不出价值，反而会使程序跑得稍慢些。因此在单机上是否开启 YARN 就看实际情况了。</strong></p>
-<p><strong>不启动 YARN 需重命名 <code>mapred-site.xml</code></strong>
+<p><strong>不启动 YARN 需重命名 <code>mapred-site.xml</code></strong><br />
 如果不想启动 YARN，务必把配置文件 <code>mapred-site.xml</code> 重命名，改成 <code>mapred-site.xml.template</code>，需要用时改回来就行。否则在该配置文件存在，而未开启 YARN 的情况下，运行程序会提示 “Retrying connect to server: 0.0.0.0/0.0.0.0:8032” 的错误，这也是为何该配置文件初始文件名为 <code>mapred-site.xml.template</code>。</p>
 <p>同样的，关闭 YARN 的脚本如下：</p>
 <div class="hlcode"><pre><span class="p">.</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">stop</span><span class="o">-</span><span class="n">yarn</span><span class="p">.</span><span class="n">sh</span>
@@ -127,7 +128,7 @@
 </ul>
 <h1 id="_2">错误</h1>
 <p>Library you are using is compiled for 32 bit and you are using 64 bit version. so open your .bashrc file where configuration for hadoop exists. Go to this line</p>
-<p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"
+<p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"<br />
 and replace it with</p>
 <p>export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib/native"</p>
 <ul>

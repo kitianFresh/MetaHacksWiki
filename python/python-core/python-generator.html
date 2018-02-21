@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -274,12 +275,12 @@
 
 <p>可以看出，以上的 countdown 是有问题的，我们必须让每次 for loop 都从新的 iterator 开始，即每个for loop 中的 iterator有其自己的状态，相互之间不干扰，我们方法就是在外部类的__iter__()方法中定义一个local nested class。然后在这个内部类中只用实现 __init__() 和 next() 方法即可。外部类就不用next了，代码直接放入内部类的next()代码中，这样每一次 iter()的调用，就会返回一个新对象，状态互不干扰。</p>
 <blockquote>
-<p>__iter__ method defining a LOCAL or NESTED CLASS (these classes define only
-an __init__ and__next__ methods) and returning a new object constructed from
+<p>__iter__ method defining a LOCAL or NESTED CLASS (these classes define only<br />
+an __init__ and__next__ methods) and returning a new object constructed from<br />
 this local/nested class every time __iter__ is called.</p>
 </blockquote>
 <ul>
-<li><a href="https://www.ics.uci.edu/~pattis/ICS-33/lectures/iteratorclasses.txt">Iterators via Classes
+<li><a href="https://www.ics.uci.edu/~pattis/ICS-33/lectures/iteratorclasses.txt">Iterators via Classes<br />
 </a></li>
 </ul>
 <div class="hlcode"><pre><span class="k">class</span> <span class="nc">NewCountdown</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -321,8 +322,8 @@ this local/nested class every time __iter__ is called.</p>
 
 
 <h1 id="generator">Generator</h1>
-<p>用于一次性操作，list可以多次遍历，但是要想再一次遍历已经运行完的generator必须重新生成该generator。generator 是 iterable 的，因此可以当 iterable 使用。但是他并不是一个iterator对象，而是generator对象。
-- <a href="https://docs.python.org/2/reference/expressions.html#generator.send">pydoc</a>
+<p>用于一次性操作，list可以多次遍历，但是要想再一次遍历已经运行完的generator必须重新生成该generator。generator 是 iterable 的，因此可以当 iterable 使用。但是他并不是一个iterator对象，而是generator对象。<br />
+- <a href="https://docs.python.org/2/reference/expressions.html#generator.send">pydoc</a><br />
 - <a href="https://www.ics.uci.edu/~pattis/ICS-33/lectures/generators.txt">generators</a></p>
 <div class="hlcode"><pre><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
 <span class="n">iterator</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
@@ -457,7 +458,7 @@ this local/nested class every time __iter__ is called.</p>
 
 
 <p>需要注意的是，primes 是一个函数对象，而 primes() 是一个 generator 对象。primes函数调用之后，由于内部含有<code>yield</code>关键字而被认为是一个generator函数，此时函数体并没有执行，而是返回一个generator对象!而后要使用generator执行他的代码，需要显式或隐式调用 <code>next()</code> 或者 <code>send()</code> 函数.</p>
-<p>对于函数调用，调用后，执行并返回；
+<p>对于函数调用，调用后，执行并返回；<br />
 对于生成器调用，调用之后，执行到 <code>yield</code> 关键字之后中断进入断点状态(suspend)，等待下一次从断点恢复执行(resume).</p>
 <p>generator有四个函数，next,send,throw,close</p>
 <h1 id="generator-application-for-system-programming">generator application for system programming</h1>

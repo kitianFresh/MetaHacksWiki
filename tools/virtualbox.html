@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -48,14 +49,14 @@
   <h1 id="vm">后台启动VM</h1>
 <p>VBoxManage startvm <uuid>|<name> [--type gui|sdl|headless] 使用headless 选项，无gui的服务器版本</p>
 <h1 id="vm_1">查看VM</h1>
-<p>vboxmanage list vms
+<p>vboxmanage list vms<br />
 vboxmanage list running vms</p>
 <h1 id="vm_2">控制VM</h1>
 <p>vboxmanage controlvm <uuid>|<vname> pause|resume|reset|poweroff|savestate</p>
 <h1 id="_1">设置共享目录</h1>
-<p>如果想使用共享目录则：
+<p>如果想使用共享目录则：<br />
 vboxmanage sharedfolder add centos --name <em>share</em> --hostpath <em>~/share</em></p>
-<p>登录成功后挂载共享目录:
+<p>登录成功后挂载共享目录:<br />
 mount -t vboxsf share /mnt/</p>
 </div>
 <div id="content-footer">created in <span class="create-date date"> 2018-01-04 20:55 </span></div>

@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -81,7 +82,7 @@
 <p><code>ps -eo ruser,pid,ppid,lwp,psr,args -L | grep java</code></p>
 <h2 id="java">Java 进程线程堆栈分析工具</h2>
 <h3 id="jps-jstack">jps &amp; jstack</h3>
-<p><code>jps</code> 一般可以直接用来获取 java 进程 id; 比如我运行了一个8线程的java程序;jps命令格式 <code>jps [ options ] [ hostid ]</code>
+<p><code>jps</code> 一般可以直接用来获取 java 进程 id; 比如我运行了一个8线程的java程序;jps命令格式 <code>jps [ options ] [ hostid ]</code><br />
 主选项:</p>
 <table>
 <thead>

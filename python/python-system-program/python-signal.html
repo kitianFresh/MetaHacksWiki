@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -93,7 +94,7 @@
 </pre></div>
 
 
-<p>prefork 模式，通过信号管理从进程，<a href="http://orangleliu.info/2016/03/06/python-pre-fork-mode-use/">Python中prefork模式的简单实现
+<p>prefork 模式，通过信号管理从进程，<a href="http://orangleliu.info/2016/03/06/python-pre-fork-mode-use/">Python中prefork模式的简单实现<br />
 </a></p>
 <div class="hlcode"><pre><span class="c"># -*- coding: utf-8 -*-</span>
 <span class="c">#master-slaves.py  python2.7.x</span>

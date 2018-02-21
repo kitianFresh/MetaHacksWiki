@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -63,7 +64,7 @@
 <h2 id="_2">时间的流逝是绝对的，但是程序中的时间是相对的，不是绝对的！所以，时间差更有使用价值！</h2>
 <p>程序中有两个最重要的时间，使用最多且可以避免错误的是，utc时间和timestamp时间戳。第一个是时区时间的标准参考点，相当于物理坐标系中的原点，其他各区的时间以此为参考，根据所在时区即可计算；第二个就是timestamp，这个存储的是一个浮点数，并且是一个相对时间差，他记录的是从UTC1970年1月1日开始到某一个时刻的时间差值。</p>
 <blockquote>
-<p>The unix time stamp is a way to track time as a running total of seconds. This count starts at the Unix Epoch on January 1st, 1970 at UTC. Therefore, the unix time stamp is merely the number of seconds between a particular date and the Unix Epoch. It should also be pointed out (thanks to the comments from visitors to this site) that this point in time technically does not change no matter where you are located on the globe. This is very useful to computer systems for tracking and sorting dated information in dynamic and distributed applications both online and client side.
+<p>The unix time stamp is a way to track time as a running total of seconds. This count starts at the Unix Epoch on January 1st, 1970 at UTC. Therefore, the unix time stamp is merely the number of seconds between a particular date and the Unix Epoch. It should also be pointed out (thanks to the comments from visitors to this site) that this point in time technically does not change no matter where you are located on the globe. This is very useful to computer systems for tracking and sorting dated information in dynamic and distributed applications both online and client side.<br />
 一般数据库中都存储utc标准时间或者unix时间戳，这样做的好处很明显，如果是全球化服务，1. 服务器可能部署在不同的时区，需要一个统一的时间来统一标准。2. 加上用户所在的时区即可知道用户所在地访问服务器的时间。</p>
 </blockquote>
 <p>比如如果你有一个定时任务调度服务，他为全球用户提供cron定时任务的调度，而用户设置的都是按照他自己所在时区的调度时间，因此你的服务器必须要知道用户所在的时区，否则同样的设置，比如 硅谷用户设置的周一到周五每天的21,22,23点和北京的用户设置的周一到周五21,22,23点，假设他们设置的请求时间都是<code>UTC 2017-12-07 13:50:40.556828 周四</code>, 如果你的服务是按照服务器所在的时区的当地时间运行，那可能就会产生错误的调度行为，因此服务器的调度运行最好统一采用UNIX UTC时间，然后你调度之前统一将用户设置的时间利用时区信息转换到UTC标准时间，就可以准确调度了。这里调度器一般会计算出调度时刻到生效时刻的时间差，那就知道多久之后(时间差)需要调度用户任务。</p>

@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -296,9 +297,9 @@
 
 <h1 id="python-logging">python logging 模块</h1>
 <h2 id="_1">日志处理</h2>
-<p>Logger: 应用程序日志模块接口, Logger 可以添加 Filter 和 Handler
-Filter: 日志记录过滤器，决定哪些日志记录可以发送给 Handler 处理
-Handler: 日志处理器，处理 Logger 发送来的 日志记录，决定日志输出到哪里，console、stream、socket等
+<p>Logger: 应用程序日志模块接口, Logger 可以添加 Filter 和 Handler<br />
+Filter: 日志记录过滤器，决定哪些日志记录可以发送给 Handler 处理<br />
+Handler: 日志处理器，处理 Logger 发送来的 日志记录，决定日志输出到哪里，console、stream、socket等<br />
 Formatter: 日志格式器，决定发送给 Handler 的 LogRecord 以什么样式输出</p>
 <h3 id="_2">日志级别</h3>
 <p>日志级别，用来设置Logger的日志级别 或者 Handler 的日志处理级别。Logger 自己设置日志级别，可以决定自己到底发不发送该信息给 Handler，Handler设置日志处理级别，决定如果 Logger 发出的 LogRecord 日志级别低于 Handler 自己的日志处理级别， Logger 还是不给 Handler 处理的。</p>

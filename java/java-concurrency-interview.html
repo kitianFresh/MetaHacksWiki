@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -65,7 +66,7 @@
 </pre></div>
 
 
-<p><code>o1.equals(o2)</code> 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．
+<p><code>o1.equals(o2)</code> 方法必须要是非空对象才能调用，通过他来比较两个对象非常灵活，你可以随便定义怎么比较．Object 类是直接比较的对象地址．<br />
 由于 java 对于一些基础类重写，因此有些类使用的时候就不是比较地址了，比如 <strong>String 类，基本数据类型对应的类Byte/Character/Short/Integer/Long/Float/Double 都重写了 <code>equals</code></strong></p>
 <div class="hlcode"><pre><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">return</span> <span class="o">(</span><span class="k">this</span> <span class="o">==</span> <span class="n">obj</span><span class="o">);</span>
@@ -77,8 +78,8 @@
 </pre></div>
 
 
-<p><strong><code>hashCode()</code> 方法和<code>equals</code>一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, <code>equals()</code> 和　<code>hashCode()</code> 必须要保持一致性，因此重写　equals 的必须重写　hashCode().</strong>
-String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,
+<p><strong><code>hashCode()</code> 方法和<code>equals</code>一样可以被重写，Object 类的hashCode()并不直接粗暴的返回对象的内存地址，但基本可以这么认为．实际上, <code>equals()</code> 和　<code>hashCode()</code> 必须要保持一致性，因此重写　equals 的必须重写　hashCode().</strong><br />
+String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>hashCode 的存在，在　Set/Map 中非常重要，对于集合中元素相等或者key相等的概念，Map 就是先通过 hashCode 计算key 的hash,然后到对应的桶中在根据 equals　方法比较是否相等,<br />
 才确定key是否相同.</strong></p>
 <div class="hlcode"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------integer--------------&quot;</span><span class="o">);</span>
 <span class="n">Integer</span> <span class="n">a1</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
@@ -102,11 +103,11 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 
 <h2 id="2-compareble-comparator">2. compareble 和 comparator 区别</h2>
-<p>Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。
+<p>Comparable是排序接口；若一个类实现了Comparable接口，就意味着“该类支持排序”。<br />
 而Comparator是比较器；我们若需要控制某个类的次序，可以建立一个“该类的比较器”来进行排序。</p>
 <p>我们不难发现：Comparable相当于“内部比较器”，而Comparator相当于“外部比较器”。</p>
 <h2 id="3">3. 深度拷贝和浅层拷贝</h2>
-<p>深度拷贝: 指的是对象中成员变量引用的对象也拷贝一份新的.
+<p>深度拷贝: 指的是对象中成员变量引用的对象也拷贝一份新的.<br />
 浅层拷贝: 指的是只拷贝对象的第一层次的数据, 对象中成员变量引用的对象不做拷贝, Java 中基类Object的 clone 默认就是浅层拷贝, 并且这是一个本地方法.</p>
 <div class="hlcode"><pre><span class="kd">protected</span> <span class="kd">native</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">CloneNotSupportedException</span><span class="o">;</span>
 </pre></div>
@@ -376,7 +377,7 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 </pre></div>
 
 
-<p>CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．
+<p>CyclicBarrier 一般是线程之间相互等待，如果其他线程没有抵达，那么自己就会阻塞在栅栏上，直到所有线程都到达某一个点，之后再共同进行下一步！其实　CyclicBarrier 可以完成 CountDownLatch 的工作; 比如主线程开始等待，从线程也等待，所有从线程也抵达栅栏的时候，主线程也就可以继续进行了，所有从线程可以同时进行后续工作或者同时退出．<br />
 CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDownLatch 也可以；</p>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">java.util.concurrent.BrokenBarrierException</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.concurrent.CyclicBarrier</span><span class="o">;</span>
@@ -526,10 +527,10 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 <p>低级的办法是 wait/notify 方法, 高级的办法是 Semaphore 或者 BlockingQueue. <a href="http://javarevisited.blogspot.sg/2012/02/producer-consumer-design-pattern-with.html">教程</a></p>
 <h2 id="26">26. 如何避免死锁?</h2>
 <p>Java多线程中的死锁: 死锁是指两个或两个以上的进程在执行过程中, 因争夺资源而造成的一种相互等待的现象. 死锁会导致程序被挂起而无法执行.</p>
-<p>死锁发生的四个条件:
- - 互斥条件: 一个资源每次只能被一个进程使用.
- - 请求与保持条件: 一个进程因为请求资源而阻塞时, 对已获得的资源保持不放.
- - 不剥夺条件: 进程已获得的资源, 在未使用完之前, 不能强行剥夺.
+<p>死锁发生的四个条件:<br />
+ - 互斥条件: 一个资源每次只能被一个进程使用.<br />
+ - 请求与保持条件: 一个进程因为请求资源而阻塞时, 对已获得的资源保持不放.<br />
+ - 不剥夺条件: 进程已获得的资源, 在未使用完之前, 不能强行剥夺.<br />
  - 循环等待条件: 若干进程之间形成一种头尾相接的循环等待资源关系.</p>
 <p>避免死锁最简单的方法就是阻止循环等待条件.</p>
 <h2 id="27-java">27. Java 中的活锁和死锁有什么区别?</h2>
@@ -624,7 +625,7 @@ CyclicBarrier 可以用来实现多线程的mapreduce 操作, 当然　CountDown
 </pre></div>
 
 
-<p><strong>并发包里的锁实际上可以通过 synchronized/wait/notify 来模拟实现同样的功能. 那这和直接用 synchronized/wait/notify有什么区别？</strong>
+<p><strong>并发包里的锁实际上可以通过 synchronized/wait/notify 来模拟实现同样的功能. 那这和直接用 synchronized/wait/notify有什么区别？</strong><br />
 synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你必须控制到代码块的枷锁粒度,并不是非常灵活,而且采用 synchronized 必定会造成阻塞, 因为JVM会把 synchronized 关键字翻译成也不能设置超时. </p>
 <p>Lock 就是更加灵活的选择, 他的实现在JDK中是通过 CAS 来做的, CAS 是cpu原语指令, 他是不需要经过操作系统去调度阻塞的,即 CAS 可以实现非阻塞的锁.</p>
 <ol>
@@ -665,13 +666,13 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 <blockquote>
 <p>For inexplicable reasons it is possible for threads to wake up even if notify() and notifyAll() has not been called. This is known as spurious wakeups. Wakeups without any reason.</p>
 </blockquote>
-<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
+<p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！<br />
 <a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
 <h3 id="semaphore">Semaphore</h3>
 <blockquote>
 <p>A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.</p>
 </blockquote>
-<p>信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.
+<p>信号量可以解决信号丢失的缺点.可以看成 PV 原语的实现.我们知道Linux下PV原语,P代表减少,V代表释放,是一种实现同步的方式,并且当信号设置成1的时候就是互斥锁了.<br />
 简单版本的 Semaphore</p>
 <div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Semaphore</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">signal</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>

@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -105,7 +106,7 @@
 </pre></div>
 
 
-<p>此时 <code>l.string</code> 为空，因为里面又出现了tag；这里使用 <code>l.get_text()</code> 更加有效；
+<p>此时 <code>l.string</code> 为空，因为里面又出现了tag；这里使用 <code>l.get_text()</code> 更加有效；<br />
  -<a href="http://stackoverflow.com/questions/31958637/beautifulsoup-search-by-text-inside-a-tag">beautifulsoup-search-by-text-inside-a-tag</a></p>
 <p>后台部署,<code>nohup</code> 可以忽略终端控制信号</p>
 <div class="hlcode"><pre><span class="n">nohup</span> <span class="n">python</span> <span class="n">DataCrawler4</span><span class="p">.</span><span class="n">py</span> <span class="o">&amp;</span>

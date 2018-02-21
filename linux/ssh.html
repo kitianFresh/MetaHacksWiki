@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -48,7 +49,7 @@
   <h1 id="ssh-linux">ssh 设置 linux 主机互信，不输入密码</h1>
 <h2 id="_1">手动方式</h2>
 <p>将机器A 的公钥 <code>id_rsa.pub</code> 加入到 机器B的 <code>.ssh</code> 目录下的 <code>authorized_keys</code> 文件中即可； 但是一般使用 ssh-keygen 命令使用默认设置产生的密钥对<code>.ssh</code>目录里面没有 <code>authorized_keys</code>, 此时需要手动新建，这个时候很容易出错，新建之后，你会发现每次使用ssh登陆还是需要密码，重启 sshd 服务也不管用。</p>
-<p><code>ssh -v user@host</code> 去查看登陆过程的异常；
+<p><code>ssh -v user@host</code> 去查看登陆过程的异常；<br />
 这是因为 sshd 这个进程对 <code>authorized_keys</code> 有权限限制，如果<code>authorized_keys</code>文件、<code>$HOME/.ssh</code>目录 或 <code>$HOME</code>目录让本用户之外的用户有写权限，系统用户的ssh 在 <code>/etc/ssh/ssh_known_hosts</code> 目录下，那么sshd都会拒绝使用 <code>~/.ssh/authorized_keys</code> 文件中的key来进行认证的。因此你需要使用 <code>chmod 644 authorized_keys</code> 来修改文件读写权限，只有当前用户有写权限，其他只有读权限；使用 <code>man sshd</code> 查看相关手册；</p>
 <div class="hlcode"><pre>~/.ssh/authorized_keys
              Lists the public keys <span class="o">(</span>RSA/ECDSA/DSA<span class="o">)</span> that can be used <span class="k">for </span>logging in as this user.  The format
@@ -82,8 +83,8 @@ rized_keys on the remote machine <span class="o">(</span>creating the file, and 
 <ol>
 <li>转发到远端：<code>ssh -C -f -N -g -L 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
 <li>转发到本地：<code>ssh -C -f -N -g –R 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
-<li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code>
-ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98
+<li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code><br />
+ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98<br />
 端口转发 ssh -p 44392 root@10.4.225.98</li>
 </ol>
 <h1 id="ssh">ssh</h1>
@@ -102,15 +103,15 @@ ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98
 <h1 id="scpsecurity-copying">scp(Security Copying)</h1>
 <ol>
 <li>
-<p>文件从本机到服务器
+<p>文件从本机到服务器<br />
 <code>scp user_item_analysis.py ustc@192.168.231.97:~/kinny/</code></p>
 </li>
 <li>
-<p>文件从服务器下载到本地
+<p>文件从服务器下载到本地<br />
 <code>scp ustc@192.168.231.97:~/kinny/data/user_item_label_table.csv ./Study/competition/jd/JData/data</code></p>
 </li>
 <li>
-<p>目录
+<p>目录<br />
 加个 <code>-r</code> 参数 <code>scp -r</code> </p>
 </li>
 </ol>

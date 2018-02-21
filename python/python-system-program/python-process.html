@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -248,20 +249,20 @@
 
 
 <h1 id="subprocess">subprocess</h1>
-<p>subprocess 和 multiprocessing
+<p>subprocess 和 multiprocessing<br />
  - subprocess 是让进程可以执行一个子程序进程，类似 fork + exec 的模式。我们知道，比较底层的创建进程的接口是fork，然后代码逻辑通过fork的一次调用两次返回，通过父子进程返回的值不同来区分控制父子进程代码的执行逻辑，典型的就是 if else 的判断。如果在子进程的逻辑代码中有可以复用的部分，可以把这部分做成一个子程序，便于其他进程直接使用，可以直接让子进程调用 exec 函数来执行一个可执行程序。</p>
 <ul>
 <li>multiprocessing更像是和threading模块一样，提供直接传入函数开启一个进程或者线程的功能。</li>
 </ul>
-<p>Python 官方文档建议使用 subprocess 替代一下模块
-- os.system
-- os.spawn<em>
-- os.popen</em>
-- popen2.<em>
+<p>Python 官方文档建议使用 subprocess 替代一下模块<br />
+- os.system<br />
+- os.spawn<em><br />
+- os.popen</em><br />
+- popen2.<em><br />
 - commands.</em></p>
 <h2 id="check_call">check_call</h2>
-<p>以下都是阻塞的调用。
-1. subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)
+<p>以下都是阻塞的调用。<br />
+1. subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)<br />
   - 执行cmd，并返回一个值，不抛出异常; ret != 0 表示程序返回值非0即程序异常退出。</p>
 <ol>
 <li>subprocess.check_call(args, *, stdin=None, stdout=None, stderr=None, shell=False)</li>
@@ -316,15 +317,15 @@
 
 
 <h2 id="subprocesspopen">subprocess.Popen</h2>
-<p>以上接口都是通过更加底层的 subprocess.Popen()来实现的。这个函数在linux上就是 fork + execv 实现的，windows 上则是通过 CreateProcess() 实现的。
-4. class subprocess.Popen(args, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0)
-  - args参数是一个list或者字符串儿，如果是list，就执行list的第一项元素即可执行程序，后续的项是可执行程序的参数；如果是字符串，默认整个串儿就是可执行程序，所以一般在命令行中使用 shlex.
-  - args：要执行的命令或可执行文件的路径。一个由字符串组成的序列（通常是列表），列表的第一个元素是可执行程序的路径，剩下的是传给这个程序的参数，如果没有要传给这个程序的参数，args 参数可以仅仅是一个字符串。
-  - bufsize：控制 stdin, stdout, stderr 等参数指定的文件的缓冲，和打开文件的 open()函数中的参数 bufsize 含义相同。
-  - executable：如果这个参数不是 None，将替代参数 args 作为可执行程序；
-  - stdin：指定子进程的标准输入；
-  - stdout：指定子进程的标准输出；
-  - stderr：指定子进程的标准错误输出；
+<p>以上接口都是通过更加底层的 subprocess.Popen()来实现的。这个函数在linux上就是 fork + execv 实现的，windows 上则是通过 CreateProcess() 实现的。<br />
+4. class subprocess.Popen(args, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0)<br />
+  - args参数是一个list或者字符串儿，如果是list，就执行list的第一项元素即可执行程序，后续的项是可执行程序的参数；如果是字符串，默认整个串儿就是可执行程序，所以一般在命令行中使用 shlex.<br />
+  - args：要执行的命令或可执行文件的路径。一个由字符串组成的序列（通常是列表），列表的第一个元素是可执行程序的路径，剩下的是传给这个程序的参数，如果没有要传给这个程序的参数，args 参数可以仅仅是一个字符串。<br />
+  - bufsize：控制 stdin, stdout, stderr 等参数指定的文件的缓冲，和打开文件的 open()函数中的参数 bufsize 含义相同。<br />
+  - executable：如果这个参数不是 None，将替代参数 args 作为可执行程序；<br />
+  - stdin：指定子进程的标准输入；<br />
+  - stdout：指定子进程的标准输出；<br />
+  - stderr：指定子进程的标准错误输出；<br />
 　　对于 stdin, stdout 和 stderr 而言，如果他们是 None（默认情况），那么子进程使用和父进程相同的标准流文件。</p>
 <p>父进程如果想要和子进程通过 communicate() 方法通信，对应的参数必须是 subprocess.PIPE（见下文例4）；</p>
 <p>当然 stdin, stdout 和 stderr 也可以是已经打开的 file 对象，前提是以合理的方式打开，比如 stdin 对应的文件必须要可读等。　</p>
@@ -338,7 +339,7 @@
 <li>startupinfo：见下一个参数；</li>
 <li>creationfalgs：最后这两个参数是Windows中才有的参数，传递给Win32的CreateProcess API调用。</li>
 </ul>
-<p>进程对象属性：
+<p>进程对象属性：<br />
 1. p.returncode 该属性表示子进程的返回状态，returncode可能有多重情况：</p>
 <ul>
 <li>None —— 子进程尚未结束；</li>
@@ -351,8 +352,8 @@
 <p>p.stdin, p.stdout, p.stderr, p.pid</p>
 </li>
 </ul>
-<p>进程对象方法：
-1. p.poll()
+<p>进程对象方法：<br />
+1. p.poll()<br />
   - 检查子进程 p 是否终止，返回的而是 p.returncode</p>
 <ol>
 <li>p.wait()</li>
@@ -508,14 +509,14 @@
 
 
 <p>The sequence of events is:</p>
-<p>The parent program instantiates Popen.
-The Popen instance forks a new process.
-The new process runs os.setsid().
-The new process runs exec() to start the shell.
-The shell runs the shell script.
-The shell script forks again and that process execs Python.
-Python runs signal_child.py.
-The parent program signals the process group using the pid of the shell.
+<p>The parent program instantiates Popen.<br />
+The Popen instance forks a new process.<br />
+The new process runs os.setsid().<br />
+The new process runs exec() to start the shell.<br />
+The shell runs the shell script.<br />
+The shell script forks again and that process execs Python.<br />
+Python runs signal_child.py.<br />
+The parent program signals the process group using the pid of the shell.<br />
 The shell and Python processes receive the signal. The shell ignores it. Python invokes the signal handler.</p>
 <p>subprocess模块的缺陷在于默认提供的父子进程间通信手段有限，只有管道；同时创建的子进程专门用来执行外部的程序或命令。</p>
 <h2 id="_3">参考</h2>

@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -47,8 +48,8 @@
 <div id="content">
   <h1 id="_1">机器学习</h1>
 <h2 id="_2">系统结构</h2>
-<p>系统认识, 机器学习就是 模型 + 策略 + 算法.
-- 模型 
+<p>系统认识, 机器学习就是 模型 + 策略 + 算法.<br />
+- 模型 <br />
     - 就是是用什么模型来建模实际问题,比如线性,非线性,概率,图等;生成模型还是判别模型;决策函数;模型假设;模型复杂度.</p>
 <ul>
 <li>
@@ -74,7 +75,7 @@
 <blockquote>
 <p>为什么朴素贝叶斯做了条件独立性假设之后, 模型效果还是很不错呢?</p>
 </blockquote>
-<p>个人认为有两点, 第一是虽然条件变量之间的确不独立, 但是变量之间的相关性往往也没有我们想象的那么大; 
+<p>个人认为有两点, 第一是虽然条件变量之间的确不独立, 但是变量之间的相关性往往也没有我们想象的那么大; <br />
 第二, 如果假设不独立, 反而会让模型变得更加复杂, 更简单的模型相当于加入正则的经验风险, 模型泛化能力可能更好, 考虑过多相关性反而会出现过拟合.</p>
 <h2 id="_3">策略选取(损失函数, 决策树并没有直接的损失函数,它是一种按照最大信息增益的标准做贪心选取算法)</h2>
 <ul>
@@ -140,21 +141,21 @@
 <blockquote>
 <p>为什么要做特征工程?</p>
 </blockquote>
-<p>训练数据往往并不是所有数据的代表, 一方面含有噪声. 另一方面,特征过多, 训练时间过长,模型维度更大,更加复杂.
+<p>训练数据往往并不是所有数据的代表, 一方面含有噪声. 另一方面,特征过多, 训练时间过长,模型维度更大,更加复杂.<br />
 特征选择能剔除不相关(irrelevant)或亢余(redundant )的特征，从而达到减少特征个数，提高模型精确度，减少运行时间的目的。另一方面，选取出真正相关的特征简化了模型.</p>
 <blockquote>
 <p>什么时候需要减少特征,什么时候需要增加特征?</p>
 </blockquote>
 <p>噪声,特征升维, 特生抽取. 那些特征可以使用,人口统计学特征,时间,行为,点击,浏览,扫描.....</p>
 <blockquote>
-<p>如何选取特征?
+<p>如何选取特征?<br />
 统计学相关性分析, 计算距离, 信息增益. 决策树模型, 线性回归等都可以看到特征重要性,因此也可以做特征选取.</p>
 </blockquote>
 <ul>
 <li><a href="http://blog.csdn.net/dream_angel_z/article/details/49388733">机器学习之特征工程</a></li>
 </ul>
 <h3 id="_10">数据量和特征维度对模型选取的影响</h3>
-<p>先用简单模型,
+<p>先用简单模型,<br />
 SVM一般做到几十万的数据量就会变得很慢了.SVM对数据范围敏感,需要归一化.</p>
 <h3 id="_11">样本不均衡问题</h3>
 <p>数据采样.对负样本多采样.</p>
@@ -165,18 +166,18 @@ SVM一般做到几十万的数据量就会变得很慢了.SVM对数据范围敏�
 <p>加入正则. 正则区别L0, L1, L2. 为了降低模型复杂度, 防止模型将某些不重要的特征也学习出一个较高的权重, 在训练数据集上过拟合, 我们需要找出哪些特征是不重要甚至是无用的, 即L0 正则. 但是这是 NP 问题, 很难求解. </p>
 <p>L1 正则, L1 正则是 在 0 处不可导, 这个特性使得在求解最小化结构风险函数的时候, L1 正则学习出来的参数倾向于稀疏, 有些地方就直接是 0 了. 因此可以做特征抽取和降维. 典型的是 Lasso 线性回归.</p>
 <p>L2 正则处处可导, 学习出来的参数也是比较平滑的,他可以保证所有的特征不会出现一些权重很大的, 可以防止过拟合. 典型的是 Rindge 线性回归.</p>
-<p>另外, L1 和 L2 使用梯度下降求解的时候, 收敛速度也不一样. 对于 L1 最后权重更新公式其实是每一次都做在原来权重基础上先做一个减法减少权重, 因此在权重较小的时候他下降的比较快,但是权重还很大的时候下降比较慢; 
+<p>另外, L1 和 L2 使用梯度下降求解的时候, 收敛速度也不一样. 对于 L1 最后权重更新公式其实是每一次都做在原来权重基础上先做一个减法减少权重, 因此在权重较小的时候他下降的比较快,但是权重还很大的时候下降比较慢; <br />
 而 L2 正则导数之后, 梯度更新公式每一次先在原来权重基础上成比例减小, 对于大权重的时候, 收敛下降就快.</p>
 <h3 id="ensembling">模型融合Ensembling</h3>
-<p>Bagging:
- - RandomForest
+<p>Bagging:<br />
+ - RandomForest<br />
     - 数据采样,特征采样, 稳定性,数据多样性复杂也适用</p>
-<p>Boosting:
- - AdaBoost(加权投票机制)
-    - 每一课树其实是可用的.
- - Gradient Boosting Decision Tree(基于梯度提升)
-    - 当前的树学习的是前面累计模型的残差, 因此只有组合起来才可用.
- - Xgboost
+<p>Boosting:<br />
+ - AdaBoost(加权投票机制)<br />
+    - 每一课树其实是可用的.<br />
+ - Gradient Boosting Decision Tree(基于梯度提升)<br />
+    - 当前的树学习的是前面累计模型的残差, 因此只有组合起来才可用.<br />
+ - Xgboost<br />
     - 利用二阶导, 能够更快的在训练集上收敛, 并在实现上充分利用了多核并行计算.</p>
 <h2 id="_13">模型分类</h2>
 <h3 id="_14">监督学习可以分为生成模型还是判别模型</h3>
@@ -189,7 +190,7 @@ SVM一般做到几十万的数据量就会变得很慢了.SVM对数据范围敏�
 <li>K近邻法(KNN), 感知机(Perceptron), 决策树(Decision Tree), 逻辑斯特回归(Logistic Regression), 最大熵模型, 支持向量机(SVM), 提升方法(Boosting), 条件随机场(CRF)</li>
 </ul>
 <h3 id="_15">线性模型还是非线性模型</h3>
-<p>主要是决策函数部分决定的, 比如 Linear Regression, Logistic Regression, Linear Kernel SVM, 感知器 都是线性模型.
+<p>主要是决策函数部分决定的, 比如 Linear Regression, Logistic Regression, Linear Kernel SVM, 感知器 都是线性模型.<br />
 Decsion Tree, Naive Bayes, AdaBoost, GBDT, SVM(非线性核), KNN(K近邻)都是非线性模型.</p>
 <h3 id="_16">监督还是无监督还是半监督</h3>
 <p>带标签,不带标签.</p>

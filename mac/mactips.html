@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -46,47 +47,47 @@
 <div id="title">MacTips</div>
 <div id="content">
   <h1 id="osx">OSX 环境配置</h1>
-<p>OS X 下载 brew
+<p>OS X 下载 brew<br />
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" &lt; /dev/null 2&gt; /dev/null ; brew install caskroom/cask/brew-cask 2&gt; /dev/null</p>
 <p>brew cask install pycharm</p>
 <h1 id="mac">Mac 快捷键</h1>
-<p>Mac 下的 home 和 end
-Ctrl+A：到行首（达到Home键的效果）
-Ctrl+E：到行尾（达到End键的效果）
-Ctrl+N：到下一行
-Ctrl+P：到上一行
+<p>Mac 下的 home 和 end<br />
+Ctrl+A：到行首（达到Home键的效果）<br />
+Ctrl+E：到行尾（达到End键的效果）<br />
+Ctrl+N：到下一行<br />
+Ctrl+P：到上一行<br />
 Ctrl+K：从光标处开始删除，知道行尾</p>
 <ul>
 <li><a href="http://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/">A Quick and Easy Guide to tmux</a></li>
 <li><a href="http://kuanghy.github.io/2016/09/29/tmux">Tmux 简介与使用</a></li>
 </ul>
 <h1 id="mac-os-xrootpython">Mac OS X新版本系统root用户也无法安装python包</h1>
-<p>新系统引入了保护机制，<code>sudo pip install xxx</code> 也无法安装， 或出现权限错误，<code>OSError: [Errno 1] Operation not permitted:'/System/Library/Frameworks/Python.framework/Versions/2.7/share'</code>由于El Capitan引入了SIP机制(System Integrity Protection)，默认下系统启用SIP系统完整性保护机制，无论是对于硬盘还是运行时的进程限制对系统目录的写操作。
+<p>新系统引入了保护机制，<code>sudo pip install xxx</code> 也无法安装， 或出现权限错误，<code>OSError: [Errno 1] Operation not permitted:'/System/Library/Frameworks/Python.framework/Versions/2.7/share'</code>由于El Capitan引入了SIP机制(System Integrity Protection)，默认下系统启用SIP系统完整性保护机制，无论是对于硬盘还是运行时的进程限制对系统目录的写操作。<br />
 现在的解决办法是取消SIP机制，具体做法是：</p>
-<p>重启电脑，按住Command+R(直到出现苹果标志)进入Recovery Mode(恢复模式)
-左上角菜单里找到实用工具 -&gt; 终端
-输入csrutil disable回车
-重启Mac即可
+<p>重启电脑，按住Command+R(直到出现苹果标志)进入Recovery Mode(恢复模式)<br />
+左上角菜单里找到实用工具 -&gt; 终端<br />
+输入csrutil disable回车<br />
+重启Mac即可<br />
 如果想重新启动SIP机制重复上述步骤改用csrutil enable即可</p>
 <p>另外， 新版本的 ipython 也会出问题， 最好安装 jupyter. <code>sudo pip install jupyter</code></p>
 <h2 id="mac-os-mysql">在MAC OS 上安装MYSQL</h2>
-<p>Download MySQL for OS X
+<p>Download MySQL for OS X<br />
 Download latest stable version of MySQL server for your OS X version and architecture. Link: http://dev.mysql.com/downloads/mysql/. Please make sure you download the .dmg file.</p>
-<p>Unpack download .dmg file
+<p>Unpack download .dmg file<br />
 Click on the downloaded .dmg file and unpack it. Click on the mysql server package from unpacked files.</p>
-<p>Install MySQL from downloaded file
+<p>Install MySQL from downloaded file<br />
 Install MySQL server by clicking on the mysql package to open up the installer. If you want to install the startup script to automatically start MySQL server at the time of system startup, you should also install the start up package of mysql now (included in the unpacked MySQL package that you just downloaded and unpacked as a separate file).</p>
 <p>Once the installer has finished successfully, all MySQL related files should be installed under /usr/local/mysql-VERSION directory. A link /usr/local/mysql (pointing to the MySQL installation directory) should also have been created for your convenience.</p>
-<p>Install and setup auto start package for MySQL on OS X
+<p>Install and setup auto start package for MySQL on OS X<br />
 If you had installed the automatic startup package at the time of installation, you should now be able to start MySQL running the following command in OS X Terminal window or by restarting the operating system:</p>
-<p>$ sudo /Library/StartupItems/MySQLCOM/MySQLCOM start
+<p>$ sudo /Library/StartupItems/MySQLCOM/MySQLCOM start<br />
 As soon as you run the command above, your system might ask for permission to allow MySQL server to accept incoming connections. You must give the permission to listen on port 3306 (or change it later to run on a different port).</p>
 <p>In case, you did not install the startup script, you have to run mysqld_safe under /usr/local/mysql/bin/mysqld_safe script.</p>
 <p>If you want to disable automatic MySQL starts at the time of system startup, you can change the value of MYSQLCOM in /etc/hostconfig to "-NO-" (without quotes).</p>
 <p>You should also consider including /usr/local/mysql/bin/ in your system PATH variable.</p>
-<p>Connect to installed MySQL server
+<p>Connect to installed MySQL server<br />
 In order to connect to MySQL using command line client, do the following from OSX terminal:</p>
-<p>通过命令行登陆看是否安装 <code>$ /usr/local/mysql/bin/mysql -uroot</code>
+<p>通过命令行登陆看是否安装 <code>$ /usr/local/mysql/bin/mysql -uroot</code><br />
 最后配置环境变量</p>
 <div class="hlcode"><pre><span class="c"># for mysql #</span>
 <span class="nb">export </span><span class="nv">MYSQL_HOME</span><span class="o">=</span>/usr/local/mysql

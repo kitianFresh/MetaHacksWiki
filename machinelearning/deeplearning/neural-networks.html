@@ -1,0 +1,164 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>neural-networks - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;neural-networks</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">neural-networks</div>
+<div id="content">
+  <h1 id="_1">逻辑斯特回归</h1>
+<p><font color='blue'><br />
+<strong>What you need to remember:</strong></p>
+<p>Common steps for pre-processing a new dataset are:<br />
+- Figure out the dimensions and shapes of the problem (m_train, m_test, num_px, ...)<br />
+- Reshape the datasets such that each example is now a vector of size (num_px * num_px * 3, 1)<br />
+- "Standardize" the data</p>
+<h2 id="3-general-architecture-of-the-learning-algorithm">3 - General Architecture of the learning algorithm</h2>
+<p>It's time to design a simple algorithm to distinguish cat images from non-cat images.</p>
+<p>You will build a Logistic Regression, using a Neural Network mindset. The following Figure explains why <strong>Logistic Regression is actually a very simple Neural Network!</strong></p>
+<p><img src="images/ML/LR/LogReg_kiank.png" style="width:650px;height:400px;"></p>
+<p><strong>Mathematical expression of the algorithm</strong>:</p>
+<p>For one example $x^{(i)}$, \( ax^2 + \sqrt{bx} + c = 0 \)下面是公式</p>
+<p>$$z^{(i)} = w^T x^{(i)} + b \tag{1}$$<br />
+$$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{2}$$ <br />
+$$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{3}$$</p>
+<p>The cost is then computed by summing over all training examples:<br />
+$$ J = \frac{1}{m} \sum_{i=1}^m \mathcal{L}(a^{(i)}, y^{(i)})\tag{6}$$</p>
+<p><strong>Key steps</strong>:<br />
+In this exercise, you will carry out the following steps: <br />
+    - Initialize the parameters of the model<br />
+    - Learn the parameters for the model by minimizing the cost<br />
+    - Use the learned parameters to make predictions (on the test set)<br />
+    - Analyse the results and conclude</p>
+<h2 id="4-building-the-parts-of-our-algorithm">4 - Building the parts of our algorithm ##</h2>
+<p>The main steps for building a Neural Network are:<br />
+1. Define the model structure (such as number of input features) <br />
+2. Initialize the model's parameters<br />
+3. Loop:<br />
+    - Calculate current loss (forward propagation)<br />
+    - Calculate current gradient (backward propagation)<br />
+    - Update parameters (gradient descent)</p>
+<p>You often build 1-3 separately and integrate them into one function we call <code>model()</code>.</p>
+<h3 id="41-helper-functions">4.1 - Helper functions</h3>
+<p><strong>Exercise</strong>: Using your code from "Python Basics", implement <code>sigmoid()</code>. As you've seen in the figure above, you need to compute $sigmoid( w^T x + b) = \frac{1}{1 + e^{-(w^T x + b)}}$ to make predictions. Use np.exp().</p>
+<p></font></p>
+<h1 id="shallow-neural-net">浅层神经网络(Shallow Neural Net)</h1>
+<h1 id="deep-neural-net">深度神经网络(Deep Neural Net)</h1>
+<h1 id="_2">神经网络实践核心概念</h1>
+<h2 id="traindevtest">Train/Dev/Test</h2>
+<h2 id="bias-variances">偏差bias 和 方差 variances</h2>
+<h2 id="_3">过拟合与欠拟合</h2>
+<h2 id="regularization">正则化 Regularization</h2>
+<h2 id="inverted-dropout">反向随机失活 Inverted Dropout</h2>
+<h2 id="data-augmentation">数据集扩增 Data Augmentation</h2>
+<h2 id="early-stop">提前终止训练 Early Stop</h2>
+<h2 id="normalizing-inputs">数据归一化(Normalizing inputs)</h2>
+<h2 id="vanishingexploding-gradients">梯度消失与爆炸(Vanishing/Exploding Gradients)</h2>
+<h2 id="weights-initialization">权重初始化(Weights Initialization)</h2>
+<h2 id="gradient-checking">梯度检查(Gradient Checking)</h2>
+<h1 id="neural-network-optimization">神经网络优化(Neural Network Optimization)</h1>
+<h2 id="bgdsgdmini-batch-gd">BGD/SGD/mini-batch-GD</h2>
+<h2 id="exponetially-weighted-averages-and-bias-correction">指数加权平均与校正(Exponetially weighted averages and bias correction)</h2>
+<h2 id="gradient-descent-with-momentum">动量梯度下降法(gradient descent with momentum)</h2>
+<h2 id="rmsprop">RMSprop(均方根传播)</h2>
+<h2 id="adamadaptive-momentum-estimation-momentum-rmsprop">Adam(Adaptive momentum estimation) = Momentum + RMSprop</h2>
+<h2 id="learning-rate-decay">学习率衰减(Learning rate decay)</h2>
+<p>I am now a post graduate at USTC (University of Science and Technology of China), majored in software engineering. I have strong interests about IoT and cloud-edge intelligence, I do some research about this, and I want to get a machine learning job after my graduation. As all we know, internet of things will come soon, there will be more and more intelligent devices and it will produce more and more data. I think deep learning is one of the most powerful technics to implement the vision. It can be applied in computer vision, speech recognition, natural language processing, healthcare and so on. But now i have no enough income to pay for the course. I have only basic living allowance. I have finished 《Neural Networks and Deep Learning》and 《Improving Deep Neural Networks: Hyperparameter tuning, Regularization and Optimization》 which i have paid for $49 by cutting my living expenses. Now i really want to continue this course specification. I will be grateful if I get a scholarship.</p>
+<p>Firstly, i have finished the 1th and 2th courses from which i have got a solid foundation about neural networks basics and optimization. I think it is time to apply it to real applications such as computer vision which is very important in intelligent edge devices.<br />
+Secondly, if i finished this course, i will get a certificate for my job hunting. Coursera courses are acknowledged by industry. This will be a good point in my resume. It will help me get more opportunities for interviews.<br />
+Thirdly, I think this course is very competitive and i will learn more from this course, which will improve my machine learning skills and i will do some research about cloud-edge intelligence more effectively. I believe i will be better at deep learning principle and application which will help me to write thesis and graduation better.<br />
+At last, this course specification will lay a solid foundation about deep learning for me. I think it will be the most valuable fortune in my career.</p>
+<p>```{.python .input}</p>
+<p>```</p>
+</div>
+<div id="content-footer">created in <span class="create-date date"> 2018-02-07 21:59 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'neural-networks',
+  owner: 'tracholar',
+  repo: 'wiki',
+  oauth: {
+    client_id: '0cc0476e504b5e70ae7c',
+    client_secret: 'ab98e39ef79469040057eba9c6b2b543b84c72ee',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

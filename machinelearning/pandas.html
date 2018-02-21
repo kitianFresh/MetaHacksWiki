@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -45,7 +46,7 @@
 <div class="clearfix"></div>
 <div id="title">pandas</div>
 <div id="content">
-  <h2></h2>
+  <h2 id="_1"></h2>
 <p>遍历 pandas.DataFrame 所有行的方式</p>
 <p><a href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.iterrows.html">DataFrame.iterrows()</a></p>
 <div class="hlcode"><pre><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="n">in</span> <span class="n">df</span><span class="p">.</span><span class="n">iterrows</span><span class="p">()</span><span class="o">:</span>
@@ -92,7 +93,7 @@
 
 
 <h2 id="python-dump-json-file">python dump json file</h2>
-<p>将 dict 直接 dump 到文件中, 会出现 <strong>json.dump　的　ensure_ascii 会把非ascii码变通过转义字符的形式写出去</strong>，因此会出现　<code>\uXXXX</code>　字符串;
+<p>将 dict 直接 dump 到文件中, 会出现 <strong>json.dump　的　ensure_ascii 会把非ascii码变通过转义字符的形式写出去</strong>，因此会出现　<code>\uXXXX</code>　字符串;<br />
 因此如果需要 <code>.json</code> 文件看到正确的字符串, 需要先把 dict 变成 Unicode str, 然后以写文件的形式将字符串写出即可;</p>
 <div class="hlcode"><pre><span class="k">def</span> <span class="nf">save_by_gb_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;similar_by_gb_name.json&#39;</span><span class="p">):</span>
     <span class="c"># json.dump　的　ensure_ascii 会把非ascii码变通过转义字符的形式写出去，因此会出现　\uXXXX　字符串</span>

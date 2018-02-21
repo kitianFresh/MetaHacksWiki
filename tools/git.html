@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -148,18 +149,18 @@
 </pre></div>
 
 
-<p>本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）
-git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master
-跟踪方法：
-1. 首先拉取远程分支信息
-<code>git fetch</code>
-2. 新建一个新的本地分支跟踪一个远程分支
-<code>git checkout -b localbranchname origin/dev</code>
-3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)
-<code>git branch --set-upstream-to=origin/branch currentbranch</code>
-4. 删除远程分支
-<code>git push origin --delete branchname</code>
-5. 展示分支详细信息
+<p>本地分支（该分支成为 tracking branch）跟踪远程分支（该分支被称为 upstream branch）<br />
+git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/master<br />
+跟踪方法：<br />
+1. 首先拉取远程分支信息<br />
+<code>git fetch</code><br />
+2. 新建一个新的本地分支跟踪一个远程分支<br />
+<code>git checkout -b localbranchname origin/dev</code><br />
+3. 修改已存在本地分支或者设置已存在本地分支的跟踪分支(upstream)<br />
+<code>git branch --set-upstream-to=origin/branch currentbranch</code><br />
+4. 删除远程分支<br />
+<code>git push origin --delete branchname</code><br />
+5. 展示分支详细信息<br />
 <code>git branch -vv</code></p>
 <h1 id="git-tag">git tag</h1>
 <p>又用到了删除git仓库的tags， 删除本地tag: git tag -d v0.1 只删除本地的没有用，下次fetch的时候还会拉下来，再删除远程仓库中的tag，跟删除远程分支的语法类似git push origin :refs/tags/v0.1.</p>
@@ -169,8 +170,8 @@ git clone 会自动在在本地将本地的 master 分支设置跟踪 origin/mas
 </pre></div>
 
 
-<p>git apply -v changes.diff 失败
-可以patch成功的，失败的手动改
+<p>git apply -v changes.diff 失败<br />
+可以patch成功的，失败的手动改<br />
 git apply --reject --whitespace=fix mypatch.patch</p>
 <h1 id="git-revert-merge">git revert 去掉某一次merge（慎用，很容易冲突）</h1>
 <h1 id="ssh-rsync">本地编辑代码直接推送到服务器上调试（ssh &amp; rsync）</h1>
@@ -231,8 +232,8 @@ python_style_check
 
 
 <p>不设置的话，直接去掉这个文件即可。</p>
-<p>java 多核和单核对int类型的存储有什么区别？
-Java concurrentHashMap 实现， 分段+读写分离的锁
+<p>java 多核和单核对int类型的存储有什么区别？<br />
+Java concurrentHashMap 实现， 分段+读写分离的锁<br />
 SQL 求</p>
 </div>
 <div id="content-footer">created in <span class="create-date date"> 2017-04-23 21:22 </span></div>

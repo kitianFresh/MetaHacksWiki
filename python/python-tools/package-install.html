@@ -16,10 +16,11 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$(',')$'], ['\\(','\\)']]}
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
         </script>
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
@@ -89,11 +90,11 @@
 <li><a href="https://testerhome.com/topics/4615">基本的图像处理与 OCR 文字识别工具总结 (Python)</a></li>
 </ul>
 <h1 id="tensorflowmemoryerror">低配机器安装tensorflow出现MemoryError</h1>
-<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误
-操作系统    Ubuntu Server 16.04.1 LTS 64位
-CPU 1核
-内存  1GB
-系统盘 20GB(云硬盘)   disk-qy4kp18l
+<p>原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误<br />
+操作系统    Ubuntu Server 16.04.1 LTS 64位<br />
+CPU 1核<br />
+内存  1GB<br />
+系统盘 20GB(云硬盘)   disk-qy4kp18l<br />
 公网带宽    1Mbps</p>
 <div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span>  <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">dir</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">https</span><span class="o">:</span><span class="c1">//storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl</span>
 </pre></div>
@@ -108,10 +109,10 @@ CPU 1核
 <p>基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package</p>
 <h1 id="mysql-python">MySQL-python 安装</h1>
 <p>centos 上安装的时候报错 <code>EnvironmentError: mysql_config not found</code>； 网上说 装 mysql-devel， 但是因为安装的 mysql 是 percona 因此装不了， 正确的安装姿势是</p>
-<p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。
+<p>查看 <code>yum list installed | grep -i percona</code> 是否安装了 percona ，然后再 <code>yum whatprovides mysql_config</code> 或 <code>yum whatprovides */mysql_config</code> 列表中找到 devel 字样的开发包。<br />
 安装 Percona-Server-devel-55-5.5.34-rel32.0.591.rhel6.x86_64</p>
 <h1 id="pycurl">pycurl 失败</h1>
-<p><code>__main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory</code>
+<p><code>__main__.ConfigurationError: Could not run curl-config: [Errno 2] No such file or directory</code><br />
 sudo yum install libcurl-openssl-devel</p>
 <h1 id="pip">pip 安装走国内镜像源的方法</h1>
 <p>pip 安装python包其实可以添加参数 <code>pip install --index-url  http://pypi.douban.com/simple</code>， 但是太麻烦，直接在$HOME 目录下新建 .pip 目录，在此目录下新建 pip.conf 文件, 加入如下几句:</p>
