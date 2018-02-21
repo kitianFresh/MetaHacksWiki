@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
-        <title>neural-networks - MetaHacks Wiki</title>
+        <title>neural-networks-core - MetaHacks Wiki</title>
         <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
         <meta name="description" content="my personal wiki"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,7 +16,9 @@
 
         <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
         });
         </script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
@@ -41,53 +43,15 @@
         <div id="container">
             
 <div id="header">
-  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;neural-networks</div>
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;neural-networks-core</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">neural-networks</div>
+<div id="title">neural-networks-core</div>
 <div id="content">
-  <h1 id="_1">逻辑斯特回归</h1>
-<p><font color='blue'><br />
-<strong>What you need to remember:</strong></p>
-<p>Common steps for pre-processing a new dataset are:<br />
-- Figure out the dimensions and shapes of the problem (m_train, m_test, num_px, ...)<br />
-- Reshape the datasets such that each example is now a vector of size (num_px * num_px * 3, 1)<br />
-- "Standardize" the data</p>
-<h2 id="3-general-architecture-of-the-learning-algorithm">3 - General Architecture of the learning algorithm</h2>
-<p>It's time to design a simple algorithm to distinguish cat images from non-cat images.</p>
-<p>You will build a Logistic Regression, using a Neural Network mindset. The following Figure explains why <strong>Logistic Regression is actually a very simple Neural Network!</strong></p>
-<p><img src="/static/images/ML/LR/LogReg_kiank.png" style="width:650px;height:400px;"></p>
-<p><strong>Mathematical expression of the algorithm</strong>:</p>
-<p>For one example $x^{(i)}$, \( ax^2 + \sqrt{bx} + c = 0 \)下面是公式</p>
-<p>$$z^{(i)} = w^T x^{(i)} + b \tag{1}$$<br />
-$$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{2}$$ <br />
-$$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{3}$$</p>
-<p>The cost is then computed by summing over all training examples:<br />
-$$ J = \frac{1}{m} \sum_{i=1}^m \mathcal{L}(a^{(i)}, y^{(i)})\tag{6}$$</p>
-<p><strong>Key steps</strong>:<br />
-In this exercise, you will carry out the following steps: <br />
-    - Initialize the parameters of the model<br />
-    - Learn the parameters for the model by minimizing the cost<br />
-    - Use the learned parameters to make predictions (on the test set)<br />
-    - Analyse the results and conclude</p>
-<h2 id="4-building-the-parts-of-our-algorithm">4 - Building the parts of our algorithm ##</h2>
-<p>The main steps for building a Neural Network are:<br />
-1. Define the model structure (such as number of input features) <br />
-2. Initialize the model's parameters<br />
-3. Loop:<br />
-    - Calculate current loss (forward propagation)<br />
-    - Calculate current gradient (backward propagation)<br />
-    - Update parameters (gradient descent)</p>
-<p>You often build 1-3 separately and integrate them into one function we call <code>model()</code>.</p>
-<h3 id="41-helper-functions">4.1 - Helper functions</h3>
-<p><strong>Exercise</strong>: Using your code from "Python Basics", implement <code>sigmoid()</code>. As you've seen in the figure above, you need to compute $sigmoid( w^T x + b) = \frac{1}{1 + e^{-(w^T x + b)}}$ to make predictions. Use np.exp().</p>
-<p></font></p>
-<h1 id="shallow-neural-net">浅层神经网络(Shallow Neural Net)</h1>
-<h1 id="deep-neural-net">深度神经网络(Deep Neural Net)</h1>
-<h1 id="_2">神经网络实践核心概念</h1>
+  <h1 id="_1">神经网络实践核心概念</h1>
 <h2 id="traindevtest">Train/Dev/Test</h2>
 <h2 id="bias-variances">偏差bias 和 方差 variances</h2>
-<h2 id="_3">过拟合与欠拟合</h2>
+<h2 id="_2">过拟合与欠拟合</h2>
 <h2 id="regularization">正则化 Regularization</h2>
 <h2 id="inverted-dropout">反向随机失活 Inverted Dropout</h2>
 <h2 id="data-augmentation">数据集扩增 Data Augmentation</h2>
@@ -108,17 +72,15 @@ In this exercise, you will carry out the following steps: <br />
 Secondly, if i finished this course, i will get a certificate for my job hunting. Coursera courses are acknowledged by industry. This will be a good point in my resume. It will help me get more opportunities for interviews.<br />
 Thirdly, I think this course is very competitive and i will learn more from this course, which will improve my machine learning skills and i will do some research about cloud-edge intelligence more effectively. I believe i will be better at deep learning principle and application which will help me to write thesis and graduation better.<br />
 At last, this course specification will lay a solid foundation about deep learning for me. I think it will be the most valuable fortune in my career.</p>
-<p>```{.python .input}</p>
-<p>```</p>
 </div>
-<div id="content-footer">created in <span class="create-date date"> 2018-02-07 21:59 </span></div>
+<div id="content-footer">created in <span class="create-date date"> 2018-02-21 22:05 </span></div>
 <div id="comments"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script type="text/javascript">
 const gitment = new Gitment({
   id: location.pathname,
-  title: 'neural-networks',
+  title: 'neural-networks-core',
   owner: 'tracholar',
   repo: 'wiki',
   oauth: {
