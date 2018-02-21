@@ -23,7 +23,8 @@ You will build a Logistic Regression, using a Neural Network mindset. The follow
 
 **Mathematical expression of the algorithm**:
 
-For one example $x^{(i)}$:
+For one example $x^{(i)}$, \\( ax^2 + \sqrt{bx} + c = 0 \\)下面是公式
+
 $$z^{(i)} = w^T x^{(i)} + b \tag{1}$$
 $$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{2}$$ 
 $$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{3}$$
