@@ -23,7 +23,7 @@ Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
 
 Simiki is short for `Simple Wiki` :)
 
-## Quick Start ##
+## 快速使用指南 ##
 
 ### Install ###
 
@@ -52,7 +52,27 @@ Simiki is short for `Simple Wiki` :)
 
 For more information, `simiki -h` or have a look at [Simiki.org](http://simiki.org)
 
-## Others ##
+## 数学公式和插件 ##
+simiki 本身并不支持数学公式，你需要依赖一个主题模板，采用前端数学渲染库 MathJax 来进行渲染书写在 markdown 中的 数学公式。注意升级你的 simiki 保持和 markdown 版本兼容，否则可能会报错 `pkg_resources.DistributionNotFound: The 'Markdown==2.6.8' distribution was not found and is required by simiki`. `sudo pip install simiki --upgrade` 对 simiki 进行升级。
+
+配置主题模板的时候，可以在 base.html 文件中加入关于数学公式的配置，特别是 inline mode，可能你写的 Latex 版本的 inline mode 的数学公式 MathJax 并不认识。
+```js
+<script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+```
+
+## 插入图片 ##
+由于 simiki 不支持插入图片，因此只有通过 html 原生语言来插入图片了。我的图片管理都在同一个文件夹下. `/static/images`.
+
 
 * [simiki.org](http://simiki.org)
 * <https://github.com/tankywoo/simiki>
