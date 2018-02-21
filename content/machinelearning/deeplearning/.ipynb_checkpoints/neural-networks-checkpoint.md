@@ -19,12 +19,11 @@ It's time to design a simple algorithm to distinguish cat images from non-cat im
 
 You will build a Logistic Regression, using a Neural Network mindset. The following Figure explains why **Logistic Regression is actually a very simple Neural Network!**
 
-<img src="/static/images/ML/LR/LogReg_kiank.png" style="width:650px;height:400px;">
+<img src="images/ML/LR/LogReg_kiank.png" style="width:650px;height:400px;">
 
 **Mathematical expression of the algorithm**:
 
-For one example $x^{(i)}$, \\( ax^2 + \sqrt{bx} + c = 0 \\)下面是公式
-
+For one example $x^{(i)}$:
 $$z^{(i)} = w^T x^{(i)} + b \tag{1}$$
 $$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{2}$$ 
 $$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{3}$$
@@ -55,7 +54,6 @@ You often build 1-3 separately and integrate them into one function we call `mod
 
 **Exercise**: Using your code from "Python Basics", implement `sigmoid()`. As you've seen in the figure above, you need to compute $sigmoid( w^T x + b) = \frac{1}{1 + e^{-(w^T x + b)}}$ to make predictions. Use np.exp().
 
-</font>
 
 
 # 浅层神经网络(Shallow Neural Net)
