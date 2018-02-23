@@ -54,7 +54,7 @@ Let's go!
 
 A Recurrent neural network can be seen as the repetition of a single cell. You are first going to implement the computations for a single time-step. The following figure describes the operations for a single time-step of an RNN cell. 
 
-<img src="images/rnn_step_forward.png" style="width:700px;height:300px;">
+<img src="/static/images/ML/DL/rnn/rnn_step_forward.png" style="width:700px;height:300px;">
 <caption><center> **Figure 2**: Basic RNN cell. Takes as input $x^{\langle t \rangle}$ (current input) and $a^{\langle t - 1\rangle}$ (previous hidden state containing information from the past), and outputs $a^{\langle t \rangle}$ which is given to the next RNN cell and also used to predict $y^{\langle t \rangle}$ </center></caption>
 
 **Exercise**: Implement the RNN-cell described in Figure (2).
