@@ -1,0 +1,312 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>word-embeddings - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;word-embeddings</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">word-embeddings</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#word-embeddings">Word Embeddings</a><ul>
+<li><a href="#word-represention">word represention</a></li>
+<li><a href="#embedding-matrix">embedding matrix</a></li>
+</ul>
+</li>
+<li><a href="#learning-word-embeddings">Learning Word Embeddings</a><ul>
+<li><a href="#word2vec">word2vec</a></li>
+<li><a href="#negative-sampling">negative sampling</a></li>
+<li><a href="#glove-word-vectors">GloVe word vectors</a></li>
+</ul>
+</li>
+<li><a href="#application">Application</a><ul>
+<li><a href="#sentiment-classification">sentiment classification</a><ul>
+<li><a href="#1-">1 - 简单模型</a></li>
+<li><a href="#2-rnn">2 - 基于RNN的序列模型</a></li>
+</ul>
+</li>
+<li><a href="#debiasing-word-embeddings">debiasing word embeddings</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="word-embeddings">Word Embeddings</h1>
+<p>词嵌入向量具有很强的泛化和迁移学习能力，即使使用很小的训练集学习出来的词向量，也很容易应用与其他词。</p>
+<h2 id="word-represention">word represention</h2>
+<h2 id="embedding-matrix">embedding matrix</h2>
+<h1 id="learning-word-embeddings">Learning Word Embeddings</h1>
+<h2 id="word2vec">word2vec</h2>
+<h2 id="negative-sampling">negative sampling</h2>
+<h2 id="glove-word-vectors">GloVe word vectors</h2>
+<h1 id="application">Application</h1>
+<h2 id="sentiment-classification">sentiment classification</h2>
+<p>输入一个句子，输出该句子的情感分类。</p>
+<h3 id="1-">1 - 简单模型</h3>
+<p><center><br />
+<img src="/static/images/ML/DL/rnn/Emojifier-V1.png" style="width:900px;height:300px;"><br />
+<caption><center> <strong>Figure</strong>: Baseline model (Emojifier-V1).</center></caption><br />
+</center><br />
+不考虑单词顺序，将词向量简单平均后扔进普通神经网络做多分类。该方法简单粗暴，无法考虑句子中词语的反义即顺序关系。比如，they are lacking good taste, good service and good postion. 这句话很容易在这种网络中被认为是好的类。因为出现了很多 good. 由于未考虑时序关系，lacking good 导致。<br />
+$$ z^{(i)} = W . avg^{(i)} + b$$<br />
+$$ a^{(i)} = softmax(z^{(i)})$$<br />
+$$ \mathcal{L}^{(i)} = - \sum_{k = 0}^{n_y - 1} Yoh^{(i)}_k * log(a^{(i)}_k)$$</p>
+<h3 id="2-rnn">2 - 基于RNN的序列模型</h3>
+<p>考虑单词顺序对句子的影响。many-to-one 的 rnn 模型。rnn 会考虑前后单词之间的关系，因此 rnn 是更好的选择。<br />
+由于不同的输入sentence长度不一样，如果不对输入句子做特殊处理，就无法并行计算所有句子。这里采用的方法就是 padding.<br />
+<center><br />
+<img src="/static/images/ML/DL/rnn/emojifier-v2.png" style="width:900px;height:300px;"><br />
+<caption><center> <strong>Figure</strong>: Emojifier-V2. A 2-layer LSTM sequence classifier.</center></caption><br />
+</center></p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: sentences_to_indices</span>
+
+<span class="k">def</span> <span class="nf">sentences_to_indices</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">,</span> <span class="n">max_len</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts an array of sentences (strings) into an array of indices corresponding to words in the sentences.</span>
+<span class="sd">    The output shape should be such that it can be given to `Embedding()` (described in Figure 4). </span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    X -- array of sentences (strings), of shape (m, 1)</span>
+<span class="sd">    word_to_index -- a dictionary containing the each word mapped to its index</span>
+<span class="sd">    max_len -- maximum number of words in a sentence. You can assume every sentence in X is no longer than this. </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    X_indices -- array of indices corresponding to words in the sentences from X, of shape (m, max_len)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>                                   <span class="c"># number of training examples</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Initialize X_indices as a numpy matrix of zeros and the correct shape (≈ 1 line)</span>
+    <span class="n">X_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">max_len</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>                               <span class="c"># loop over training examples</span>
+
+        <span class="c"># Convert the ith training sentence in lower case and split is into words. You should get a list of words.</span>
+        <span class="n">sentence_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)]</span>
+
+        <span class="c"># Initialize j to 0</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># Loop over the words of sentence_words</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">sentence_words</span><span class="p">:</span>
+            <span class="c"># Set the (i,j)th entry of X_indices to the index of the correct word.</span>
+            <span class="n">X_indices</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">word_to_index</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">if</span> <span class="n">w</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="c"># Increment j to j + 1</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">X_indices</span>
+</pre></div>
+
+
+<p>使用keras 实现 word embedding layer<br />
+<center><br />
+<img src="/static/images/ML/DL/rnn/embedding.png" style="width:900px;height:300px;"><br />
+<caption><center> <strong>Figure</strong>: embedding.</center></caption><br />
+</center></p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: pretrained_embedding_layer</span>
+
+<span class="k">def</span> <span class="nf">pretrained_embedding_layer</span><span class="p">(</span><span class="n">word_to_vec_map</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a Keras Embedding() layer and loads in pre-trained GloVe 50-dimensional vectors.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    word_to_vec_map -- dictionary mapping words to their GloVe vector representation.</span>
+<span class="sd">    word_to_index -- dictionary mapping from words to their indices in the vocabulary (400,001 words)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    embedding_layer -- pretrained layer Keras instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">vocab_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_index</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>                  <span class="c"># adding 1 to fit Keras embedding (requirement)</span>
+    <span class="n">emb_dim</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="s">&quot;cucumber&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      <span class="c"># define dimensionality of your GloVe word vectors (= 50)</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Initialize the embedding matrix as a numpy array of zeros of shape (vocab_len, dimensions of word vectors = emb_dim)</span>
+    <span class="n">emb_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">vocab_len</span><span class="p">,</span> <span class="n">emb_dim</span><span class="p">))</span>
+
+    <span class="c"># Set each row &quot;index&quot; of the embedding matrix to be the word vector representation of the &quot;index&quot;th word of the vocabulary</span>
+    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">word_to_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">emb_matrix</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="n">word</span><span class="p">]</span>
+
+    <span class="c"># Define Keras embedding layer with the correct output/input sizes, make it trainable. Use Embedding(...). Make sure to set trainable=False. </span>
+    <span class="n">embedding_layer</span> <span class="o">=</span> <span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_len</span><span class="p">,</span> <span class="n">emb_dim</span><span class="p">,</span> <span class="n">trainable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="c"># Build the embedding layer, it is required before setting the weights of the embedding layer. Do not modify the &quot;None&quot;.</span>
+    <span class="n">embedding_layer</span><span class="o">.</span><span class="n">build</span><span class="p">((</span><span class="bp">None</span><span class="p">,))</span>
+
+    <span class="c"># Set the weights of the embedding layer to the embedding matrix. Your layer is now pretrained.</span>
+    <span class="n">embedding_layer</span><span class="o">.</span><span class="n">set_weights</span><span class="p">([</span><span class="n">emb_matrix</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">embedding_layer</span>
+
+
+<span class="c"># GRADED FUNCTION: Emojify_V2</span>
+
+<span class="k">def</span> <span class="nf">Emojify_V2</span><span class="p">(</span><span class="n">input_shape</span><span class="p">,</span> <span class="n">word_to_vec_map</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function creating the Emojify-v2 model&#39;s graph.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    input_shape -- shape of the input, usually (max_len,)</span>
+<span class="sd">    word_to_vec_map -- dictionary mapping every word in a vocabulary into its 50-dimensional vector representation</span>
+<span class="sd">    word_to_index -- dictionary mapping from words to their indices in the vocabulary (400,001 words)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    model -- a model instance in Keras</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Define sentence_indices as the input of the graph, it should be of shape input_shape and dtype &#39;int32&#39; (as it contains indices).</span>
+    <span class="n">sentence_indices</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int32&#39;</span><span class="p">)</span>
+
+    <span class="c"># Create the embedding layer pretrained with GloVe Vectors (≈1 line)</span>
+    <span class="n">embedding_layer</span> <span class="o">=</span> <span class="n">pretrained_embedding_layer</span><span class="p">(</span><span class="n">word_to_vec_map</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">)</span>
+
+    <span class="c"># Propagate sentence_indices through your embedding layer, you get back the embeddings</span>
+    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding_layer</span><span class="p">(</span><span class="n">sentence_indices</span><span class="p">)</span> 
+
+    <span class="c"># Propagate the embeddings through an LSTM layer with 128-dimensional hidden state</span>
+    <span class="c"># Be careful, the returned output should be a batch of sequences.</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">return_sequences</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)(</span><span class="n">embeddings</span><span class="p">)</span>
+    <span class="c"># Add dropout with a probability of 0.5</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+    <span class="c"># Propagate X trough another LSTM layer with 128-dimensional hidden state</span>
+    <span class="c"># Be careful, the returned output should be a single hidden state, not a batch of sequences.</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+    <span class="c"># Add dropout with a probability of 0.5</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+    <span class="c"># Propagate X through a Dense layer with softmax activation to get back a batch of 5-dimensional vectors.</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">5</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+    <span class="c"># Add a softmax activation</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">Activation</span><span class="p">(</span><span class="s">&#39;softmax&#39;</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c"># Create Model instance which converts sentence_indices into X.</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">sentence_indices</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">maxLen = 20</span>
+<span class="sd">model = Emojify_V2((maxLen,), word_to_vec_map, word_to_index)</span>
+<span class="sd">model.summary()</span>
+<span class="sd">model.compile(loss=&#39;categorical_crossentropy&#39;, optimizer=&#39;adam&#39;, metrics=[&#39;accuracy&#39;])</span>
+<span class="sd">X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)</span>
+<span class="sd">Y_train_oh = convert_to_one_hot(Y_train, C = 5)</span>
+<span class="sd">model.fit(X_train_indices, Y_train_oh, epochs = 50, batch_size = 32, shuffle=True)</span>
+<span class="sd">X_test_indices = sentences_to_indices(X_test, word_to_index, max_len = maxLen)</span>
+<span class="sd">Y_test_oh = convert_to_one_hot(Y_test, C = 5)</span>
+<span class="sd">loss, acc = model.evaluate(X_test_indices, Y_test_oh)</span>
+<span class="sd">print()</span>
+<span class="sd">print(&quot;Test accuracy = &quot;, acc)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="err">&#39;\</span><span class="n">nmaxLen</span> <span class="o">=</span> <span class="mi">20</span><span class="err">\</span><span class="n">nmodel</span> <span class="o">=</span> <span class="n">Emojify_V2</span><span class="p">((</span><span class="n">maxLen</span><span class="p">,),</span> <span class="n">word_to_vec_map</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">)</span><span class="err">\</span><span class="n">nmodel</span><span class="p">.</span><span class="n">summary</span><span class="p">()</span><span class="err">\</span><span class="n">nmodel</span><span class="p">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="err">\&#39;</span><span class="n">categorical_crossentropy</span><span class="err">\&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="err">\&#39;</span><span class="n">adam</span><span class="err">\&#39;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="err">\&#39;</span><span class="n">accuracy</span><span class="err">\&#39;</span><span class="p">])</span><span class="err">\</span><span class="n">nX_train_indices</span> <span class="o">=</span> <span class="n">sentences_to_indices</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">,</span> <span class="n">maxLen</span><span class="p">)</span><span class="err">\</span><span class="n">nY_train_oh</span> <span class="o">=</span> <span class="n">convert_to_one_hot</span><span class="p">(</span><span class="n">Y_train</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span><span class="err">\</span><span class="n">nmodel</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_indices</span><span class="p">,</span> <span class="n">Y_train_oh</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">True</span><span class="p">)</span><span class="err">\</span><span class="n">nX_test_indices</span> <span class="o">=</span> <span class="n">sentences_to_indices</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">word_to_index</span><span class="p">,</span> <span class="n">max_len</span> <span class="o">=</span> <span class="n">maxLen</span><span class="p">)</span><span class="err">\</span><span class="n">nY_test_oh</span> <span class="o">=</span> <span class="n">convert_to_one_hot</span><span class="p">(</span><span class="n">Y_test</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span><span class="err">\</span><span class="n">nloss</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_test_indices</span><span class="p">,</span> <span class="n">Y_test_oh</span><span class="p">)</span><span class="err">\</span><span class="n">nprint</span><span class="p">()</span><span class="err">\</span><span class="n">nprint</span><span class="p">(</span><span class="s">&quot;Test accuracy = &quot;</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span><span class="err">\</span><span class="n">n</span><span class="err">&#39;</span>
+</pre></div>
+
+
+<h2 id="debiasing-word-embeddings">debiasing word embeddings</h2>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-02-23 13:01 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'word-embeddings',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
