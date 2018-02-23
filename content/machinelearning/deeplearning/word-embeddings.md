@@ -83,7 +83,7 @@ def sentences_to_indices(X, word_to_index, max_len):
 
 使用keras 实现 word embedding layer
 <center>
-<img src="/static/images/ML/DL/rnn/embedding.png" style="width:900px;height:300px;">
+<img src="/static/images/ML/DL/rnn/embedding1.png" style="width:900px;height:300px;">
 <caption><center> **Figure**: embedding.</center></caption>
 </center>
 
