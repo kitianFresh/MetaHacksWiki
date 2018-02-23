@@ -501,6 +501,7 @@ The initialization for a deeper L-layer neural network is more complicated becau
 
 
 
+
 <tr>
         <td> **Layer L-1** </td> 
         <td> $(n^{[L-1]}, n^{[L-2]})$ </td> 
@@ -518,6 +519,7 @@ The initialization for a deeper L-layer neural network is more complicated becau
         <td> $Z^{[L]} =  W^{[L]} A^{[L-1]} + b^{[L]}$</td>
         <td> $(n^{[L]}, 209)$  </td> 
     <tr>
+
 
 
 
