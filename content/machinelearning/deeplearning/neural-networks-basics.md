@@ -361,6 +361,7 @@ $$
 a^{L}_{j} = \frac{e^{z^{L}_j}}{\sum_k e^{z^{L}_k}}
 $$
 
+
 ```python
 def softmax(z):
     exps = np.exp(z)
@@ -385,6 +386,7 @@ $$
 $$
 L = \sum\limits_{i = 0}^{m} L_i
 $$
+
 
 ```python
 def cross_entropy(Z,y):
@@ -422,6 +424,7 @@ softmax cross entropy loss 对 z 的求导过程:
 下面是softmax导数的矩阵形式:
 <img src="/static/images/ML/DL/nn-basics/softmax-grad-3.jpeg" style="width:600px;height:300px;">
 <caption><center> **softmax cross-entropy loss derivative matrix **</center></caption><br>
+
 
 ```python
 def delta_cross_entropy(Z,y):
@@ -495,15 +498,18 @@ The initialization for a deeper L-layer neural network is more complicated becau
         <td> $\vdots$</td> 
         <td> $\vdots$  </td> 
     <tr>
-    
-   <tr>
+
+
+
+<tr>
         <td> **Layer L-1** </td> 
         <td> $(n^{[L-1]}, n^{[L-2]})$ </td> 
         <td> $(n^{[L-1]}, 1)$  </td> 
         <td>$Z^{[L-1]} =  W^{[L-1]} A^{[L-2]} + b^{[L-1]}$ </td> 
         <td> $(n^{[L-1]}, 209)$ </td> 
     <tr>
-    
+
+
     
    <tr>
         <td> **Layer L** </td> 
@@ -512,6 +518,8 @@ The initialization for a deeper L-layer neural network is more complicated becau
         <td> $Z^{[L]} =  W^{[L]} A^{[L-1]} + b^{[L]}$</td>
         <td> $(n^{[L]}, 209)$  </td> 
     <tr>
+
+
 
 </table>
 
@@ -547,6 +555,8 @@ $$ WX + b = \begin{bmatrix}
 - Use zeros initialization for the biases. Use `np.zeros(shape)`.
 - We will store $n^{[l]}$, the number of units in different layers, in a variable `layer_dims`. For example, the `layer_dims` for the "Planar Data classification model" from last week would have been [2,4,1]: There were two inputs, one hidden layer with 4 hidden units, and an output layer with 1 output unit. Thus means `W1`'s shape was (4,2), `b1` was (4,1), `W2` was (1,4) and `b2` was (1,1). Now you will generalize this to $L$ layers! 
 - Here is the implementation for $L=1$ (one layer neural network). It should inspire you to implement the general case (L-layer neural network).
+
+
 ```python
     if L == 1:
         parameters["W" + str(L)] = np.random.randn(layer_dims[1], layer_dims[0]) * 0.01
@@ -637,17 +647,19 @@ def linear_forward(A, W, b):
 
 In this notebook, you will use two activation functions:
 
-- **Sigmoid**: $\sigma(Z) = \sigma(W A + b) = \frac{1}{ 1 + e^{-(W A + b)}}$. We have provided you with the `sigmoid` function. This function returns **two** items: the activation value "`a`" and a "`cache`" that contains "`Z`" (it's what we will feed in to the corresponding backward function). To use it you could just call: 
-``` python
+- **Sigmoid**: $\sigma(Z) = \sigma(W A + b) = \frac{1}{ 1 + e^{-(W A + b)}}$. We have provided you with the `sigmoid` function. This function returns **two** items: the activation value "`a`" and a "`cache`" that contains "`Z`" (it's what we will feed in to the corresponding backward function). To use it you could just call:
+
+
+```python
 A, activation_cache = sigmoid(Z)
 ```
 
 - **ReLU**: The mathematical formula for ReLu is $A = RELU(Z) = max(0, Z)$. We have provided you with the `relu` function. This function returns **two** items: the activation value "`A`" and a "`cache`" that contains "`Z`" (it's what we will feed in to the corresponding backward function). To use it you could just call:
-``` python
+
+
+```python
 A, activation_cache = relu(Z)
 ```
-
-
 
 
 ```python
@@ -710,7 +722,6 @@ For even more convenience when implementing the $L$-layer Neural Net, you will n
 Now you will implement forward and backward propagation. You need to compute the cost, because you want to check if your model is actually learning.
 
 **Exercise**: Compute the cross-entropy cost $J$, using the following formula: $$-\frac{1}{m} \sum\limits_{i = 1}^{m} (y^{(i)}\log\left(a^{[L] (i)}\right) + (1-y^{(i)})\log\left(1- a^{[L] (i)}\right)) \tag{7}$$
-
 
 
 ```python
@@ -781,7 +792,6 @@ $$ db^{[l]} = \frac{\partial \mathcal{L} }{\partial b^{[l]}} = \frac{1}{m} \sum_
 $$ dA^{[l-1]} = \frac{\partial \mathcal{L} }{\partial A^{[l-1]}} = W^{[l] T} dZ^{[l]} \tag{10}$$
 
 
-
 ```python
 # GRADED FUNCTION: linear_backward
 
@@ -821,11 +831,13 @@ Next, you will create a function that merges the two helper functions: **`linear
 To help you implement `linear_activation_backward`, we provided two backward functions:
 - **`sigmoid_backward`**: Implements the backward propagation for SIGMOID unit. You can call it as follows:
 
+
 ```python
 dZ = sigmoid_backward(dA, activation_cache)
 ```
 
 - **`relu_backward`**: Implements the backward propagation for RELU unit. You can call it as follows:
+
 
 ```python
 dZ = relu_backward(dA, activation_cache)
@@ -883,6 +895,8 @@ Now you will implement the backward function for the whole network. Recall that 
 To backpropagate through this network, we know that the output is, 
 $A^{[L]} = \sigma(Z^{[L]})$. Your code thus needs to compute `dAL` $= \frac{\partial \mathcal{L}}{\partial A^{[L]}}$.
 To do so, use this formula (derived using calculus which you don't need in-depth knowledge of):
+
+
 ```python
 dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL)) # derivative of cost with respect to AL
 ```
@@ -908,8 +922,7 @@ where $\alpha$ is the learning rate. After computing the updated parameters, sto
 **Exercise**: Implement `update_parameters()` to update your parameters using gradient descent.
 
 **Instructions**:
-Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l = 1, 2, ..., L$. 
-
+Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l = 1, 2, ..., L$.
 
 
 ```python
@@ -938,9 +951,4 @@ def update_parameters(parameters, grads, learning_rate):
         parameters["b" + str(l)] = parameters["b" + str(l)] - learning_rate * grads["db" + str(l)]
     ### END CODE HERE ###
     return parameters
-```
-
-
-```python
-
 ```
