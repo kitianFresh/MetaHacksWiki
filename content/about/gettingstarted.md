@@ -55,7 +55,7 @@ For more information, `simiki -h` or have a look at [Simiki.org](http://simiki.o
 ## 数学公式和插件 ##
 simiki 本身并不支持数学公式，你需要依赖一个主题模板，采用前端数学渲染库 MathJax 来进行渲染书写在 markdown 中的 数学公式。注意升级你的 simiki 保持和 markdown 版本兼容，否则可能会报错 `pkg_resources.DistributionNotFound: The 'Markdown==2.6.8' distribution was not found and is required by simiki`. `sudo pip install simiki --upgrade` 对 simiki 进行升级。
 
-配置主题模板的时候，可以在 base.html 文件中加入关于数学公式的配置，特别是 inline mode，可能你写的 Latex 版本的 inline mode 的数学公式 MathJax 并不认识。
+配置主题模板的时候，可以在 base.html 文件中加入关于数学公式的配置，特别是 inline mode，可能你写的 Latex 版本的 inline mode 的数学公式 MathJax 并不认识。可以参考 [MathJax 文档](http://docs.mathjax.org/en/latest/options/preprocessors/tex2jax.html)
 ```js
 <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
