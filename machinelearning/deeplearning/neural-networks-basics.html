@@ -517,13 +517,16 @@ $$</p>
         <td> $\vdots$  </td> 
     <tr>
 
-   <tr>
+
+
+<tr>
         <td> **Layer L-1** </td> 
         <td> $(n^{[L-1]}, n^{[L-2]})$ </td> 
         <td> $(n^{[L-1]}, 1)$  </td> 
         <td>$Z^{[L-1]} =  W^{[L-1]} A^{[L-2]} + b^{[L-1]}$ </td> 
         <td> $(n^{[L-1]}, 209)$ </td> 
     <tr>
+
 
 
    <tr>
@@ -533,6 +536,8 @@ $$</p>
         <td> $Z^{[L]} =  W^{[L]} A^{[L-1]} + b^{[L]}$</td>
         <td> $(n^{[L]}, 209)$  </td> 
     <tr>
+
+
 
 </table>
 
@@ -644,7 +649,7 @@ The mathematical representation of this unit is $Z^{[l]} = W^{[l]}A^{[l-1]} +b^{
 <h3 id="42-linear-activation-forward">4.2 - Linear-Activation Forward</h3>
 <p>In this notebook, you will use two activation functions:</p>
 <ul>
-<li><strong>Sigmoid</strong>: $\sigma(Z) = \sigma(W A + b) = \frac{1}{ 1 + e^{-(W A + b)}}$. We have provided you with the <code>sigmoid</code> function. This function returns <strong>two</strong> items: the activation value "<code>a</code>" and a "<code>cache</code>" that contains "<code>Z</code>" (it's what we will feed in to the corresponding backward function). To use it you could just call: </li>
+<li><strong>Sigmoid</strong>: $\sigma(Z) = \sigma(W A + b) = \frac{1}{ 1 + e^{-(W A + b)}}$. We have provided you with the <code>sigmoid</code> function. This function returns <strong>two</strong> items: the activation value "<code>a</code>" and a "<code>cache</code>" that contains "<code>Z</code>" (it's what we will feed in to the corresponding backward function). To use it you could just call:</li>
 </ul>
 <div class="hlcode"><pre><span class="n">A</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
 </pre></div>
@@ -874,7 +879,7 @@ $$ b^{[l]} = b^{[l]} - \alpha \text{ } db^{[l]} \tag{17}$$</p>
 <p>where $\alpha$ is the learning rate. After computing the updated parameters, store them in the parameters dictionary.</p>
 <p><strong>Exercise</strong>: Implement <code>update_parameters()</code> to update your parameters using gradient descent.</p>
 <p><strong>Instructions</strong>:<br />
-Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l = 1, 2, ..., L$. </p>
+Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l = 1, 2, ..., L$.</p>
 <div class="hlcode"><pre><span class="c"># GRADED FUNCTION: update_parameters</span>
 
 <span class="k">def</span> <span class="nf">update_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
@@ -901,12 +906,13 @@ Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l
     <span class="c">### END CODE HERE ###</span>
     <span class="k">return</span> <span class="n">parameters</span>
 </pre></div>
-
-
-<div class="hlcode"><pre>
-</pre></div>
 </div>
-<div id="content-footer">created in <span class="create-date date"> 2018-02-07 21:59 </span></div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-02-07 21:59 </span></div>
 <div id="comments"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>

@@ -130,6 +130,7 @@
 </pre></div>
 
 
+<p>注意MathJax和jupyter中数学公式的区别，MathJax没有jupyter中的数学公式兼容性好，比如<code>$$ db^{[l]} = \frac{\partial \mathcal{L} }{\partial b^{[l]}} = \frac{1}{m} \sum_{i = 1}^{m} dZ^{[l] (i)}\tag{9}$$</code> 需要注意 <code>[l]</code> 和 <code>(i)</code> 之间的空格！<code>\begin{align}</code> 不能加星号。</p>
 <h2 id="_3">插入图片</h2>
 <p>由于 simiki 不支持插入图片，因此只有通过 html 原生语言来插入图片了。我的图片管理都在同一个文件夹下. <code>/static/images</code>.</p>
 <ul>
@@ -151,7 +152,12 @@
 <li><a href="https://www.dadclab.com/archives/6510.jiecao">使用simiki搭建个人wiki图片功能</a></li>
 </ul>
 </div>
-<div id="content-footer">created in <span class="create-date date"> 2099-06-02 00:00 </span></div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2099-06-02 00:00 </span></div>
 <div id="comments"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
