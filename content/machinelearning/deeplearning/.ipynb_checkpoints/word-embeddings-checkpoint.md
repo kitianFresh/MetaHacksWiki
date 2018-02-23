@@ -14,6 +14,21 @@ date: 2018-02-23 13:01
 ## word2vec
 ## negative sampling
 ## GloVe word vectors
+## 参考资料
+ - 论文
+  - [A-Neural-Probabilistic-Language-Model-1](http://wiki.hacksmeta.com/static/pdf/A-Neural-Probabilistic-Language-Model-1.pdf)
+  - [Efficient-Estimation-of-Word-Representations](http://wiki.hacksmeta.com/static/pdf/Efficient-Estimation-of-Word-Representations-2.pdf)
+  - [5021-distributed-representations-of-words-and-phrases-and-their-compositionality](http://wiki.hacksmeta.com/static/pdf/5021-distributed-representations-of-words-and-phrases-and-their-compositionality-3.pdf)
+  - [GloVe-Global-Vectors-for-Word-Representation](http://wiki.hacksmeta.com/static/pdf/GloVe-Global-Vectors-for-Word-Representation-4.pdf)
+  - [word2vec-Parameter-Learning-Explained](http://wiki.hacksmeta.com/static/pdf/word2vec-Parameter-Learning-Explained-5.pdf)
+ - 博客
+  - [秒懂词向量Word2vec的本质](https://mp.weixin.qq.com/s/aeoFx6sIX6WNch51XRF5sg)
+  - [理解 Word2Vec 之 Skip-Gram 模型](https://zhuanlan.zhihu.com/p/27234078)
+  - [深度学习word2vec笔记之基础篇算法篇应用篇--写的非常到位](http://blog.csdn.net/han____shuai/article/details/50882135)
+ - 实现
+  - [Learn Word2Vec by implementing it in tensorflow](https://towardsdatascience.com/learn-word2vec-by-implementing-it-in-tensorflow-45641adaf2ac)
+  - [自己动手写word2vec](http://blog.csdn.net/u014595019/article/details/51884529)
+  - [Word2Vec (Part 1): NLP With Deep Learning with Tensorflow (Skip-gram)](http://www.thushv.com/natural_language_processing/word2vec-part-1-nlp-with-deep-learning-with-tensorflow-skip-gram/)
 
 # Application
 ## sentiment classification
