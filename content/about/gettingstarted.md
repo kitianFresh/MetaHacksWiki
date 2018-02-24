@@ -76,13 +76,29 @@ simiki 本身并不支持数学公式，你需要依赖一个主题模板，�
 
 
 * [simiki.org](http://simiki.org)
-* <https://github.com/tankywoo/simiki>
-* Email: <me@tankywoo.com>
-* [Simiki Users](https://github.com/tankywoo/simiki/wiki/Simiki-Users)
+
 
 ## 使用评论插件 ##
 多说和Discus都太老了，现在有一款基于github issue 的评论系统[gitment](https://github.com/imsun/gitment)，给作者点赞.
 - [Gitment：使用 GitHub Issues 搭建评论系统](https://imsun.net/posts/gitment-introduction/)
+需要非常注意的是，这个 id 不能太长，默认是 location.href， 相对路径，因为这个id会当成 github issue label 使用，太长就会验证失败，所以你文章起名字千万不能太长（整个路径长度不能太长）. 或者你更换 id， 换成 page.titile 也是可以的，但是最好不要重复
+
+```js
+const gitment = new Gitment({
+  id: window.location.pathname, #页面 ID, 可选。默认为 location.href
+  title: '{{ page.title }}',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki', #存储评论的 repo
+  oauth: {
+    client_id: '', #你的 Client ID
+    client_secret: '',  #你的 Client secret
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+```
 
 ## github page的相关概念 ##
 Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。`User pages must be built from the master branch.`
