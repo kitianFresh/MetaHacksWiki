@@ -151,7 +151,6 @@
 </ul>
 <h2 id="_4">使用评论插件</h2>
 <p>多说和Discus都太老了，现在有一款基于github issue 的评论系统<a href="https://github.com/imsun/gitment">gitment</a>，给作者点赞.<br />
-- <a href="https://imsun.net/posts/gitment-introduction/">Gitment：使用 GitHub Issues 搭建评论系统</a><br />
 需要非常注意的是，这个 id 不能太长，默认是 location.href， 相对路径，因为这个id会当成 github issue label 使用，太长就会验证失败，所以你文章起名字千万不能太长（整个路径长度不能太长）. 或者你更换 id， 换成 page.titile 也是可以的，但是最好不要重复</p>
 <div class="hlcode"><pre><span class="kr">const</span> <span class="nx">gitment</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Gitment</span><span class="p">({</span>
   <span class="nx">id</span><span class="o">:</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">pathname</span><span class="p">,</span> <span class="err">#页面</span> <span class="nx">ID</span><span class="p">,</span> <span class="err">可选。默认为</span> <span class="nx">location</span><span class="p">.</span><span class="nx">href</span>
@@ -178,6 +177,11 @@
 </pre></div>
 
 
+<ul>
+<li><a href="https://imsun.net/posts/gitment-introduction/">Gitment：使用 GitHub Issues 搭建评论系统</a></li>
+<li><a href="https://ericxie.github.io/2017/06/12/hexo-gitment-md/">hexo中添加Gitment</a></li>
+<li><a href="https://extremegtr.github.io/2017/09/07/Add-Gitment-comment-system-to-hexo-theme-NexT/">添加Gitment评论系统到Hexo主题NexT</a></li>
+</ul>
 <h2 id="github-page">github page的相关概念</h2>
 <p>Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。<code>User pages must be built from the master branch.</code><br />
 因此一个账户有且仅有一个 user pages. organization page 和 user pages 类似。那如何在一个账户创建多个 pages呢? 就是另一个 project pages 了。其实每一个项目都可以创建 project pages 来发布。对于project page，你可以选择 master 作为 githubpages 发布源，也可以选择 gh-pages 分支作为发布源，因为pages一般是用来说明项目的，因此项目一般不要使用主分支发布，直接使用 gh-pages 分支更好，这样就和你的 master 代码分开了。如果你就是想要在主分支发布，那么在主分支的root目录下必须要有一个 /docs 目录，发布源代码需要在 /docs 目录下。 自定义域名只要 在发布源的代码目录下面加入CNAME文件即可，里面只需要填写你的自定义域名！如果你的域名还未被DNS收录，那么github会发出警告消息。</p>
