@@ -105,9 +105,35 @@ var SHORT_ID = function(url) { return url.replace(/[\?#].*$/, '').replace(/\/((d
 var gitment = new Gitmint({
   id: SHORT_ID(location.href),
 ```
+- [注册Github Authorized APP](https://github.com/settings/applications/new)
 - [Gitment：使用 GitHub Issues 搭建评论系统](https://imsun.net/posts/gitment-introduction/)
 - [hexo中添加Gitment](https://ericxie.github.io/2017/06/12/hexo-gitment-md/)
 - [添加Gitment评论系统到Hexo主题NexT](https://extremegtr.github.io/2017/09/07/Add-Gitment-comment-system-to-hexo-theme-NexT/)
+
+## 使用百度统计和Google Analytics
+按照百度统计和GoogleAnalytics文档操作即可，非常简单。把他们自动生成的代码copy到基类模板即可。
+```js
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-114706319-1');
+</script>
+        
+<!-- Baidu Analytics -->
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+```
 
 ## github page的相关概念 ##
 Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。`User pages must be built from the master branch.`
