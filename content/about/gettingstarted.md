@@ -99,6 +99,13 @@ const gitment = new Gitment({
 
 gitment.render('comments')
 ```
+或者改写 id 
+```js
+var SHORT_ID = function(url) { return url.replace(/[\?#].*$/, '').replace(/\/((default\|index)\..{1,4})?$/,'').replace(/^.*\/\|.html$/g, '') };
+
+var gitment = new Gitmint({
+  id: SHORT_ID(location.href),
+```
 
 ## github page的相关概念 ##
 Github 为每一个账户都设置了一个默认的 user pages, 如果你要使用，创建的 repository name 必须符合 <username>.github.io,并且 user pages 只能使用这个项目的主分支master来作为发布源。`User pages must be built from the master branch.`
