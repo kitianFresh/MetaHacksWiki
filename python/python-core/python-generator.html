@@ -70,11 +70,11 @@
 
 
 <p>其中， iter() 函数和 next() 函数一样，都调用对象内部的 __iter__() 和 __next__().</p>
-<div class="hlcode"><pre><span class="n">def</span> <span class="n">iter</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">:</span>
-    <span class="k">return</span> <span class="n">i</span><span class="p">.</span><span class="n">__iter__</span><span class="p">()</span>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
 
-<span class="n">def</span> <span class="n">next</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">:</span>
-    <span class="k">return</span> <span class="n">i</span><span class="p">.</span><span class="n">__next__</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">__next__</span><span class="p">()</span>
 </pre></div>
 
 
@@ -316,10 +316,6 @@ this local/nested class every time __iter__ is called.</p>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="hlcode"><pre>
 </pre></div>
 
 

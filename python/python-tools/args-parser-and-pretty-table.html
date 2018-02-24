@@ -1,0 +1,270 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>args-parser-and-pretty-table - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78529611-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-tools">python-tools</a>&nbsp;»&nbsp;args-parser-and-pretty-table</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">args-parser-and-pretty-table</div>
+<div id="content">
+  <h1 id="args-parser">args-parser</h1>
+<div class="hlcode"><pre><span class="c"># -*- coding: utf8 -*-</span>
+<span class="kn">import</span> <span class="nn">MySQLdb</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+
+<span class="c">#### 参数调用说明</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-a&#39;</span><span class="p">,</span> <span class="s">&#39;--host&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;mysql host&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-t&#39;</span><span class="p">,</span> <span class="s">&#39;--port&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;mysql port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3306</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-u&#39;</span><span class="p">,</span> <span class="s">&#39;--user&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;mysql user&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-p&#39;</span><span class="p">,</span> <span class="s">&#39;--passwd&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;mysql password&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-d&#39;</span><span class="p">,</span> <span class="s">&#39;--db&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">&quot;mysql database&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-c&#39;</span><span class="p">,</span> <span class="s">&#39;--charset&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;mysql connect charset&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-z&#39;</span><span class="p">,</span> <span class="s">&#39;--zone&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;image zone where you want to deleted&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;append&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">MySQLdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="n">charset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span>
+
+
+<span class="k">def</span> <span class="nf">delete_image_properties</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">format_strings</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">))</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;DELETE FROM `image_properties` WHERE `image_id` IN (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">format_strings</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">images_to_delete</span><span class="p">)))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="k">print</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">delete_image_members</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span>
+        <span class="n">placeholders</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">placeholder</span> <span class="k">for</span> <span class="n">unused</span> <span class="ow">in</span> <span class="n">images_to_delete</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&#39;DELETE FROM `image_members` WHERE `image_id` IN (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">placeholders</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">images_to_delete</span><span class="p">)))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="k">print</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">delete_image_tags</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span>
+        <span class="n">placeholders</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">placeholder</span> <span class="k">for</span> <span class="n">unused</span> <span class="ow">in</span> <span class="n">images_to_delete</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&#39;DELETE FROM `image_tags` WHERE `image_id` IN (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">placeholders</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">images_to_delete</span><span class="p">)))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="k">print</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">delete_images</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span>
+        <span class="n">placeholders</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">placeholder</span> <span class="k">for</span> <span class="n">unused</span> <span class="ow">in</span> <span class="n">images_to_delete</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&#39;DELETE FROM `images` WHERE `id` IN (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">placeholders</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">images_to_delete</span><span class="p">)))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="k">print</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">host</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">host</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">user</span>
+    <span class="n">passwd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">passwd</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">db</span>
+    <span class="n">charset</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">charset</span>
+    <span class="n">zones</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">zone</span>
+    <span class="k">print</span> <span class="n">host</span>
+    <span class="k">print</span> <span class="n">port</span>
+    <span class="k">print</span> <span class="n">user</span>
+    <span class="k">print</span> <span class="n">passwd</span>
+    <span class="k">print</span> <span class="n">db</span>
+    <span class="k">print</span> <span class="n">charset</span>
+    <span class="k">print</span> <span class="n">zones</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">queryStr</span> <span class="o">=</span> <span class="s">&quot;select `image_id` from `image_properties` where `deleted` = 0 and &quot;</span>
+        <span class="n">subQuery</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">zones</span><span class="p">:</span>
+            <span class="n">subQuery</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;(`name` = &#39;zone&#39; and `value` = </span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">)</span>
+        <span class="n">subStr</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot; or &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subQuery</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+        <span class="n">queryStr</span> <span class="o">=</span> <span class="n">queryStr</span> <span class="o">+</span> <span class="n">subStr</span> <span class="o">+</span> <span class="s">&quot; order by `updated_at` desc&quot;</span>
+        <span class="k">print</span> <span class="n">queryStr</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">queryStr</span><span class="p">,</span> <span class="n">zones</span><span class="p">)</span>
+        <span class="n">images_to_delete</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images_to_delete</span><span class="p">:</span>
+            <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">print</span> <span class="n">imgs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span>
+        <span class="n">images_to_delete</span> <span class="o">=</span> <span class="n">imgs</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">delete_image_properties</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+            <span class="n">delete_image_members</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+            <span class="n">delete_image_tags</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+            <span class="n">delete_images</span><span class="p">(</span><span class="n">images_to_delete</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="k">print</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="args-tab-hint">args-tab-hint</h2>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">arg</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="c"># Because of the sematics of decorator composition if we just append</span>
+        <span class="c"># to the options list positional options will appear to be backwards.</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;arguments&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">func</span>
+    <span class="k">return</span> <span class="n">_decorator</span>
+
+<span class="nd">@arg</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;SERVER_ID&gt;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;ID of virtual server to get metadata info&#39;</span><span class="p">)</span>
+<span class="nd">@arg</span><span class="p">(</span><span class="s">&#39;--field&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;METADATA_FIELD&gt;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Field name of metadata&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&#39;ok&#39;</span>
+<span class="n">do</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="c"># do.__dict__.setdefault(&#39;argument&#39;,[]).insert(0, (1,2))</span>
+<span class="c"># do.__dict__.setdefault(&#39;argument&#39;,[]).insert(0, (2,3))</span>
+</pre></div>
+
+
+<h1 id="terminal-display-table">Terminal display table</h1>
+<p>pip install prettytable</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">prettytable</span> <span class="kn">import</span> <span class="n">PrettyTable</span>
+<span class="n">row</span> <span class="o">=</span> <span class="n">PrettyTable</span><span class="p">()</span>
+<span class="n">row</span><span class="o">.</span><span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Property&#39;</span><span class="p">,</span> <span class="s">&#39;Value&#39;</span><span class="p">]</span>
+<span class="n">maps</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;kiki&#39;</span><span class="p">,</span>
+    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;hacker&#39;</span><span class="p">,</span>
+    <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;0x70&#39;</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">maps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">row</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">])</span>
+<span class="k">print</span> <span class="n">row</span>
+<span class="k">print</span> <span class="n">row</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="n">sortby</span><span class="o">=</span><span class="s">&#39;Property&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-02-24 10:20 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: location.pathname,
+  title: 'args-parser-and-pretty-table',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?df74779713027375e7b79302fb72d7b0";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
