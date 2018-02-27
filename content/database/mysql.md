@@ -183,19 +183,29 @@ create table `students` (
 ```
 
 # SQL JOIN
-- inner join
+## inner join
 `SELECT <field_list> FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY`
-- left join
+求左右两边相同键值的笛卡尔积。举个例子，假设 A.a1 在左边有两条记录，`rec_num(A.a1) = 2`, B.a1 在右边有一条记录 `rec_num(B.a1) = 1`（一般是B的主键）, 那么连接之后，a1 记录就有 2 x 1 条记录。如果 A.a1 有 m 条记录， B.a1在右边有多条设为 n 条记录，则最后 a1 记录就有 m x n 条， 这就是笛卡尔积。即 左边的每一条和右边的每一条都得组合。这里做的笛卡尔积只对 m >= 1 && n >= 1 的时候才会加入最终的连接结果，这就是 inner join， 只包含 连接键值满足 m >= 1 && n >= 1 的笛卡尔积。
+
+## left join
 `SELECT <field_list> FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY`
-- right join
+以左边基准，求左右两边相同键值的笛卡尔积。 这里的笛卡尔积必须包含左边表所有的键值，如果 `rec_num(A.a1) > 0 && rec_num(B.a1) = 0`，这在 inner join 中就会被去除，但是在 left join 中，会保留这些 A.a1 记录，连接起来的右边表的值都设置为默认 null。`A.a1, A.a2,..., B.null, B.null...`
+
+## right join
 `SELECT <field_list> FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY`
-- outer join
+和left join 相反，以右边基准，求左右两边相同键值的笛卡尔积。 这里的笛卡尔积必须包含右边表所有的键值，如果 `rec_num(A.a1) = 0 && rec_num(B.a1) > 0`，这在 inner join 中会被去除，但是在 left join 中，会保留这些 B.a1 记录，连接起来的左边表的值都设置为默认 null。 `A.null, A.null, ... A.null, B.a1, B.a2, B.a3...`
+
+## outer join
 `SELECT <field_list> FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY`
-- left join excluding inner join
+这个就是 left join + right join。 左右两边的键值都保留。
+
+## left join excluding inner join
 `SELECT <field_list> FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL`
-- right join excluding inner join
+
+## right join excluding inner join
 `SELECT <field_list> FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL`
-- outer join excluding inner join 
+
+##outer join excluding inner join 
 `SELECT <field_list> FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL`
 
 以上在SQLAlchemy中的对应关系
