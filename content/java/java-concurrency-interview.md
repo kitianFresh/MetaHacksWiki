@@ -454,6 +454,126 @@ hreadLocal是Java里一种特殊的变量。每个线程都有一个ThreadLocal�
 ## 18. 什么是 FutureTask ?(不熟悉)
 在Java并发程序中FutureTask表示一个可以取消的异步运算。它有启动和取消运算、查询运算是否完成和取回运算结果等方法。只有当运算完成的时候结果才能取回，如果运算尚未完成get方法将会阻塞。一个FutureTask对象可以对调用了Callable和Runnable的对象进行包装，由于FutureTask也是调用了Runnable接口所以它可以提交给Executor来执行。
 
+### 18.1 异步编程（异步计算和异步IO）
+计算机科学和网络中经常会出现异步的概念，这个概念就是双方交互的过程，主动方在发起请求(函数调用)之后，不需要等待这个请求完成就可以继续往后执行。
+
+异步编程提供了一个非阻塞的，事件驱动的编程模型。 这种编程模型利用系统中多核执行任务来提供并行，因此提供了应用的吞吐率。此处吞吐率是指在单位时间内所做任务的数量。 在这种编程方式下， 一个工作单元将独立于主应用线程而执行， 并且会将它的状态通知调用线程：成功，处理中或者失败。
+
+### 18.2 异步IO
+最典型的应用就是 基于非阻塞IO的Web 服务器比如tornado, tornado 实际上是一个利用底层非阻塞操作系统调用select/poll/epoll等方式，对于发来的请求（读事件）和发送的响应（写事件）进行循环扫描监听，从而实现对请求的高并发处理。而对于上层业务逻辑的Handler其实就是给Tornado框架的callback, Tornado 知道请求做完之后，需要发送回响应给客户端。
+但是回调的方式容易出现　callback hell. 一般在 tornado.ioloop.IOLoop.instance()　启动的时候，需要设置很多服务，这些服务有先后依赖关系，就会出现 在回调函数里面继续使用另一个回调函数的情况，这样有很多服务的话就会出现层层嵌套。
+```python
+from tornado import ioloop
+class ServiceBase():
+    def __init__(self):
+        self.__http_client = AsyncHTTPClient()
+        
+    def start_register(self, delay=5):
+        io = ioloop.IOLoop.instance()
+        self._register_thread = io.add_timeout(delay, self.register)
+     
+    def register(self):
+        self.registerA()
+     
+    def on_fail(self):
+        self.start_register(delay=30)
+        
+    def registerA(self):
+        self.__http_client.fetch('', self.on_registerA_succ, self.on_fail)
+    
+    def on_registerA_succ(self):
+        self.registerB()
+        
+    def registerB(self):
+        self.__http_client.fetch('', self.on_registerB_succ, self.on_fail)
+        
+    def on_registerB_succ(self):
+        self.registerC()
+    
+    def registerC(self):
+        .....
+        
+    .....
+    
+    
+```
+### 18.3 异步计算
+异步还可以是异步计算任务的执行，比如多线程中，主线程提交一个CPU密集型的任务给一个线程池，线程池函数立即返回，这样主线程就不会因为等待计算这个CPU密集任务而阻塞了。这里就会看到，　Runable 只是简单的执行一段任务，但是无法获取任务的结果，任务是没有返回值的，而　Callable 是一个泛型接口，是可以获取返回值的，他一般和　Future 一起使用，Future 是一个接口。
+
+```java
+public interface Runnable {
+    public abstract void run();
+}
+
+public interface Callable<V> {
+    /**
+     * Computes a result, or throws an exception if unable to do so.
+     *
+     * @return computed result
+     * @throws Exception if unable to compute a result
+     */
+    V call() throws Exception;
+}
+
+```
+
+Callable并不像Runnable那样通过Thread的start方法就能启动实现类的run方法，所以它通常利用ExecutorService的submit方法去启动call方法自执行任务，而ExecutorService的submit又返回一个Future类型的结果，因此Callable通常也与Future一起使用.
+```java
+ExecutorService pool = Executors.newCachedThreadPool();
+     Future future = pool.submit(new Callable{
+           public void call(){
+                   //TODO
+           }
+    });
+```
+
+因为Future只是一个接口，所以是无法直接用来创建对象使用的，因此就有了下面的FutureTask。
+```java
+public interface Future<V> {
+    //
+    boolean cancel(boolean mayInterruptIfRunning);
+    
+    
+    boolean isCancelled();
+    
+    
+    boolean isDone();
+    //用来获取执行结果，这个方法会产生阻塞，会一直等到任务执行完毕才返回；
+    V get() throws InterruptedException, ExecutionException;
+
+    //用来获取执行结果，如果在指定时间内，还没获取到结果，就直接返回null。
+    V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException;
+}
+```
+FutureTask实现了RunnableFuture接口，提供了即可以使用Runnable来执行任务，又可以使用Future执行任务并取得结果的构造器，所以可以利用FutureTask去封装Runnable或Callable对象，之后再submit任务;
+
+```java
+FutureTask(Callable callable) FutureTask(Runnable runnable, V result)
+ 
+FutureTask task = new FutureTask(new Callable{
+        public void call(){
+              //TODO
+        }
+  });
+ Thead thread = new Thread(task);
+ thread.start();
+```
+
+Java 7 之前的Future模式的缺点
+
+　- Future虽然可以实现获取异步执行结果的需求，但是它没有提供通知的机制，我们无法得知Future什么时候完成。
+ - 要么使用阻塞，在future.get()的地方等待future返回的结果，这时又变成同步操作。要么使用isDone()轮询地判断Future是否完成，这样会耗费CPU的资源。
+
+### 18.4 java 8 CompletableFuture
+其实这个东西在 python 里面早就有了，就是　future.add_done_callback(done_callback)，异步计算任务结果拿到之后，可以继续调用这个注册的done_callback 处理计算结果！ 这样就可以实现任务完成之后的通知机制了。
+另外，我们所熟悉的 java awt swing 中注册摸个组件的监听器，就是你给某个　Button 注册一个Listener，监听器写的是你的处理逻辑代码（比如通过网络发送用户和密码登录），然后窗口主线程监听到点击事件之后，默认只会在自己的主线程执行你的监听代码，因此如果你的监听代码如果是耗时的，最好是开一个新线程来执行，否则会阻塞主循环。但这个模式是和我们异步编程反过来的，这个一般是主线程（窗口主线程）执行你的给的回调函数（监听器），而在异步编程中，一般是其他的非主线程（如线程池）执行我们主线程给出的回调函数，线程池执行完异步任务之后，可以拿到你给的　done_callback 继续执行任务完成之后的代码。
+
+Java8 中的CompletableFuture能够将回调放到与任务不同的线程中执行，也能将回调作为继续执行的同步函数，在与任务相同的线程中执行。它避免了传统回调最大的问题，那就是能够将控制流分离到不同的事件处理器中。
+
+CompletableFuture弥补了Future模式的缺点。在异步的任务完成后，需要用其结果继续操作时，无需等待。可以直接通过thenAccept、thenApply、thenCompose等方式将前面异步处理的结果交给另外一个异步事件处理线程来处理。
+
+
 ## 19. Java 中的 interrupted 和 isInterrupted 区别?(不熟悉)
 **`interrupted()` 和 `isInterrupted()` 的主要区别是前者会将中断状态清除而后者不会。Java多线程的中断机制是用内部标识来实现的，调用Thread.interrupt()来中断一个线程就会设置中断标识为true。**当中断线程调用静态方法Thread.interrupted()来检查中断状态时，中断状态会被清零。而非静态方法isInterrupted()用来查询其它线程的中断状态且不会改变中断状态标识。简单的说就是任何抛出InterruptedException异常的方法都会将中断状态清零。无论如何，一个线程的中断状态有有可能被其它线程调用中断来改变。
 
@@ -474,6 +594,13 @@ hreadLocal是Java里一种特殊的变量。每个线程都有一个ThreadLocal�
 
  - Synchronized 集合比如 synchronized HashMap, HashTable, HashSet, Vector以及 synchronized ArrayList要比 ConcurrentHashMap, CopyOnWriteArrayList 和 CopyOnWriteHashSet 慢!
  - **枷锁粒度不同, HashSet, Vector 单个操作就锁住的是整个集合,** 而** ConcurrentHashMap 锁住的是部分集合, 他将内部Map分段, 当一个段被操作的时候, 其他段还可以继续被访问. CopyOnWriteArrayList 允许多个多线程同时访问,直到一个写发生,他会复制整个List然后和新的交换.**
+
+### 22.1 锁优化
+减少线程之间锁竞争的方法，就是通过缩小锁的冲突域，比如数据结构分段枷锁，锁的分配算法等。最常见的方式是
+ - 减小锁的粒度，比如从一个方法枷锁改成某个语句枷锁
+ - 锁分离技术，读写锁分开，比如 LinkedBlockingQueue
+ - 锁粗话，就是有多个地方不停的获取释放锁，考虑合并成一个大锁
+ - 无锁编程，比如采用 CAS 原语，当然　CAS 也有缺点，还是有总线竞争，CPU cache 导致的　false sharing 和轮训浪费CPU的缺点。更高性能的无锁方式最著名的是 [Disruptor](https://martinfowler.com/articles/lmax.html)，基于消除这些缺点之后的 CAS 和　循环缓冲区实现，性能非常强悍，多用在金融交易系统，Storm 也使用了这个框架
 
 ## 23. <del>Java 堆和栈区别?</del>
 
