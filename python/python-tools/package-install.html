@@ -152,6 +152,17 @@ sudo yum install libcurl-openssl-devel</p>
 
 <span class="n">install_package</span> <span class="s">&quot;Python-2.7.13&quot;</span> <span class="s">&quot;http://172.18.177.215:8000/Python-2.7.13.tar.xz&quot;</span> <span class="n">ldflags_dirs</span> <span class="n">standard</span> <span class="n">verify_py27</span> <span class="n">ensurepip</span>
 </pre></div>
+
+
+<h2 id="python-26-crypto">Python 2.6 安装 crypto 出错</h2>
+<div class="hlcode"><pre><span class="n">from</span> <span class="n">Crypto</span><span class="p">.</span><span class="n">Cipher</span> <span class="n">import</span> <span class="n">PKCS1_OAEP</span>
+<span class="nl">ImportError:</span> <span class="n">cannot</span> <span class="n">import</span> <span class="n">name</span> <span class="n">PKCS1_OAEP</span>
+</pre></div>
+
+
+<p>sudo pip list<br />
+sudo pip uninstall pycrypto<br />
+sudo pip install pycryptodome</p>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
