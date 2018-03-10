@@ -104,3 +104,13 @@ install_package "readline-6.3" "https://ftpmirror.gnu.org/readline/readline-6.3.
 
 install_package "Python-2.7.13" "http://172.18.177.215:8000/Python-2.7.13.tar.xz" ldflags_dirs standard verify_py27 ensurepip
 ```
+
+
+## Python 2.6 安装 crypto 出错
+```pythons
+from Crypto.Cipher import PKCS1_OAEP
+ImportError: cannot import name PKCS1_OAEP
+```
+sudo pip list
+sudo pip uninstall pycrypto
+sudo pip install pycryptodome
