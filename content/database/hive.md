@@ -147,7 +147,7 @@ MapReduce 多级排序实现；
 自定义复合Key值 CompositeKey， 按需要实现 自定义 Partitioner SortComparator GroupComparator
 
 # MapReduce Join data 实现
-## Reduce-Side Join(Repartition join case study)
+## Reduce-Side Join [Repartition join case study](http://blog.ditullio.fr/2016/01/29/hadoop-basics-repartition-join-mapreduce/)
 ### 连接操作类型 mysql join type
 四个基本的join，其实还有三种。详细可以参考 [mysql join]()
 - inner join
@@ -341,3 +341,251 @@ public static class JoinReducer extends Reducer<Text, Text, Text, Text> {
 	}	
 ```
 
+## Map-Side Join [Replicated join case study](http://blog.ditullio.fr/2016/02/03/hadoop-basics-replicated-join-in-mapreduce/)
+### 局限性
+1. 小表能够刷入Map端JVM 内存之中
+2. 只能以大表为准做　inner join 或者 left join. 因为小表会被复制到每一个map,因此每一个map 都能看到全局的做连接的右边的小表，但是反过来小表无法看到全局的大表;
+
+### 基本操作
+小表刷入每一个Mapper 的内存，装入　HashMap 之中，之后就可以在 map 函数之中使用其作为右表做inner join 或者　left join 了；这个版本基于　Writable 对象来做，通过从已经做好的SequenceFile中读取　Writable 类型的value
+
+```java
+public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable, Text, Text> {
+
+		public static final String PROJECTS_FILENAME_CONF_KEY = "projects.filename";
+
+		private Map<String, ProjectWritable> projectsCache = new HashMap<>();
+
+		private Text outputKey = new Text();
+		private Text outputValue = new Text();
+
+		@Override
+		public void setup(Context context) throws IOException, InterruptedException {
+
+			boolean cacheOK = false;
+
+			URI[] cacheFiles = context.getCacheFiles();
+			final String distributedCacheFilename = context.getConfiguration().get(PROJECTS_FILENAME_CONF_KEY);
+
+			Configuration conf = new Configuration();
+			for (URI cacheFile : cacheFiles) {
+				Path path = new Path(cacheFile);
+				if (path.getName().equals(distributedCacheFilename)) {
+					LOG.info("Starting to build cache from : " + cacheFile);
+					try (SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(path))) 
+					{
+						LOG.info("Compressed ? " + reader.isBlockCompressed());
+						Text tempKey = new Text();
+						ProjectWritable tempValue = new ProjectWritable();
+
+						while (reader.next(tempKey, tempValue)) {
+							// Clone the writable otherwise all map values will be the same reference to tempValue
+							ProjectWritable project = WritableUtils.clone(tempValue, conf);
+							projectsCache.put(tempKey.toString(), project);
+						}
+					}
+					LOG.info("Finished to build cache. Number of entries : " + projectsCache.size());
+
+					cacheOK = true;
+					break;
+				}
+			}
+
+			if (!cacheOK) {
+				LOG.error("Distributed cache file not found : " + distributedCacheFilename);
+				throw new IOException("Distributed cache file not found : " + distributedCacheFilename);
+			}
+		}
+
+		@Override
+		public void map(Object key, DonationWritable donation, Context context)
+				throws IOException, InterruptedException {
+
+			ProjectWritable project = projectsCache.get(donation.project_id);
+
+			// Ignore if the corresponding entry doesn't exist in the projects data (INNER JOIN)
+			if (project == null) {
+				return;
+			}
+
+			String donationOutput = String.format("%s|%s|%s|%s|%.2f", donation.donation_id, donation.project_id, 
+					donation.donor_city, donation.ddate, donation.total);
+
+			String projectOutput = String.format("%s|%s|%d|%s", 
+					project.project_id, project.school_city, project.poverty_level, project.primary_focus_subject);
+
+			outputKey.set(donationOutput);
+			outputValue.set(projectOutput);
+			context.write(outputKey, outputValue);
+		}
+	}
+```
+
+### 优化1
+使用 projection 在map 阶段将不需要的字段过滤掉。
+```java
+/**
+	 * Smaller "Project" class used for projection.
+	 * 
+	 * @author Nicomak
+	 *
+	 */
+	public static class ProjectProjection {
+
+		public String project_id;
+		public String school_city;
+		public String poverty_level;
+		public String primary_focus_subject;
+
+		public ProjectProjection(ProjectWritable project) {
+			this.project_id = project.project_id;
+			this.school_city = project.school_city;
+			this.poverty_level = project.poverty_level;
+			this.primary_focus_subject = project.primary_focus_subject;
+		}
+	}
+
+	public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable, Text, Text> {
+
+		private Map<String, ProjectProjection> projectsCache = new HashMap<>();
+
+		private Text outputKey = new Text();
+		private Text outputValue = new Text();
+
+		@Override
+		public void setup(Context context) throws IOException, InterruptedException {
+
+			boolean cacheOK = false;
+
+			URI[] cacheFiles = context.getCacheFiles();
+			final String distributedCacheFilename = context.getConfiguration().get(PROJECTS_FILENAME_CONF_KEY);
+
+			Configuration conf = new Configuration();
+			for (URI cacheFile : cacheFiles) {
+				Path path = new Path(cacheFile);
+				if (path.getName().equals(distributedCacheFilename)) {
+					LOG.info("Starting to build cache from : " + cacheFile);
+					try (SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(path))) 
+					{
+						LOG.info("Compressed ? " + reader.isBlockCompressed());
+						Text tempKey = new Text();
+						ProjectWritable tempValue = new ProjectWritable();
+
+						while (reader.next(tempKey, tempValue)) {
+
+							// We are creating a smaller projection object here to save memory space.
+							ProjectProjection projection = new ProjectProjection(tempValue);
+							projectsCache.put(tempKey.toString(), projection);
+						}
+					}
+					LOG.info("Finished to build cache. Number of entries : " + projectsCache.size());
+
+					cacheOK = true;
+					break;
+				}
+			}
+
+			if (!cacheOK) {
+				LOG.error("Distributed cache file not found : " + distributedCacheFilename);
+				throw new IOException("Distributed cache file not found : " + distributedCacheFilename);
+			}
+		}
+
+		@Override
+		public void map(Object key, DonationWritable donation, Context context)
+				throws IOException, InterruptedException {
+
+			ProjectProjection project = projectsCache.get(donation.project_id);
+
+			// Ignore if the corresponding entry doesn't exist in the projects data (INNER JOIN)
+			if (project == null) {
+				return;
+			}
+
+			if (project != null) {
+				String donationOutput = String.format("%s|%s|%s|%s|%.2f", donation.donation_id, donation.project_id, 
+						donation.donor_city, donation.ddate, donation.total);
+
+				String projectOutput = String.format("%s|%s|%s|%s", 
+						project.project_id, project.school_city, project.poverty_level, project.primary_focus_subject);
+
+				outputKey.set(donationOutput);
+				outputValue.set(projectOutput);
+				context.write(outputKey, outputValue);
+			}
+		}
+	}
+```
+
+### 优化２
+纯文本形式
+
+```java
+public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable, Text, Text> {
+
+		public static final String PROJECTS_FILENAME_CONF_KEY = "projects.filename";
+
+		private Map<String, String> projectsCache = new HashMap<>();
+
+		private Text outputKey = new Text();
+		private Text outputValue = new Text();
+
+		@Override
+		public void setup(Context context) throws IOException, InterruptedException {
+
+			boolean cacheOK = false;
+
+			URI[] cacheFiles = context.getCacheFiles();
+			final String distributedCacheFilename = context.getConfiguration().get(PROJECTS_FILENAME_CONF_KEY);
+
+			Configuration conf = new Configuration();
+			for (URI cacheFile : cacheFiles) {
+				Path path = new Path(cacheFile);
+				if (path.getName().equals(distributedCacheFilename)) {
+					LOG.info("Starting to build cache from : " + cacheFile);
+					try (SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(path))) 
+					{
+						LOG.info("Compressed ? " + reader.isBlockCompressed());
+						Text tempKey = new Text();
+						ProjectWritable tempValue = new ProjectWritable();
+
+						while (reader.next(tempKey, tempValue)) {
+							// Serialize important value to a string containing pipe-separated values
+							String projectString = String.format("%s|%s|%s|%s", tempValue.project_id, 
+									tempValue.school_city, tempValue.poverty_level, tempValue.primary_focus_subject);
+							projectsCache.put(tempKey.toString(), projectString);
+						}
+					}
+					LOG.info("Finished to build cache. Number of entries : " + projectsCache.size());
+
+					cacheOK = true;
+					break;
+				}
+			}
+
+			if (!cacheOK) {
+				LOG.error("Distributed cache file not found : " + distributedCacheFilename);
+				throw new IOException("Distributed cache file not found : " + distributedCacheFilename);
+			}
+		}
+
+		@Override
+		public void map(Object key, DonationWritable donation, Context context)
+				throws IOException, InterruptedException {
+
+			String projectOutput = projectsCache.get(donation.project_id);
+
+			// Ignore if the corresponding entry doesn't exist in the projects data (INNER JOIN)
+			if (projectOutput == null) {
+				return;
+			}
+
+			String donationOutput = String.format("%s|%s|%s|%s|%.2f", donation.donation_id, donation.project_id, 
+					donation.donor_city, donation.ddate, donation.total);
+
+			outputKey.set(donationOutput);
+			outputValue.set(projectOutput);
+			context.write(outputKey, outputValue);
+		}
+	}
+```
