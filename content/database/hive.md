@@ -589,3 +589,165 @@ public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable
 		}
 	}
 ```
+
+
+# 虚拟列（分区partition）
+Hive中有个"虚拟列"的概念，此列并未在表中真正存在，其用意是为了将Hive中的表进行分区(partition)，这对每日增长的海量数据存储而言是非常有用的。为了保证HiveQL的高效运行，强烈推荐在where语句后使用虚拟列作为限定。拿web日志举例，在Hive中为web日志创建了一个名为web_log表，它有一个虚拟列logdate，web_log表通过此列对每日的日志数据进行分区。因此，在对web_log表执行select时，切记要在where后加上logdate的限定条件，如下：
+SELECT url FROM web_log WHERE logdate='20090603';
+若是没有logdate作为限定，Hive默认查询web_log表的所有分区，有多少天就查多少天，那个场景无法想象
+
+
+需求分析hiveql
+```sql
+insert overwrite local directory '/TODB2_PATH/20150508/'
+select
+substr(hour_id,9,2),
+sum(case when a.busi_type_id=15 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=1 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=4 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=7 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=3 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=6 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=5 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=14 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=17 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=13 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=12 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=9 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=2 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=11 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=8 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=16 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id=10 then a.down_flow+a.up_flow else cast(0 as bigint) end),
+sum(case when a.busi_type_id in(18,19,20,-9) then a.down_flow+a.up_flow else cast(0 as bigint) end)
+from dw_cal_gprs_bh_yyyymmdd a where month_id=201504 group by substr(hour_id,9,2) ;
+```
+
+
+## hive学习之数据导入导出
+把hive数据从hive数据库表中导出，总体分为两类，第一类就是导出到文件里面；第二类就是导出到另一个表
+### 2.1.1把hive数据导出到文件系统
+ 1.直接使用Hql语句 
+```sql
+insert overwrite [local] directory 'importedRecordNum/' select count(*) from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616 ;
+```
+如果要指定分割符，可以写成
+```sql
+hive> insert overwrite local directory './'
+hive> row format delimited 
+hive> FIELDS TERMINATED BY '\t'
+hive> select inserttime,importedrecordnum from tmp_imported_recordnum order by inserttime;
+```
+如果记录里有map或者collection，需要指定格式
+```sql
+hive> insert overwrite local directory './'
+hive> row format delimited 
+hive> FIELDS TERMINATED BY '\t'
+hive> COLLECTION ITEMS TERMINATED BY ','
+hive> MAP KEYS TERMINATED BY ':'
+hive> select inserttime,importedrecordnum from tmp_imported_recordnum order by inserttime;
+```
+加入local表示本地文件系统目录，不加local表示hdfs文件系统目录。注意，如果你有多个导出结果，那么不能导出到同一个目录，否则会覆盖掉以前的结果，最好是一个新的目录，否则以前的所有内容都会被覆盖！！！`overwrite` 会覆盖掉原来的结果，使用 `into` 才不会覆盖，但是 `into` 用于插入到 hive 表中。另外导出的数据默认是压缩的，需要设置set hive.exec.compress.output= false 取消压缩.
+
+2．使用hive命令再加上重定向
+```sql
+hive -e "use dc;select * from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616" >> ./tmp.dat
+hive –f sql.d >>/home/ocdc/tmp.dat
+```
+
+### 2.1.2把hive数据导出到数据库中的另一个表中
+```sql
+insert into table tmp_imported_recordnum select count(*) from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616 ;
+```
+这里有一个问题就是hive到底支不支持插入一条记录，使用select语句查询的结果不论是一条记录还是多条，都是一个结果集，也即是一个中间表，所以使用insert into table tablename select ….这种格式本身就不是在插入一条记录。如果多次insert into select到同一张表，其实每一次都会在tablename表对应的分区目录下生成一个文件
+```
+[ocdc@HBBDC-Interface-5 tmp_imported_recordnum]$ ls -rtl
+total 0
+-rw-r--r--. 1 ocdc nobody 44 Jun 19 09:55 000000_0.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 09:55 000000_0_copy_1.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 09:56 000000_0_copy_2.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 42 Jun 19 09:56 000000_0_copy_3.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 45 Jun 19 09:57 000000_0_copy_4.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 09:57 000000_0_copy_5.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 09:57 000000_0_copy_6.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 09:58 000000_0_copy_7.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 42 Jun 19 09:58 000000_0_copy_8.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 41 Jun 19 09:59 000000_0_copy_9.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 40 Jun 19 10:00 000000_0_copy_10.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 39 Jun 19 10:00 000000_0_copy_11.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 40 Jun 19 10:01 000000_0_copy_12.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 10:01 000000_0_copy_13.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 44 Jun 19 10:02 000000_0_copy_14.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 41 Jun 19 10:02 000000_0_copy_15.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 41 Jun 19 10:03 000000_0_copy_16.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 37 Jun 19 10:03 000000_0_copy_17.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:03 000000_0_copy_18.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 10:04 000000_0_copy_19.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:04 000000_0_copy_20.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 40 Jun 19 10:05 000000_0_copy_21.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 40 Jun 19 10:06 000000_0_copy_22.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:06 000000_0_copy_23.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:07 000000_0_copy_24.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 46 Jun 19 10:07 000000_0_copy_25.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 10:08 000000_0_copy_26.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:08 000000_0_copy_27.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 41 Jun 19 10:09 000000_0_copy_28.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:09 000000_0_copy_29.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 44 Jun 19 10:10 000000_0_copy_30.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 43 Jun 19 10:10 000000_0_copy_31.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:11 000000_0_copy_32.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 44 Jun 19 10:11 000000_0_copy_33.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 44 Jun 19 10:11 000000_0_copy_34.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 45 Jun 19 10:12 000000_0_copy_35.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:13 000000_0_copy_36.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:13 000000_0_copy_37.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:14 000000_0_copy_38.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 42 Jun 19 10:14 000000_0_copy_39.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:14 000000_0_copy_40.lzo_deflate
+-rw-r--r--. 1 ocdc nobody 38 Jun 19 10:15 000000_0_copy_41.lzo_deflate
+```
+该版本虽然能插入同一个表，但是每一次插入都是在该表目录下生成一个文件拷贝，最后通过 `select * from tablename` 得到的结果并不是按照插入顺序排序，而是按照拷贝名称排序，hive内部默认进行了排序，因此查询结果顺序无法预测，并不是按照插入顺序，因为这些记录压根不在一个文件里。
+从这里也可以看出hive这样使用时不支持随机插入一条数据到数据库的，因为每一次插入的结果都是一个文件的形式存放的，并没有把记录合并的一个文件中，这就是为什么hive数据库也不支持记录级的更改update和delete;
+
+如何让这些记录有序，就是按照他们插入的顺序被查询出来呢，这里解决方案之一是在表 `tmp_imported_recordnum` 中增加插入时间戳字段或者递增的id字段，而后用 `order by id` 来排序输出。
+
+
+### hive 统计小例子
+```sh
+#定时任务脚本，统计接口入库记录数,定时为每天的02:00点，运行时间大概为3个小时
+#importRecordNum.sh
+#version9.X
+#统计接口入库record条数,高效率版本，内嵌hiveQL，充分利用hadoop并行计算功能
+#!/bin/bash
+#必须加入这个命令，定时任务的shell环境和当前shell不一样
+source ~/.bashrc
+opt_time_day=`date +%Y%m%d -d '-2 days'`
+opt_time_month=`date +%Y%m`
+echo -e "启动时间\t`date +%c`">/home/ocdc/tianqi/import_record_statistics/hive${opt_time_day}.log
+echo -e "处理批次\t${opt_time_month}/${opt_time_day}">>/home/ocdc/tianqi/import_record_statistics/hive${opt_time_day}.log
+hive -e "use dc;drop table tmp_imported_recordnum;CREATE  TABLE tmp_imported_recordnum(
+  importedrecordnum string,
+  inserttime timestamp)
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY '\t' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://hbcm/user/hive/ocdc/dc.db/tmp_imported_recordnum';"
+for if_tablename in `cat /home/ocdc/tianqi/import_record_statistics/if_tablename.int`
+        do
+                hive -e "use dc;insert into table tmp_imported_recordnum select count(*),unix_timestamp() from ${if_tablename} where month_id=${opt_time_month} and day_id=${opt_time_day};"
+                echo -e "${if_tablename}\t统计完成">>/home/ocdc/tianqi/import_record_statistics/hive${opt_time_day}.log
+        done
+#导出查询结果到本地文件系统
+hive -e "use dc;select inserttime,importedrecordnum from tmp_imported_recordnum order by inserttime;" >>/home/ocdc/tianqi/import_record_statistics/imp${opt_time_day}.dat
+hive -e "quit;"
+echo -e "完成时间\t`date +%c`">>/home/ocdc/tianqi/import_record_statistics/hive${opt_time_day}.log
+exit 0
+```
+
+shell解释这些hive命令很快，导致hive处于一种高并发状态，有大量的缓存撑爆了整个磁盘，导致集群垮掉。解决办法是让这些sql执行时间间隔长一些。
+
+hive里，同一sql里，会涉及到n个job，默认情况下，每个job是顺序执行的。 如果每个job没有前后依赖关系，可以并发执行的话，可以通过设置该参数 set hive.exec.parallel=true，实现job并发执行，该参数默认可以并发执行的job数为8。
