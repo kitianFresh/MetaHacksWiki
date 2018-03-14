@@ -423,6 +423,7 @@ public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable
 
 ### 优化1
 使用 projection 在map 阶段将不需要的字段过滤掉。
+
 ```java
 /**
 	 * Smaller "Project" class used for projection.
@@ -591,10 +592,26 @@ public static class ReplicatedJoinMapper extends Mapper<Object, DonationWritable
 ```
 
 
-# 虚拟列（分区partition）
+# 内部表：
+hive>create table it (name string , age string);
+//此时会在hdfs的/user/hive/warehouse/目录下新建一个it表的数据存放地
+hive>load data inpath '/input/data' into table it; 
+//接着上传hdfs数据到表中，此时会将hdfs上的/input/data目录下的数据转移到/user/hive/warehouse/下，而/input/data目录下的数据就没有了
+**删除it表后，会将it表的数据和元数据信息全部删除，即/user/hive/warehouse/下没有数据。**
+特别注意：load data会转移数据，也就是/input/data目录下的数据被转移就没有了。
+
+# 外部表：
+hive>create external table et (name string , age string);
+//在hdfs的/user/hive/warehouse/下面新建一个表目录et
+hive>load data inpath '/input/edata' into table et;  
+//加载hdfs数据，此时会把hdfs上/input/edata/下的数据转到/user/hive/warehouse/et下
+**删除这个外部表后，/user/hive/warehouse/et下的数据不会被删除，但是/input/edata/下的数据在上一步load后就已经没有了。数据的位置发生变化，本质是load一个hdfs上的数据时会转移数据。**
+
+
+# 虚拟列（分区表partition）
 Hive中有个"虚拟列"的概念，此列并未在表中真正存在，其用意是为了将Hive中的表进行分区(partition)，这对每日增长的海量数据存储而言是非常有用的。为了保证HiveQL的高效运行，强烈推荐在where语句后使用虚拟列作为限定。拿web日志举例，在Hive中为web日志创建了一个名为web_log表，它有一个虚拟列logdate，web_log表通过此列对每日的日志数据进行分区。因此，在对web_log表执行select时，切记要在where后加上logdate的限定条件，如下：
 SELECT url FROM web_log WHERE logdate='20090603';
-若是没有logdate作为限定，Hive默认查询web_log表的所有分区，有多少天就查多少天，那个场景无法想象
+如果不限定分区直接查询，会扫描全表导致非常耗时甚至失败！hive 一张表作为一个目录存在，该目录下的分区也是按照某列的值划分，作为子目录存放起来的。
 
 
 需求分析hiveql
@@ -628,10 +645,13 @@ from dw_cal_gprs_bh_yyyymmdd a where month_id=201504 group by substr(hour_id,9,2
 把hive数据从hive数据库表中导出，总体分为两类，第一类就是导出到文件里面；第二类就是导出到另一个表
 ### 2.1.1把hive数据导出到文件系统
  1.直接使用Hql语句 
+
 ```sql
 insert overwrite [local] directory 'importedRecordNum/' select count(*) from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616 ;
 ```
+
 如果要指定分割符，可以写成
+
 ```sql
 hive> insert overwrite local directory './'
 hive> row format delimited 
@@ -639,6 +659,7 @@ hive> FIELDS TERMINATED BY '\t'
 hive> select inserttime,importedrecordnum from tmp_imported_recordnum order by inserttime;
 ```
 如果记录里有map或者collection，需要指定格式
+
 ```sql
 hive> insert overwrite local directory './'
 hive> row format delimited 
@@ -650,6 +671,7 @@ hive> select inserttime,importedrecordnum from tmp_imported_recordnum order by i
 加入local表示本地文件系统目录，不加local表示hdfs文件系统目录。注意，如果你有多个导出结果，那么不能导出到同一个目录，否则会覆盖掉以前的结果，最好是一个新的目录，否则以前的所有内容都会被覆盖！！！`overwrite` 会覆盖掉原来的结果，使用 `into` 才不会覆盖，但是 `into` 用于插入到 hive 表中。另外导出的数据默认是压缩的，需要设置set hive.exec.compress.output= false 取消压缩.
 
 2．使用hive命令再加上重定向
+
 ```sql
 hive -e "use dc;select * from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616" >> ./tmp.dat
 hive –f sql.d >>/home/ocdc/tmp.dat
@@ -659,8 +681,9 @@ hive –f sql.d >>/home/ocdc/tmp.dat
 ```sql
 insert into table tmp_imported_recordnum select count(*) from ods01_am_score_reception_dm where month_id=201506 and day_id=20150616 ;
 ```
-这里有一个问题就是hive到底支不支持插入一条记录，使用select语句查询的结果不论是一条记录还是多条，都是一个结果集，也即是一个中间表，所以使用insert into table tablename select ….这种格式本身就不是在插入一条记录。如果多次insert into select到同一张表，其实每一次都会在tablename表对应的分区目录下生成一个文件
-```
+这里有一个问题就是hive到底支不支持插入一条记录，表面上是支持插入到一张表，但实际使用select语句查询的结果不论是一条记录还是多条，都是一个结果集，也即是一个中间表，所以使用insert into table tablename select ….这种格式本身就不是在插入一条记录。如果多次insert into select到同一张表，其实每一次都会在tablename表对应的分区目录下生成一个文件
+
+```sh
 [ocdc@HBBDC-Interface-5 tmp_imported_recordnum]$ ls -rtl
 total 0
 -rw-r--r--. 1 ocdc nobody 44 Jun 19 09:55 000000_0.lzo_deflate
