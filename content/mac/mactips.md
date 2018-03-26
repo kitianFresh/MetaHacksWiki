@@ -96,3 +96,6 @@ UPDATE user SET authentication_string=PASSWORD("NEWPASSWORD") WHERE User='root';
 ```sql
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourNewPass';
 ```
+
+## Mac 配置科大VPN教程
+[科大VPN教程](http://netfee.ustc.edu.cn/faq/index.html#howtosetupvpn)
