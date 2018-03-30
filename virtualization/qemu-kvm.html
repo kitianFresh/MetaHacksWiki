@@ -1,0 +1,454 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>qemu-kvm - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#virtualization">virtualization</a>&nbsp;»&nbsp;qemu-kvm</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">qemu-kvm</div>
+<div id="content">
+  <h1 id="qemu-kvm">qemu-kvm</h1>
+<p><a href="https://www.linux-kvm.org/page/HOWTO">KVM: Kernel-Based Virtual Machine</a> 是基于内核的虚拟机，目前已经属于Linux内核的一个可加载模块，通过调用Linux内核本身的功能，实现对CPU和内存的虚拟化。本质上，KVM是管理虚拟硬件设备的驱动，该驱动使用字符设备/dev/kvm（由KVM本身创建）作为管理接口，主要负责vCPU的创建，虚拟内存的分配，vCPU寄存器的读写以及vCPU的运行。<br />
+<a href="https://www.qemu.org/">Qemu</a>　就是一个计算机硬件模拟器，可以虚拟出一台硬件设备齐全的机器。QEMU有两种工作模式：系统模式，可以模拟出整个电脑系统，另一种是用户模式，可以运行不同与当前硬件平台的其他平台上的程序（比如在x86平台上运行跑在ARM平台上的程序）<br />
+在0.9.1及之前版本还可以使用kqemu加速器（可以理解为QEMU的一个插件，用来提高QEMU的翻译性能，支持Windows平台），但1.0以后版本就只能使用qemu-kvm（只支持Linux）进行加速了，1.3版本后QEMU和QEMU-KVM合二为一了。</p>
+<p><a href="https://huangwei.me/wiki/tech_cloud_kvm_qemu_libvirt_openstack.html">QEMU-KVM</a> 由于kvm只能虚拟CPU和内存，并且完全处于内核态，因此用户无法直接控制。KVM运行在内核空间，QEMU运行在用户空间，实际模拟创建，管理各种虚拟硬件，QEMU将KVM整合了进来，通过/ioctl 调用 /dev/kvm，从而将CPU指令的部分交给内核模块来做，KVM实现了CPU和内存的虚拟化，但kvm不能虚拟其他硬件设备，因此qemu还有模拟IO设备（磁盘，网卡，显卡等）的作用，KVM加上QEMU后就是完整意义上的服务器虚拟化。</p>
+<p>另外，由于qemu模拟io设备效率不高的原因，现在常常采用半虚拟化的virtio方式来虚拟IO设备。综上所述，QEMU-KVM具有两大作用：</p>
+<ol>
+<li>提供对cpu，内存（KVM负责），IO设备（QEMU负责）的虚拟</li>
+<li>对各种虚拟设备的创建，调用进行管理（QEMU)负责</li>
+</ol>
+<p>很不幸的是，qemu　kvm 只支持　linux 平台，Mac 上无法使用 enable-kvm; </p>
+<h2 id="_1">参考</h2>
+<ul>
+<li><a href="http://blog.51cto.com/changfei/1672147">KVM-Qemu-Libvirt三者之间的关系</a></li>
+</ul>
+<h1 id="qemu">qemu启动虚拟机</h1>
+<p>启动虚拟机之前，你必须得有一块磁盘给虚拟机使用，就像我们有了一台裸机之后，需要安装系统到磁盘上或者直接从已经安装过操作系统的磁盘/光驱/U盘启动一样。因此，这里有两种方式:</p>
+<h2 id="iso">从ISO镜像启动(类似于物理机安装操作系统)</h2>
+<p>你也可以创建一块虚拟裸盘（我们一般称之为镜像、磁盘镜像），然后选择从ISO光驱等启动虚拟机，然后你会和使用物理裸机一样开始进入安装操作系统的正常步骤，安装完成之后，你的虚拟裸盘就变成了真正的带操作系统的系统盘了。</p>
+<p>首先创建一个空盘</p>
+<div class="hlcode"><pre><span class="n">qemu</span><span class="o">-</span><span class="n">img</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">qcow2</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">.</span><span class="n">qcow2</span> <span class="mi">20</span><span class="n">G</span>
+</pre></div>
+
+
+<p>从ISO光驱启动, 这里的boot其实类似于我们物理机设置BIOS里面的启动项的启动顺序，比如U盘,磁盘，硬盘，光驱启动。d指的是从光驱启动安装ubuntu-16.04.3-server-amd64.iso，-c从硬盘启动，-n是从网络启动.<br />
+一般情况是，使用cdn这个顺序，就是直接从硬盘启动，如果硬盘没有安葬操作系统，就从光驱启动，进行操作系统安装了。最后是从网络。</p>
+<div class="hlcode"><pre><span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">m</span> <span class="mi">2048</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">4</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">.</span><span class="n">qcow2</span> <span class="o">-</span><span class="n">cdrom</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">kinny</span><span class="o">/</span><span class="n">Tools</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">16.04.3</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">amd64</span><span class="p">.</span><span class="n">iso</span> <span class="o">-</span><span class="n">enable</span><span class="o">-</span><span class="n">kvm</span> <span class="o">-</span><span class="n">boot</span> <span class="n">cdn</span>
+</pre></div>
+
+
+<p>参数说明:</p>
+<div class="hlcode"><pre><span class="o">-</span><span class="n">m</span> <span class="mi">2048</span><span class="o">:</span> <span class="err">虚拟机内存是</span><span class="mi">2048</span><span class="n">MB</span> 
+<span class="o">-</span><span class="n">smp</span> <span class="mi">4</span><span class="o">:</span> <span class="err">虚拟机有</span><span class="mi">4</span><span class="err">个</span><span class="n">vcpu</span>  
+<span class="o">-</span><span class="n">hda</span><span class="o">:</span> <span class="err">指定了硬盘是那个虚拟磁盘，这里用刚刚创建的</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">.</span><span class="n">qcow2</span><span class="err">；</span>
+<span class="o">-</span><span class="n">cdrom</span><span class="o">:</span> <span class="err">指定启动的</span><span class="n">cdrom</span><span class="err">，可以用</span><span class="n">iso</span><span class="err">文件，也可以用机器的光驱，我们选择用</span><span class="n">iso</span><span class="err">文件</span><span class="p">;</span><span class="err">如果用光驱尝试</span><span class="o">-</span><span class="n">cdrom</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">cdrom</span><span class="err">；</span>
+<span class="o">-</span><span class="n">boot</span><span class="o">:</span> <span class="err">指定启动的时候从磁盘，硬盘，光驱启动，我们安装的时候选择从光盘启动，所以用</span><span class="n">d</span><span class="err">；</span>
+</pre></div>
+
+
+<p>关于以上的参数选项说明，可以参考详细的<a href="https://wiki.gentoo.org/wiki/QEMU/Options">wiki</a>. 另外，安装 ubuntu server 版本的时候，如果你选择中文版，会出问题，<code>virtualbox安装ubuntu-16.04.1-server-amd64出现“无法安装busybox-initramfs”错误。向目标系统中安装busybox-initramfs软件包时出现一个错误。请检查/var/log/syslog或查看第四虚拟控制台以获得详细信息。</code>这貌似是 ubuntu 的bug,换成安装英文版就可以成功了！反正从采用虚拟机安装中文版都会出现这种错误，不管是qemu/kvm 还是virtualbox vmware.</p>
+<h2 id="_2">从已经含有操作系统的磁盘镜像启动（类似于从已经安装过操作系统的物理机启动机器）</h2>
+<p>你可以直接拿到一个已经安装过操作系统的虚拟磁盘，从这个虚拟磁盘启动虚拟机，</p>
+<div class="hlcode"><pre><span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">m</span> <span class="mi">2048</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">4</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">.</span><span class="n">qcow2</span> <span class="o">-</span><span class="n">enable</span><span class="o">-</span><span class="n">kvm</span>
+</pre></div>
+
+
+<h1 id="qemu_1">qemu 网络</h1>
+<p>qemu 网络主要由两部分构成<br />
+ - 虚拟机(guest)内部的虚拟网卡设备(PCI network card)<br />
+ - 和虚拟网卡交互的网络后端，即网络类型，用户网络(user networking)，Tap 网络，VDE网络，Socket网络</p>
+<h2 id="user-mode-networking">User mode networking</h2>
+<p>用户模式网络是一种qemu虚拟机比较简单的网络配置方法，这种网络只允许虚拟机访问宿主机网络以及外网，但不允许其他虚拟机或者宿主机以及局域网和互联网上的机器访问该虚拟机，就是只能出去，无法进来。因此他也不支持 ICMP 协议，如ping等。只支持 TCP/UDP协议。这种网络模式非常类似于virtualbox　或者 VMware 的NAT模式。</p>
+<div class="hlcode"><pre><span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">m</span> <span class="mi">2048</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntubase</span><span class="p">.</span><span class="n">qcow2</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">4</span> <span class="o">-</span><span class="n">netdev</span> <span class="n">user</span><span class="p">,</span><span class="n">id</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span> <span class="o">-</span><span class="n">device</span> <span class="n">e1000</span><span class="p">,</span><span class="n">netdev</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span><span class="p">,</span><span class="n">mac</span><span class="o">=</span><span class="mi">52</span><span class="o">:</span><span class="mi">54</span><span class="o">:</span><span class="n">e4</span><span class="o">:</span><span class="mi">99</span><span class="o">:</span><span class="mi">78</span><span class="o">:</span><span class="mi">31</span>
+</pre></div>
+
+
+<p>执行完以上命令后，你在宿主机上 <code>ip a</code> 或者 <code>ifconfig</code> 是看不到该虚拟机的网卡设备的，这种用户模式网络对外不可见(除了虚拟机本身).　默认不给出网络设置的话，qemu默认创建出如下如所示的用户模式网络.<br />
+<img src="/static/images/Virtualization/qemu-kvm/qemu-default-user-network(slirp).png" style="width:500px;height:300px;"><br />
+<caption><center> <u> <font color='purple'> <strong>Figure 1</strong> </u><font color='purple'>  : slirp </center></caption></p>
+<p>如果想要从宿主机上通过scp拷贝文件到虚拟机,则可以通过端口转发，<code>-device e1000,netdev=network-ubuntubase,mac=52:54:e4:99:78:31,hostfwd=tcp::5555-:22</code>. 这样你就可以通过 <code>scp -P 5555 file.txt tq@localhost:/</code> 往虚拟机传文件了。但是记住前提是要把宿主机的公钥拷贝到虚拟机ssh目录下的authorized_keys文件里，且虚拟机需要安装并运行sshd,即openssh-server. <code>sudo apt-get install openssh-server</code><br />
+如果hostfwd 属性不认识，端口重定向还可以采用如下的形式,直接将宿主机的端口重定向到虚拟机的端口.</p>
+<div class="hlcode"><pre><span class="n">qemu</span> <span class="o">-</span><span class="n">m</span> <span class="mi">256</span> <span class="o">-</span><span class="n">hda</span> <span class="n">disk</span><span class="p">.</span><span class="n">img</span> <span class="o">-</span><span class="n">redir</span> <span class="n">tcp</span><span class="o">:</span><span class="mi">5555</span><span class="o">::</span><span class="mi">80</span> <span class="o">-</span><span class="n">redir</span> <span class="n">tcp</span><span class="o">:</span><span class="mi">5556</span><span class="o">::</span><span class="mi">445</span> <span class="o">&amp;</span>
+<span class="p">...</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">qemu</span>
+<span class="n">mount</span> <span class="o">-</span><span class="n">t</span> <span class="n">cifs</span> <span class="c1">//localhost/someshare /mnt/qemu -o user=test,pass=test,dom=workgroup,port=5556</span>
+<span class="n">firefox</span> <span class="n">http</span><span class="o">:</span><span class="c1">//localhost:5555/</span>
+</pre></div>
+
+
+<p>还可以设置网络地址范围改变上图的默认值. <code>-netdev user,id=network-ubuntubase,net=192.168.76.0/24,dhcpstart=192.168.76.9</code><br />
+用户模式网络一般只会用于简单的使用虚拟机，而且他的性能很差，没有Tap性能好.<br />
+ - there is a lot of overhead so the performance is poor<br />
+ - in general, ICMP traffic does not work (so you cannot use ping within a guest)<br />
+ - on Linux hosts, ping does work from within the guest, but it needs initial setup by root (once per host) -- see the steps below<br />
+ - the guest is not directly accessible from the host or the external network</p>
+<h2 id="tap-networking">Tap networking</h2>
+<p><a href="https://en.wikipedia.org/wiki/TUN/TAP">TUN/TAP</a>都是虚拟网络内核设备。其实就是内核虚拟出来的网卡。TUN 隧道网络设备，是工作在第三层的网络设备，即他直接操作的是IP报文。TAP 是工作在数据链路层的网络设备，他直接操作MAC帧。TUN一般用来做路由器，而TAP一般用来创建网桥。<br />
+操作系统可以将数据包通过TUN/TAP转发给附着在他们上面的用户态应用程序，反之，用户态应用程序也可以将数据包通过TUN/TAP转发给操系统网络协议栈处理。这种网络模式非常灵活，可以实现virtualbox,VMware中的桥接模式，使得虚拟机网卡和宿主机网卡处于同等地位，就好像一个局域网上另一台真实物理机的网卡一样。</p>
+<h3 id="_3">桥接模式</h3>
+<p>Tap 设备是支持Linux bridge driver即<a href="https://wiki.archlinux.org/index.php/Network_bridge#Wireless_interface_on_a_bridge">linux 网桥</a>（可以看成是一个虚拟网络交换机）的。因此，使用Tap使我们能够创建桥接模式的网络，让虚拟机网卡、其他虚拟机网卡以及宿主机网卡桥接在同一个网桥上面形成一个广播域，这样就能使虚拟机与虚拟机、虚拟机和宿主机以及虚拟机和外部网络之间能够相互访问了。值得注意的是，这个时候网卡是混杂模式，虚拟机网卡也会直接暴露在网络之中，会面临网络攻击的风险。另外，Tap 的网络性能也要比 user mode network 高很多。最简单的桥接配置，就是使用如下虚拟机网络的设置和删除脚本。<br />
+虚拟机启动之前，运行　<code>qemu-ifup</code>　来配置网桥和网卡. 启动虚拟机 <code>qemu-system-x86_64 -m 2048 -hda ubuntubase.qcow2 -smp 4 -net nic -net tap,ifname=tap0,script=no``。</code>eth1<code>是你的有线网卡，但是不同电脑名称不一样，我的叫</code>enp3s0<code>, 无线网卡叫</code>wlp2s0<code>首先安装</code>apt-get install openvpn &amp; apt-get install bridge-utils`.</p>
+<div class="hlcode"><pre><span class="c">#qemu-ifup</span>
+/sbin/ifconfig eth1 down
+/sbin/ifconfig eth1 0.0.0.0 promisc up
+openvpn --mktun --dev tap0
+ifconfig tap 0 0.0.0.0 up
+brctl addbr br0
+brctl addif br0 eth1
+brctl addif br0 tap0
+brctl stp br0 off
+ifconfig br0 10.10.10.2 netmask 255.255.255.0
+</pre></div>
+
+
+<p>进入虚拟机设置 <code>sudo ifconfig eth0 10.10.10.100 netmask 255.255.255.0</code>. 停止虚拟机后　运行 <code>qemu-ifdown</code> 恢复网络配置。</p>
+<div class="hlcode"><pre><span class="c">#qemu-ifdown</span>
+ifconfig eth1 down
+ifconfig eth1 -promisc
+ifup eth1
+ifconfig br0 down
+brctl delbr br0
+openvpn --rmtun --dev tap0
+</pre></div>
+
+
+<p><strong>桥接网络的设置需要注意的是，如果你是在你个人电脑上，而且还是用的是无线网络，没有使用有线网卡的话，是无效的！</strong></p>
+<blockquote>
+<p>Bridged networking works fine between a wired interface (Eg. eth0), and it is easy to setup. However if the host gets connected to the network through a wireless device, then bridging is not possible.</p>
+</blockquote>
+<p>要想在无线网卡模式下建立桥接网络，可以给Tap设备设置静态IP,然后通过路由表来处理。可以参考<a href="https://wiki.archlinux.org/index.php/Internet_sharing">Internet sharing</a></p>
+<blockquote>
+<p>One way to overcome that is to setup a tap device with a static IP, making linux automatically handle the routing for it, and then forward traffic between the tap interface and the device connected to the network through iptables rules.</p>
+</blockquote>
+<p>可以参考<a href="https://wiki.qemu.org/Documentation/Networking/NAT">Documentation/Networking/NAT</a></p>
+<div class="hlcode"><pre><span class="c">#!/bin/sh</span>
+<span class="c">#</span>
+<span class="c"># Copyright IBM, Corp. 2010  </span>
+<span class="c">#</span>
+<span class="c"># Authors:</span>
+<span class="c">#  Anthony Liguori &lt;aliguori@us.ibm.com&gt;</span>
+<span class="c">#</span>
+<span class="c"># This work is licensed under the terms of the GNU GPL, version 2.  See</span>
+<span class="c"># the COPYING file in the top-level directory.</span>
+
+<span class="c"># Set to the name of your bridge</span>
+<span class="nv">BRIDGE</span><span class="o">=</span>br0
+
+<span class="c"># Network information</span>
+<span class="nv">NETWORK</span><span class="o">=</span>192.168.53.0
+<span class="nv">NETMASK</span><span class="o">=</span>255.255.255.0
+<span class="nv">GATEWAY</span><span class="o">=</span>192.168.53.1
+<span class="nv">DHCPRANGE</span><span class="o">=</span>192.168.53.2,192.168.53.254
+
+<span class="c"># Optionally parameters to enable PXE support</span>
+<span class="nv">TFTPROOT</span><span class="o">=</span>
+<span class="nv">BOOTP</span><span class="o">=</span>
+
+do_brctl<span class="o">()</span> <span class="o">{</span>
+    brctl <span class="s2">&quot;$@&quot;</span>
+<span class="o">}</span>
+
+do_ifconfig<span class="o">()</span> <span class="o">{</span>
+    ifconfig <span class="s2">&quot;$@&quot;</span>
+<span class="o">}</span>
+
+do_dd<span class="o">()</span> <span class="o">{</span>
+    dd <span class="s2">&quot;$@&quot;</span>
+<span class="o">}</span>
+
+do_iptables_restore<span class="o">()</span> <span class="o">{</span>
+    iptables-restore <span class="s2">&quot;$@&quot;</span>
+<span class="o">}</span>
+
+do_dnsmasq<span class="o">()</span> <span class="o">{</span>
+    dnsmasq <span class="s2">&quot;$@&quot;</span>
+<span class="o">}</span>
+
+check_bridge<span class="o">()</span> <span class="o">{</span>
+    <span class="k">if </span>do_brctl show | grep <span class="s2">&quot;^$1&quot;</span> &gt; /dev/null 2&gt; /dev/null; <span class="k">then</span>
+<span class="k">    return </span>1
+    <span class="k">else</span>
+<span class="k">    return </span>0
+    <span class="k">fi</span>
+<span class="o">}</span>
+
+create_bridge<span class="o">()</span> <span class="o">{</span>
+    do_brctl addbr <span class="s2">&quot;$1&quot;</span>
+    do_brctl stp <span class="s2">&quot;$1&quot;</span> off
+    do_brctl setfd <span class="s2">&quot;$1&quot;</span> 0
+    do_ifconfig <span class="s2">&quot;$1&quot;</span> <span class="s2">&quot;$GATEWAY&quot;</span> netmask <span class="s2">&quot;$NETMASK&quot;</span> up
+<span class="o">}</span>
+
+enable_ip_forward<span class="o">()</span> <span class="o">{</span>
+    <span class="nb">echo </span>1 | do_dd <span class="nv">of</span><span class="o">=</span>/proc/sys/net/ipv4/ip_forward &gt; /dev/null
+<span class="o">}</span>
+
+add_filter_rules<span class="o">()</span> <span class="o">{</span>
+do_iptables_restore <span class="s">&lt;&lt;EOF</span>
+<span class="s"># Generated by iptables-save v1.3.6 on Fri Aug 24 15:20:25 2007</span>
+<span class="s">*nat</span>
+<span class="s">:PREROUTING ACCEPT [61:9671]</span>
+<span class="s">:POSTROUTING ACCEPT [121:7499]</span>
+<span class="s">:OUTPUT ACCEPT [132:8691]</span>
+<span class="s">-A POSTROUTING -s $NETWORK/$NETMASK -j MASQUERADE </span>
+<span class="s">COMMIT</span>
+<span class="s"># Completed on Fri Aug 24 15:20:25 2007</span>
+<span class="s"># Generated by iptables-save v1.3.6 on Fri Aug 24 15:20:25 2007</span>
+<span class="s">*filter</span>
+<span class="s">:INPUT ACCEPT [1453:976046]</span>
+<span class="s">:FORWARD ACCEPT [0:0]</span>
+<span class="s">:OUTPUT ACCEPT [1605:194911]</span>
+<span class="s">-A INPUT -i $BRIDGE -p tcp -m tcp --dport 67 -j ACCEPT </span>
+<span class="s">-A INPUT -i $BRIDGE -p udp -m udp --dport 67 -j ACCEPT </span>
+<span class="s">-A INPUT -i $BRIDGE -p tcp -m tcp --dport 53 -j ACCEPT </span>
+<span class="s">-A INPUT -i $BRIDGE -p udp -m udp --dport 53 -j ACCEPT </span>
+<span class="s">-A FORWARD -i $1 -o $1 -j ACCEPT </span>
+<span class="s">-A FORWARD -s $NETWORK/$NETMASK -i $BRIDGE -j ACCEPT </span>
+<span class="s">-A FORWARD -d $NETWORK/$NETMASK -o $BRIDGE -m state --state RELATED,ESTABLISHED -j ACCEPT </span>
+<span class="s">-A FORWARD -o $BRIDGE -j REJECT --reject-with icmp-port-unreachable </span>
+<span class="s">-A FORWARD -i $BRIDGE -j REJECT --reject-with icmp-port-unreachable </span>
+<span class="s">COMMIT</span>
+<span class="s"># Completed on Fri Aug 24 15:20:25 2007</span>
+<span class="s">EOF</span>
+<span class="o">}</span>
+
+start_dnsmasq<span class="o">()</span> <span class="o">{</span>
+    do_dnsmasq <span class="se">\</span>
+    --strict-order <span class="se">\</span>
+    --except-interface<span class="o">=</span>lo <span class="se">\</span>
+    --interface<span class="o">=</span><span class="nv">$BRIDGE</span> <span class="se">\</span>
+    --listen-address<span class="o">=</span><span class="nv">$GATEWAY</span> <span class="se">\</span>
+    --bind-interfaces <span class="se">\</span>
+    --dhcp-range<span class="o">=</span><span class="nv">$DHCPRANGE</span> <span class="se">\</span>
+    --conf-file<span class="o">=</span><span class="s2">&quot;&quot;</span> <span class="se">\</span>
+    --pid-file<span class="o">=</span>/var/run/qemu-dnsmasq-<span class="nv">$BRIDGE</span>.pid <span class="se">\</span>
+    --dhcp-leasefile<span class="o">=</span>/var/run/qemu-dnsmasq-<span class="nv">$BRIDGE</span>.leases <span class="se">\</span>
+    --dhcp-no-override <span class="se">\</span>
+    <span class="k">${</span><span class="nv">TFTPROOT</span><span class="p">:+</span><span class="s2">&quot;--enable-tftp&quot;</span><span class="k">}</span> <span class="se">\</span>
+    <span class="k">${</span><span class="nv">TFTPROOT</span><span class="p">:+</span><span class="s2">&quot;--tftp-root=$TFTPROOT&quot;</span><span class="k">}</span> <span class="se">\</span>
+    <span class="k">${</span><span class="nv">BOOTP</span><span class="p">:+</span><span class="s2">&quot;--dhcp-boot=$BOOTP&quot;</span><span class="k">}</span>
+<span class="o">}</span>
+
+setup_bridge_nat<span class="o">()</span> <span class="o">{</span>
+    <span class="k">if </span>check_bridge <span class="s2">&quot;$1&quot;</span> ; <span class="k">then</span>
+<span class="k">    </span>create_bridge <span class="s2">&quot;$1&quot;</span>
+    enable_ip_forward
+    add_filter_rules <span class="s2">&quot;$1&quot;</span>
+    start_dnsmasq <span class="s2">&quot;$1&quot;</span>
+    <span class="k">fi</span>
+<span class="o">}</span>
+
+setup_bridge_vlan<span class="o">()</span> <span class="o">{</span>
+    <span class="k">if </span>check_bridge <span class="s2">&quot;$1&quot;</span> ; <span class="k">then</span>
+<span class="k">    </span>create_bridge <span class="s2">&quot;$1&quot;</span>
+    start_dnsmasq <span class="s2">&quot;$1&quot;</span>
+    <span class="k">fi</span>
+<span class="o">}</span>
+
+setup_bridge_nat <span class="s2">&quot;$BRIDGE&quot;</span>
+
+<span class="k">if </span><span class="nb">test</span> <span class="s2">&quot;$1&quot;</span> ; <span class="k">then</span>
+<span class="k">    </span>do_ifconfig <span class="s2">&quot;$1&quot;</span> 0.0.0.0 up
+    do_brctl addif <span class="s2">&quot;$BRIDGE&quot;</span> <span class="s2">&quot;$1&quot;</span>
+<span class="k">fi</span>
+</pre></div>
+
+
+<h3 id="host-only">Host-Only</h3>
+<p>在Host-Only模式下，虚拟网络是一个全封闭的网络，它唯一能够访问的就是主机。其实Host-Only网络和NAT网络很相似，不同的地方就是Host-Only网络没有NAT服务，所以虚拟网络不能连接到Internet。主机和虚拟机之间的通信是通过VMware Network Adepter VMnet1虚拟网卡来实现的。<br />
+Host-Only的宗旨就是建立一个与外界隔绝的内部网络，来提高内网的安全性。这个功能或许对普通用户来说没有多大意义，但大型服务商会常常利用这个功能。如果你想为VMnet1网段提供路由功能，那就需要使用RRAS，而不能使用XP或2000的ICS，因为ICS会把内网的IP地址改为192.168.0.1，但虚拟机是不会给VMnet1虚拟网卡分配这个地址的，那么主机和虚拟机之间就不能通信了。</p>
+<h2 id="vde-networking">VDE networking</h2>
+<h2 id="socket-redirection">Socket redirection</h2>
+<h2 id="_4">参考</h2>
+<ul>
+<li><a href="https://wiki.qemu.org/Documentation/Networking#Network_Basics">Documentation/Networking</a></li>
+<li><a href="https://www.linux-kvm.org/page/Networking">Configuring Guest Networking</a></li>
+<li><a href="http://blog2.jcix.top/2016-12-30/qemu_bridge/">Qemu KVM 虚拟机通过虚拟网桥实现桥接和NAT的实验</a></li>
+</ul>
+<h1 id="qemu-monitor-hmpqmp">QEMU monitor 协议(HMP/QMP)</h1>
+<p><a href="https://wiki.archlinux.org/index.php/QEMU#QEMU_Monitor">Qemu monitor</a> 就是提供了一个控制台，可以在Qemu 虚拟机运行的时候，和虚拟机交互，获取虚拟机当前信息，给虚拟机发送命令执行等。实际上 qemu monitor 设计了一种协议，可以该协议发送消息给Qemu进程，从而完成对Qemu进程的某些控制。标准控制台stdio只是其中一种实现该协议的交互方式，我们还可以让Qemu监听某个TCP端口，然后我们通过程序控制发送命令给Qemu,只要遵守QMP协议即可。</p>
+<h2 id="stdio">stdio</h2>
+<p>参数使用 <code>-monitor stdio</code>即可。</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">m</span> <span class="mi">2048</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntubase</span><span class="p">.</span><span class="n">qcow2</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">4</span> <span class="o">-</span><span class="n">netdev</span> <span class="n">user</span><span class="p">,</span><span class="n">id</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span> <span class="o">-</span><span class="n">device</span> <span class="n">e1000</span><span class="p">,</span><span class="n">netdev</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span><span class="p">,</span><span class="n">mac</span><span class="o">=</span><span class="mi">52</span><span class="o">:</span><span class="mi">54</span><span class="o">:</span><span class="n">e4</span><span class="o">:</span><span class="mi">99</span><span class="o">:</span><span class="mi">78</span><span class="o">:</span><span class="mi">31</span> <span class="o">-</span><span class="n">monitor</span> <span class="n">stdio</span>
+</pre></div>
+
+
+<h2 id="telnet">telnet</h2>
+<p>参数使用 <code>-monitor telnet:127.0.0.1:port,server,nowait</code>. 然后就可以通过 <code>telnet 127.0.0.1 port</code> 连接了。</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">m</span> <span class="mi">2048</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntubase</span><span class="p">.</span><span class="n">qcow2</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">4</span> <span class="o">-</span><span class="n">netdev</span> <span class="n">user</span><span class="p">,</span><span class="n">id</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span> <span class="o">-</span><span class="n">device</span> <span class="n">e1000</span><span class="p">,</span><span class="n">netdev</span><span class="o">=</span><span class="n">network</span><span class="o">-</span><span class="n">ubuntubase</span><span class="p">,</span><span class="n">mac</span><span class="o">=</span><span class="mi">52</span><span class="o">:</span><span class="mi">54</span><span class="o">:</span><span class="n">e4</span><span class="o">:</span><span class="mi">99</span><span class="o">:</span><span class="mi">78</span><span class="o">:</span><span class="mi">31</span> <span class="o">-</span><span class="n">monitor</span> <span class="n">telnet</span><span class="o">:</span><span class="mf">127.0.0.1</span><span class="o">:</span><span class="mi">9999</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">nowait</span>
+</pre></div>
+
+
+<h2 id="unix-socket">unix Socket</h2>
+<p>参数使用 <code>-monitor unix:/tmp/monitor.sock,server,nowait</code>. 然后用　<code>socat - UNIX-CONNECT:/tmp/monitor.sock</code> 或者 <code>nc -U /tmp/monitor.sock</code>　或者直接写一个程序采用连接该套接字。</p>
+<h2 id="tcp">tcp</h2>
+<p>参数使用 <code>-monitor tcp:127.0.0.1:port,server,nowait</code>, 然后使用 <code>nc 127.0.0.1 port</code>　就可以交互了，或者直接写一个采用TCP连接到该端口。</p>
+<h1 id="_5">虚拟机磁盘镜像</h1>
+<p>虚拟机也有磁盘，虚拟机的磁盘在宿主机上就是一个文件，我们一般称之为磁盘镜像，里面有虚拟机的操作系统和驱动等重要文件（对于虚拟机来说）.你可以自己制作镜像，也可以直接使用已经制作好的带操作系统的镜像。</p>
+<h1 id="_6">更改镜像密码</h1>
+<p>比如我制作了一个镜像ubuntubase.qcow2.　但是这个镜像的密码忘记了，启动虚拟机的时候无法登录，你可以通过以下两种方法改变密码。实际生产环境中，也是通过该方式重置用户自己设置的账号和密码，挂载之后其实可以直接更改 <code>/etc/shadow</code> 内容，从而重置密码。或者是部署ssh keypair</p>
+<h2 id="chroot">挂载镜像到宿主机通过chroot 修改</h2>
+<p>检查 nbd 模块是否加载，<code>lsmod | grep nbd</code> 查看有nbd，则说明已经加载了nbd 内核模块。若没有，则使用 <code>sudo modprobe nbd</code> 进行加载。操作在root权限下进行</p>
+<ol>
+<li>通过 qemu-nbd 连接镜像到块设备 <code>qemu-nbd -c /dev/nbd0 ubuntubase.qcow2</code></li>
+<li>挂载设备到文件系统 <code>mount /dev/nbd0p1 /mnt</code></li>
+<li>采用 <a href="http://man.linuxde.net/chroot">chroot</a> 更换根目录，这样就可以更改镜像系统的root 密码了，因为整个系统会认为是在以 /mnt　为根目录的新系统里　<code>chroot /mnt</code></li>
+<li>passwd 修改密码,这个时候修改的文件就是以 /mnt 为根目录的某些密码文件了. 更改用户tq的密码</li>
+</ol>
+<div class="hlcode"><pre>root@kinny-Lenovo-XiaoXin:/# passwd tq
+Enter new UNIX password: 
+Retype new UNIX password: 
+passwd: password updated successfully
+</pre></div>
+
+
+<ol>
+<li>卸载设备 <code>umount /mnt</code></li>
+<li>断开块设备连接 <code>qemu-nbd -d /dev/nbd0p1</code></li>
+</ol>
+<h2 id="libguestfs">使用 <a href="http://libguestfs.org/">libguestfs</a></h2>
+<p>安装</p>
+<div class="hlcode"><pre>sudo yum install libguestfs-tools      <span class="c"># Fedora/RHEL/CentOS</span>
+sudo apt-get install libguestfs-tools  <span class="c"># Debian/Ubuntu</span>
+guestfish --ro -i -a disk.img
+</pre></div>
+
+
+<p>然后通过直接修改密码文件的方式修改密码. 先使用 openssl 产生加密后的密码串。</p>
+<div class="hlcode"><pre><span class="n">openssl</span> <span class="n">passwd</span> <span class="o">-</span><span class="mi">1</span> <span class="n">new_password</span>
+</pre></div>
+
+
+<p>然后将密码串替换原来的root密码</p>
+<div class="hlcode"><pre><span class="nx">guestfish</span> <span class="na">-a</span> <span class="nx">ubuntu</span><span class="na">-server.qcow2</span>
+<span class="o">&gt;&lt;</span><span class="nx">fs</span><span class="o">&gt;</span> <span class="nb">run</span>
+<span class="o">&gt;&lt;</span><span class="nx">fs</span><span class="o">&gt;</span> <span class="nb">list</span><span class="na">-filesystems</span>
+<span class="o">&gt;&lt;</span><span class="nx">fs</span><span class="o">&gt;</span> <span class="nx">mount</span> <span class="p">/</span><span class="nx">dev</span><span class="p">/</span><span class="nx">sda1</span> <span class="o">/</span>
+<span class="o">&gt;&lt;</span><span class="nx">fs</span><span class="o">&gt;</span> <span class="nx">vi</span> <span class="p">/</span><span class="nx">etc</span><span class="p">/</span><span class="nx">shadow</span>
+<span class="o">&gt;&lt;</span><span class="nx">fs</span><span class="o">&gt;</span> <span class="nb">quit</span>
+</pre></div>
+
+
+<h3 id="_7">参考</h3>
+<ul>
+<li><a href="https://www.cyberciti.biz/faq/how-to-reset-forgotten-root-password-for-linux-kvm-qcow2-image-vm/">How to reset forgotten root password for Linux KVM qcow2 image/vm</a></li>
+</ul>
+<h2 id="qemu-img">qemu-img 镜像管理</h2>
+<ul>
+<li>info<br />
+查看镜像的信息</li>
+<li>create<br />
+创建镜像</li>
+<li>check<br />
+检查镜像</li>
+<li>convert<br />
+转化镜像的格式，（raw，qcow ……）</li>
+<li>snapshot<br />
+管理镜像的快照</li>
+<li>rebase<br />
+在已有的镜像的基础上创建新的镜像</li>
+<li>resize<br />
+增加或减小镜像大小</li>
+</ul>
+<h3 id="_8">保存镜像</h3>
+<h3 id="_9">制作虚拟机镜像</h3>
+<h1 id="qemu_2">qemu 快照原理</h1>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-03-27 17:10 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'qemu-kvm',
+  title: 'qemu-kvm',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

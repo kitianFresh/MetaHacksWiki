@@ -217,6 +217,12 @@ Decsion Tree, Naive Bayes, AdaBoost, GBDT, SVM(非线性核), KNN(K近邻)都是
 <li><a href="http://kubicode.me/2015/08/16/Machine%20Learning/Algorithm-Summary-for-Interview/">机器学习常见算法个人总结（面试用)</a></li>
 <li><a href="http://blog.csdn.net/bryan__/article/details/52672912">数据挖掘岗面试总结</a></li>
 </ul>
+<h2 id="knn-k-means">KNN 和　K-Means 算法的区别</h2>
+<p>K 近邻算法KNN(K-nearest-neighbors) 是一种有监督学习算法，对于一个给定的样例，通过找出所有训练样例[(x1,y1),(x2,y2)...(xn,yn)]中与该样例距离最近的K个点，看这k个点大多数属于那个类别，就将该节点归为哪一类，也就是说评价函数采用的是投票。</p>
+<p>K-Means　算法是一种无监督学习算法，他的目的是将所有的没有标签的数据[x1,x2,...xn]划分成 K 类。采用随机选择k个点作为ｋ个类的中心，然后计算每一个点到这ｋ个点的距离，距离那个近就属于哪一类，然后一轮聚类完成之后，根据 K 类的数据中心点，重新分配k个中心点，再次聚类，直到和上一次聚类选出的中心点相同或者误差可接受稳定后，就可以停止聚类。而评价聚类好坏的函数是算出每一种K聚类之后，各个类中的样本点到其中心的距离的和，取最小的。<a href="http://benalexkeen.com/k-means-clustering-in-python/">K-means Clustering in Python</a></p>
+<p>以上两种算法的计算量就在于，每次计算距离都需要计算所有的点到样本或者是中心点的距离，计算量巨大。因此，这两种算法都是可以通过 KD树(kd-tree) 进行加速搜索和计算的。KD 树可以在确定某一个点属于哪个类别的时候，较少和训练点的距离计算，可以直接忽略某些点从而加速计算过程；</p>
+<p>KD 树通过对样本维度进行空间划分，构成一个平衡二叉树，然后再进行KD搜索，搜索的时候，例如在KNN中，先确定给定点在KD树的叶节点位置，然后计算该区域最近的点，以给定点S为圆心，以最近距离为半径的圆超平面，然后回溯到父节点，检查父节点的另一个子节点里是否有更近的点，没有则继续回溯到父节点，检查父节点的另一个子节点是否有，知道没有或者到根即终止。时间复杂度是O(lgN)<br />
+<a href="http://www.cnblogs.com/porco/p/4466316.html">使用kd-tree加速k-means</a></p>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
