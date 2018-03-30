@@ -60,7 +60,55 @@
 <div class="clearfix"></div>
 <div id="title">qemu-kvm</div>
 <div id="content">
-  <h1 id="qemu-kvm">qemu-kvm</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#qemu-kvm">qemu-kvm</a><ul>
+<li><a href="#_1">参考</a></li>
+</ul>
+</li>
+<li><a href="#qemu">qemu启动虚拟机</a><ul>
+<li><a href="#iso">从ISO镜像启动(类似于物理机安装操作系统)</a></li>
+<li><a href="#_2">从已经含有操作系统的磁盘镜像启动（类似于从已经安装过操作系统的物理机启动机器）</a></li>
+</ul>
+</li>
+<li><a href="#qemu_1">qemu 网络</a><ul>
+<li><a href="#user-mode-networking">User mode networking</a></li>
+<li><a href="#tap-networking">Tap networking</a><ul>
+<li><a href="#_3">桥接模式</a></li>
+<li><a href="#host-only">Host-Only</a></li>
+</ul>
+</li>
+<li><a href="#vde-networking">VDE networking</a></li>
+<li><a href="#socket-redirection">Socket redirection</a></li>
+<li><a href="#_4">参考</a></li>
+</ul>
+</li>
+<li><a href="#qemu-monitor-hmpqmp">QEMU monitor 协议(HMP/QMP)</a><ul>
+<li><a href="#stdio">stdio方式</a></li>
+<li><a href="#telnet">telnet方式</a></li>
+<li><a href="#unix-socket">unix ｓocket方式</a></li>
+<li><a href="#tcp">tcp方式</a></li>
+</ul>
+</li>
+<li><a href="#qemu_2">qemu 镜像和快照管理</a><ul>
+<li><a href="#_5">外置快照</a><ul>
+<li><a href="#blockcommit">利用BlockCommit 进行快照回滚</a></li>
+<li><a href="#_6">利用在线快照制作在线的镜像模板(镜像模板保存了磁盘当前所有状态数据，可以用来恢复或者创建新的虚拟机使用)</a></li>
+<li><a href="#_7">快照删除</a></li>
+<li><a href="#_8">参考</a></li>
+</ul>
+</li>
+<li><a href="#_9">保存镜像（都是关机状态，直接对磁盘进行操作）</a></li>
+<li><a href="#qemu_3">更改　qemu 镜像密码</a><ul>
+<li><a href="#1-qemu-nbd">1. 使用内核模块 qemu-nbd 挂载修改</a></li>
+<li><a href="#2-libguestfs">2. 使用 libguestfs挂载修改</a></li>
+<li><a href="#_10">参考</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="qemu-kvm">qemu-kvm</h1>
 <p><a href="https://www.linux-kvm.org/page/HOWTO">KVM: Kernel-Based Virtual Machine</a> 是基于内核的虚拟机，目前已经属于Linux内核的一个可加载模块，通过调用Linux内核本身的功能，实现对CPU和内存的虚拟化。本质上，KVM是管理虚拟硬件设备的驱动，该驱动使用字符设备/dev/kvm（由KVM本身创建）作为管理接口，主要负责vCPU的创建，虚拟内存的分配，vCPU寄存器的读写以及vCPU的运行。<br />
 <a href="https://www.qemu.org/">Qemu</a>　就是一个计算机硬件模拟器，可以虚拟出一台硬件设备齐全的机器。QEMU有两种工作模式：系统模式，可以模拟出整个电脑系统，另一种是用户模式，可以运行不同与当前硬件平台的其他平台上的程序（比如在x86平台上运行跑在ARM平台上的程序）<br />
 在0.9.1及之前版本还可以使用kqemu加速器（可以理解为QEMU的一个插件，用来提高QEMU的翻译性能，支持Windows平台），但1.0以后版本就只能使用qemu-kvm（只支持Linux）进行加速了，1.3版本后QEMU和QEMU-KVM合二为一了。</p>
