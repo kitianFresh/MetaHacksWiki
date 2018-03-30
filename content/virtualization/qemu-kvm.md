@@ -3,6 +3,8 @@ title: "qemu-kvm"
 date: 2018-03-27 17:10
 ---
 
+[TOC]
+
 # qemu-kvm
 [KVM: Kernel-Based Virtual Machine](https://www.linux-kvm.org/page/HOWTO) 是基于内核的虚拟机，目前已经属于Linux内核的一个可加载模块，通过调用Linux内核本身的功能，实现对CPU和内存的虚拟化。本质上，KVM是管理虚拟硬件设备的驱动，该驱动使用字符设备/dev/kvm（由KVM本身创建）作为管理接口，主要负责vCPU的创建，虚拟内存的分配，vCPU寄存器的读写以及vCPU的运行。
 [Qemu](https://www.qemu.org/)　就是一个计算机硬件模拟器，可以虚拟出一台硬件设备齐全的机器。QEMU有两种工作模式：系统模式，可以模拟出整个电脑系统，另一种是用户模式，可以运行不同与当前硬件平台的其他平台上的程序（比如在x86平台上运行跑在ARM平台上的程序）
