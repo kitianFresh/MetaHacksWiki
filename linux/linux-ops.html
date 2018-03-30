@@ -188,17 +188,19 @@ sudo -iu tianqi05</p>
  首先找到进程 <code>ps aux|grep XXX</code>, 然后使用 <code>sudo lsof -p [pid]</code> 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， <code>lsof [filename]</code> 可以看到进程pid， 拿到pid 之后可以使用<code>ps aux|grep [pid]</code> 查看是什么进程；</p>
 <h2 id="_2">删除某个目录下的大量的文件</h2>
 <div class="hlcode"><pre>find /tmp -name core -type f -print0 | xargs -0 /bin/rm -f
+</pre></div>
 
-Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way
-that file or directory names containing spaces or newlines are correctly handled.
 
-find /tmp -depth -name core -type f -delete
+<p>Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way<br />
+that file or directory names containing spaces or newlines are correctly handled.</p>
+<div class="hlcode"><pre><span class="n">find</span> <span class="o">/</span><span class="n">tmp</span> <span class="o">-</span><span class="n">depth</span> <span class="o">-</span><span class="n">name</span> <span class="n">core</span> <span class="o">-</span><span class="n">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">delete</span>
+</pre></div>
 
-Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the
-previous example <span class="o">(</span>because we avoid the need to use fork<span class="o">(</span>2<span class="o">)</span> and <span class="nb">exec</span><span class="o">(</span>2<span class="o">)</span> to launch rm and we don<span class="err">&#39;</span>t need the
-extra xargs process<span class="o">)</span>.
 
-cut -d: -f1 &lt; /etc/passwd | sort | xargs <span class="nb">echo</span>
+<p>Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the<br />
+previous example (because we avoid the need to use fork(2) and exec(2) to launch rm and we don't need the<br />
+extra xargs process).</p>
+<div class="hlcode"><pre><span class="n">cut</span> <span class="o">-</span><span class="n">d</span><span class="o">:</span> <span class="o">-</span><span class="n">f1</span> <span class="o">&lt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">passwd</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">|</span> <span class="n">xargs</span> <span class="n">echo</span>
 </pre></div>
 
 
@@ -225,6 +227,9 @@ ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
 <li><code>file -sL /dev/sda1</code></li>
 <li><code>cat /etc/fstab</code> 在主机启动的时候回挂载改文件内容中的设备，里面描述了该挂载的设备的id，tag，label，mount point， fs等，但是这个是手动设置的</li>
 </ol>
+<h1 id="_3">检查占用空间大的文件</h1>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">find</span> <span class="p">.</span> <span class="o">-</span><span class="n">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">size</span> <span class="o">+</span><span class="mi">1000</span><span class="n">M</span>  <span class="o">-</span><span class="n">print0</span> <span class="o">|</span> <span class="n">xargs</span> <span class="o">-</span><span class="mi">0</span> <span class="n">du</span> <span class="o">-</span><span class="n">h</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">nr</span>
+</pre></div>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
