@@ -59,8 +59,10 @@ qemu 网络主要由两部分构成
 qemu-system-x86_64 -m 2048 -hda ubuntubase.qcow2 -smp 4 -netdev user,id=network-ubuntubase -device e1000,netdev=network-ubuntubase,mac=52:54:e4:99:78:31
 ```
 执行完以上命令后，你在宿主机上 `ip a` 或者 `ifconfig` 是看不到该虚拟机的网卡设备的，这种用户模式网络对外不可见(除了虚拟机本身).　默认不给出网络设置的话，qemu默认创建出如下如所示的用户模式网络.
+
 <img src="/static/images/Virtualization/qemu-kvm/qemu-default-user-network(slirp).png" style="width:500px;height:300px;">
-<caption><center> <u> <font color='purple'> **Figure 1** </u><font color='purple'>  : slirp </center></caption>
+<caption><center><u> <font color="purple"> **slirp** </u></font> </center></caption>
+
 
 如果想要从宿主机上通过scp拷贝文件到虚拟机,则可以通过端口转发，`-device e1000,netdev=network-ubuntubase,mac=52:54:e4:99:78:31,hostfwd=tcp::5555-:22`. 这样你就可以通过 `scp -P 5555 file.txt tq@localhost:/` 往虚拟机传文件了。但是记住前提是要把宿主机的公钥拷贝到虚拟机ssh目录下的authorized_keys文件里，且虚拟机需要安装并运行sshd,即openssh-server. `sudo apt-get install openssh-server`
 如果hostfwd 属性不认识，端口重定向还可以采用如下的形式,直接将宿主机的端口重定向到虚拟机的端口.
@@ -266,29 +268,160 @@ Host-Only的宗旨就是建立一个与外界隔绝的内部网络，来提高�
 
 # QEMU monitor 协议(HMP/QMP)
 [Qemu monitor](https://wiki.archlinux.org/index.php/QEMU#QEMU_Monitor) 就是提供了一个控制台，可以在Qemu 虚拟机运行的时候，和虚拟机交互，获取虚拟机当前信息，给虚拟机发送命令执行等。实际上 qemu monitor 设计了一种协议，可以该协议发送消息给Qemu进程，从而完成对Qemu进程的某些控制。标准控制台stdio只是其中一种实现该协议的交互方式，我们还可以让Qemu监听某个TCP端口，然后我们通过程序控制发送命令给Qemu,只要遵守QMP协议即可。
-## stdio
+## stdio方式
 参数使用 `-monitor stdio`即可。
 ```
 sudo qemu-system-x86_64 -m 2048 -hda ubuntubase.qcow2 -smp 4 -netdev user,id=network-ubuntubase -device e1000,netdev=network-ubuntubase,mac=52:54:e4:99:78:31 -monitor stdio
 ```
-## telnet
+## telnet方式
 参数使用 `-monitor telnet:127.0.0.1:port,server,nowait`. 然后就可以通过 `telnet 127.0.0.1 port` 连接了。
 ```
 sudo qemu-system-x86_64 -m 2048 -hda ubuntubase.qcow2 -smp 4 -netdev user,id=network-ubuntubase -device e1000,netdev=network-ubuntubase,mac=52:54:e4:99:78:31 -monitor telnet:127.0.0.1:9999,server,nowait
 ```
-## unix Socket
+## unix ｓocket方式
 参数使用 `-monitor unix:/tmp/monitor.sock,server,nowait`. 然后用　`socat - UNIX-CONNECT:/tmp/monitor.sock` 或者 `nc -U /tmp/monitor.sock`　或者直接写一个程序采用连接该套接字。
 
-## tcp
+## tcp方式
 参数使用 `-monitor tcp:127.0.0.1:port,server,nowait`, 然后使用 `nc 127.0.0.1 port`　就可以交互了，或者直接写一个采用TCP连接到该端口。
 
 
-# 虚拟机磁盘镜像
-虚拟机也有磁盘，虚拟机的磁盘在宿主机上就是一个文件，我们一般称之为磁盘镜像，里面有虚拟机的操作系统和驱动等重要文件（对于虚拟机来说）.你可以自己制作镜像，也可以直接使用已经制作好的带操作系统的镜像。
+# qemu 镜像和快照管理
+虚拟机也有磁盘，虚拟机的磁盘在宿主机上就是一个文件，我们一般称之为磁盘镜像，里面有虚拟机的操作系统和驱动等重要文件（对于虚拟机来说）.你可以自己制作镜像，也可以直接使用已经制作好的带操作系统的镜像。qemu 有下面的命令可以做镜像相关操作。
+|command|function|
+|---:|:---|
+|info |查看镜像的信息|
+|create|创建镜像|
+|check|检查镜像|
+|convert|转化镜像的格式，(raw，qcow ……)|
+|snapshot|管理镜像的快照|
+|rebase|在已有的镜像的基础上创建新的镜像|
+|resize|增加或减小镜像大小|
 
-# 更改镜像密码
+## 外置快照
+### 利用BlockCommit 进行快照回滚
+```
+.------------.  .------------.  .------------.  .------------.  .------------.
+|            |  |            |  |            |  |            |  |            |
+| RootBase   <---  Snap-1    <---  Snap-2    <---  Snap-3    <---  Snap-4    |
+|            |  |            |  |            |  |            |  | (Active)   |
+'------------'  '------------'  '------------'  '------------'  '------------'
+                                 /                  |
+                                /                   |
+                               /  commit data       |
+                              /                     |
+                             /                      |
+                            /                       |
+                           v           commit data  |
+.------------.  .------------. <--------------------'           .------------.
+|            |  |            |                                  |            |
+| RootBase   <---  Snap-1    |<---------------------------------|  Snap-4    |
+|            |  |            |       Backing File               | (Active)   |
+'------------'  '------------'                                  '------------'
+
+```
+
+### 利用在线快照制作在线的镜像模板(镜像模板保存了磁盘当前所有状态数据，可以用来恢复或者创建新的虚拟机使用)
+
+下面这个原理图，可以用来制作磁盘模板. 就是通过产生一个快照，然后将RootBase合并到当前激活快照中，形成一个新镜像模板。
+```
+.------------.  .------------.  .------------.  .------------.  .------------.
+|            |  |            |  |            |  |            |  |            |
+| RootBase   <---  Snap-1    <---  Snap-2    <---  Snap-3    <---  Snap-4    |
+|            |  |            |  |            |  |            |  | (Active)   |
+'------------'  '------------'  '------------'  '------------'  '------------'
+      |                  |              |                  \
+      |                  |              |                   \
+      |                  |              |                    \  stream data
+      |                  |              | stream data         \
+      |                  |              |                      \
+      |                  | stream data  |                       \
+      |  stream data     |              '------------------>     v
+      |                  |                                    .--------------.
+      |                  '--------------------------------->  |              |
+      |                                                       |  Snap-4      |
+      '---------------------------------------------------->  | (Active)     |
+                                                              '--------------'
+                                                                'Standalone'
+                                                                (w/o backing
+                                                                file)
+
+```
+查看当前虚拟机使用的块设备。
+```sh
+(qemu) info block
+ide0-hd0 (#block121): ubuntu1.qcow2 (qcow2)
+    Cache mode:       writeback
+    Backing file:     ubuntubase.qcow2 (chain depth: 1)
+
+ide1-cd0: [not inserted]
+    Removable device: not locked, tray closed
+
+floppy0: [not inserted]
+    Removable device: not locked, tray open
+
+sd0: [not inserted]
+    Removable device: not locked, tray closed
+
+```
+在线情况下给虚拟机做一个外置快照, `snapshot_blkdev <block-device> <snapshot-name> <format>`
+```sh
+(qemu) snapshot_blkdev ide0-hd0 ubuntu1-snapshot.img qcow2
+Formatting 'ubuntu1-snapshot.img', fmt=qcow2 size=21474836480 backing_file=ubuntu1.qcow2 backing_fmt=qcow2 encryption=off cluster_size=65536 lazy_refcounts=off refcount_bits=16
+(qemu) info block
+ide0-hd0 (#block1469): ubuntu1-snapshot.img (qcow2)
+    Cache mode:       writeback
+    Backing file:     ubuntu1.qcow2 (chain depth: 2)
+
+ide1-cd0: [not inserted]
+    Removable device: not locked, tray closed
+
+floppy0: [not inserted]
+    Removable device: not locked, tray open
+
+sd0: [not inserted]
+    Removable device: not locked, tray closed
+
+```
+将快照(镜像)的backing_file合并到当前的外置快照之中，从而得到一个模板。 `block_stream <block-device>`
+```sh
+(qemu) block_stream ide0-hd0 
+(qemu) info block
+ide0-hd0 (#block1469): ubuntu1-snapshot.img (qcow2)
+    Cache mode:       writeback
+    Backing file:     ubuntu1.qcow2 (chain depth: 2)
+
+ide1-cd0: [not inserted]
+    Removable device: not locked, tray closed
+
+floppy0: [not inserted]
+    Removable device: not locked, tray open
+
+sd0: [not inserted]
+    Removable device: not locked, tray closed
+(qemu) info block-jobs
+No active jobs
+``` 
+
+### 快照删除
+当一个或多个快照不再需要时，您可以删除它们。删除快照后，您将无法把虚拟机恢复到这些快照所包括的时间点上。删除快照并不一定会获得更多的可用存储空间，而这些快照的数据也不一定会被实际删除。例如，您的虚拟机有 5 个快照，如果您删除了第 3 个快照，第 3 个快照中的数据可能仍然会存在在系统中，因为第 4 和第 5 个快照可能会需要这些数据。一般情况下，删除快照通常可以提高虚拟机的性能。
+当选择了一个要被删除的快照时，QEMU 会创建一个和要被删除的快照大小相同的新逻辑卷。被删除的快照会和它随后的那个快照进行合并，而新建逻辑卷的大小会被扩充来保存快照合并的结果。如果被删除的快照和它随后的那个快照没有重叠的内容，这个新建逻辑卷的大小将和被合并的两个快照的大小总和相同。当合并完成后，随后的那个快照会被改名，并被标记为已被删除，而用来保存合并结果的逻辑卷会使用它的名字来替代这个快照。最终删除的结果是选择被删除的快照和它随后的那个快照都会标记为已被删除，而这两个快照的合并结果会作为一个快照来取代它们的位置。
+例如，快照 Delete_snapshot 的大小是 200GB，它随后的那个快照（Next_snapshot）的大小是 100GB。Delete_snapshot 被删除，一个新的逻辑卷（临时命名为 Snapshot_merge）会被创建，它的初始大小是 200GB。然后，Snapshot_merge 的大小会被扩展到 300GB 来保存 Delete_snapshot 和 Next_snapshot 的合并结果。随后，Next_snapshot 会被改名为 Delete_me_too_snapshot，而 Snapshot_merge 被重新命名为 Next_snapshot。最后，Delete_snapshot 和 Delete_me_too_snapshot 都被删除。
+
+<img src="/static/images/Virtualization/qemu-kvm/qemu-snapshot-delete.png" style="width:500px;height:300px;">
+<caption><center><u> <font color="purple"> **snapshot-delete** </u></font> </center></caption>
+
+### 参考
+ - [qemu-snapshot](http://m.udpwork.com/item/12674.html)
+ - [QCOW2 backing files & overlays](https://kashyapc.fedorapeople.org/virt/lc-2012/snapshots-handout.html)
+ - [Features/Snapshots](https://wiki.qemu.org/Features/Snapshots)
+
+
+## 保存镜像（都是关机状态，直接对磁盘进行操作）
+
+
+## 更改　qemu 镜像密码
 比如我制作了一个镜像ubuntubase.qcow2.　但是这个镜像的密码忘记了，启动虚拟机的时候无法登录，你可以通过以下两种方法改变密码。实际生产环境中，也是通过该方式重置用户自己设置的账号和密码，挂载之后其实可以直接更改 `/etc/shadow` 内容，从而重置密码。或者是部署ssh keypair
-## 挂载镜像到宿主机通过chroot 修改
+### 1. 使用内核模块 qemu-nbd 挂载修改
 检查 nbd 模块是否加载，`lsmod | grep nbd` 查看有nbd，则说明已经加载了nbd 内核模块。若没有，则使用 `sudo modprobe nbd` 进行加载。操作在root权限下进行
 
 1. 通过 qemu-nbd 连接镜像到块设备 `qemu-nbd -c /dev/nbd0 ubuntubase.qcow2`
@@ -304,7 +437,7 @@ passwd: password updated successfully
 5. 卸载设备 `umount /mnt`
 6. 断开块设备连接 `qemu-nbd -d /dev/nbd0p1`
 
-## 使用 [libguestfs](http://libguestfs.org/)
+### 2. 使用 [libguestfs](http://libguestfs.org/)挂载修改
 安装
 ```sh
 sudo yum install libguestfs-tools      # Fedora/RHEL/CentOS
@@ -327,24 +460,3 @@ guestfish -a ubuntu-server.qcow2
 ### 参考
  - [How to reset forgotten root password for Linux KVM qcow2 image/vm](https://www.cyberciti.biz/faq/how-to-reset-forgotten-root-password-for-linux-kvm-qcow2-image-vm/)
 
-## qemu-img 镜像管理
-- info
-查看镜像的信息
-- create
-创建镜像
-- check
-检查镜像
-- convert
-转化镜像的格式，（raw，qcow ……）
-- snapshot
-管理镜像的快照
-- rebase
-在已有的镜像的基础上创建新的镜像
-- resize
-增加或减小镜像大小
-
-### 保存镜像
-
-### 制作虚拟机镜像
-
-# qemu 快照原理

@@ -128,19 +128,18 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 ## 删除某个目录下的大量的文件
 ```sh
 find /tmp -name core -type f -print0 | xargs -0 /bin/rm -f
-
+```
 Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way
 that file or directory names containing spaces or newlines are correctly handled.
-
+```
 find /tmp -depth -name core -type f -delete
-
+```
 Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the
 previous example (because we avoid the need to use fork(2) and exec(2) to launch rm and we don't need the
 extra xargs process).
-
+```
 cut -d: -f1 < /etc/passwd | sort | xargs echo
 ```
-
 /bin/rm: Argument list too long.
 The problem is that when you type something like “rm -rf *”, the “*” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.
 To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:
@@ -166,3 +165,8 @@ ls -1 | wc -l && time find . -type f -delete
 5. `blkid /dev/sda1`
 6. `file -sL /dev/sda1`
 7. `cat /etc/fstab` 在主机启动的时候回挂载改文件内容中的设备，里面描述了该挂载的设备的id，tag，label，mount point， fs等，但是这个是手动设置的
+
+# 检查占用空间大的文件
+```
+sudo find . -type f -size +1000M  -print0 | xargs -0 du -h | sort -nr
+```
