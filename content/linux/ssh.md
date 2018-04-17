@@ -66,3 +66,42 @@ scp id_rsa.pub.bak kinny@hacksmeta.com:~/.ssh
 
 3. 目录
 加个 `-r` 参数 `scp -r` 
+
+## SCP 原理其实是基于SSH的
+ - [SCP原理](https://blog.xiaket.org/2010/how-scp-protocol-works.html)
+
+
+# ssh 远程执行命令和脚本
+### 在远程主机上执行命令
+```sh
+ssh user@remoteNode "cd /home ; ls"
+ssh user@remoteHost "cat /proc/cpuinfo"
+```
+
+### 直接执行远程主机上的脚本
+ssh 调用远程命令后不能自动退出解决方法
+可以将标准输出与标准错误输出重定向到/dev/null，这样就不会一直处于等待状态。
+ssh -l www-online 192.168.110.34 “/home/www-online/uptimelog.sh > /dev/null 2>&1 &”
+
+### 让一个本地脚本在远程主机执行
+以下这个脚本test.sh可以在远程主机执行的方式
+```sh
+ls
+pwd
+echo $0
+echo $1
+echo $2
+```
+`ssh user@remoteHost "bash -s" < test.sh helloword kiki`; 执行结果如下，helloword kiki 是脚本的 $1 和 $2 参数。
+```sh
+dockerapp
+py2virtualenv
+qemu-2.11.0-rc0.tar.xz
+test_encoding.py
+uts.c
+work
+/home/ubuntu
+bash
+helloworld
+kiki
+```
