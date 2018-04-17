@@ -138,6 +138,124 @@
 
 
 <h2 id="argparse-metavar-actionstore_true">argparse 中 <code>metavar</code> 不能和<code>action=store_true</code> 同时用。</h2>
+<div class="hlcode"><pre><span class="c"># User Instructions</span>
+<span class="c">#</span>
+<span class="c"># Write a function best_wild_hand(hand) that takes as</span>
+<span class="c"># input a 7-card hand and returns the best 5 card hand.</span>
+<span class="c"># In this problem, it is possible for a hand to include</span>
+<span class="c"># jokers. Jokers will be treated as &#39;wild cards&#39; which</span>
+<span class="c"># can take any rank or suit of the same color. The </span>
+<span class="c"># black joker, &#39;?B&#39;, can be used as any spade or club</span>
+<span class="c"># and the red joker, &#39;?R&#39;, can be used as any heart </span>
+<span class="c"># or diamond.</span>
+<span class="c">#</span>
+<span class="c"># The itertools library may be helpful. Feel free to </span>
+<span class="c"># define multiple functions if it helps you solve the</span>
+<span class="c"># problem. </span>
+<span class="c">#</span>
+<span class="c"># -----------------</span>
+<span class="c"># Grading Notes</span>
+<span class="c"># </span>
+<span class="c"># Muliple correct answers will be accepted in cases </span>
+<span class="c"># where the best hand is ambiguous (for example, if </span>
+<span class="c"># you have 4 kings and 3 queens, there are three best</span>
+<span class="c"># hands: 4 kings along with any of the three queens).</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="n">black_cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="s">&#39;23456789TJQKA&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s">&#39;SC&#39;</span><span class="p">]</span>
+<span class="n">red_cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="s">&#39;23456789TJQKA&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s">&#39;HD&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">best_hand</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="n">hand_rank</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">replacements</span><span class="p">(</span><span class="n">card</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">card</span> <span class="o">==</span> <span class="s">&#39;?B&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">black_cards</span>
+    <span class="k">elif</span> <span class="n">card</span> <span class="o">==</span> <span class="s">&#39;?R&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">red_cards</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">card</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">best_wild_hand</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+    <span class="s">&quot;Try all values for jokers in all 5-card selections.&quot;</span>
+    <span class="n">all_hands</span> <span class="o">=</span> <span class="p">[</span><span class="n">best_hand</span><span class="p">(</span><span class="n">hand</span><span class="p">)</span> 
+                <span class="k">for</span> <span class="n">hand</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="nb">map</span><span class="p">(</span><span class="n">replacements</span><span class="p">,</span> <span class="n">hand</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">all_hands</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">hand_rank</span><span class="p">)</span>
+    <span class="c"># Your code here</span>
+
+<span class="k">def</span> <span class="nf">test_best_wild_hand</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">best_wild_hand</span><span class="p">(</span><span class="s">&quot;6C 7C 8C 9C TC 5C ?B&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+            <span class="o">==</span> <span class="p">[</span><span class="s">&#39;7C&#39;</span><span class="p">,</span> <span class="s">&#39;8C&#39;</span><span class="p">,</span> <span class="s">&#39;9C&#39;</span><span class="p">,</span> <span class="s">&#39;JC&#39;</span><span class="p">,</span> <span class="s">&#39;TC&#39;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">best_wild_hand</span><span class="p">(</span><span class="s">&quot;TD TC 5H 5C 7C ?R ?B&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+            <span class="o">==</span> <span class="p">[</span><span class="s">&#39;7C&#39;</span><span class="p">,</span> <span class="s">&#39;TC&#39;</span><span class="p">,</span> <span class="s">&#39;TD&#39;</span><span class="p">,</span> <span class="s">&#39;TH&#39;</span><span class="p">,</span> <span class="s">&#39;TS&#39;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">best_wild_hand</span><span class="p">(</span><span class="s">&quot;JD TC TH 7C 7D 7S 7H&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+            <span class="o">==</span> <span class="p">[</span><span class="s">&#39;7C&#39;</span><span class="p">,</span> <span class="s">&#39;7D&#39;</span><span class="p">,</span> <span class="s">&#39;7H&#39;</span><span class="p">,</span> <span class="s">&#39;7S&#39;</span><span class="p">,</span> <span class="s">&#39;JD&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="s">&#39;test_best_wild_hand passes&#39;</span>
+
+<span class="c"># ------------------</span>
+<span class="c"># Provided Functions</span>
+<span class="c"># </span>
+<span class="c"># You may want to use some of the functions which</span>
+<span class="c"># you have already defined in the unit to write </span>
+<span class="c"># your best_hand function.</span>
+
+<span class="k">def</span> <span class="nf">hand_rank</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+    <span class="s">&quot;Return a value indicating the ranking of a hand.&quot;</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="n">card_ranks</span><span class="p">(</span><span class="n">hand</span><span class="p">)</span> 
+    <span class="k">if</span> <span class="n">straight</span><span class="p">(</span><span class="n">ranks</span><span class="p">)</span> <span class="ow">and</span> <span class="n">flush</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">ranks</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">kind</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">kind</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">ranks</span><span class="p">),</span> <span class="n">kind</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ranks</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">kind</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ranks</span><span class="p">)</span> <span class="ow">and</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">kind</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ranks</span><span class="p">),</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ranks</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">flush</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">ranks</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">straight</span><span class="p">(</span><span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">ranks</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">kind</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">kind</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ranks</span><span class="p">),</span> <span class="n">ranks</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">two_pair</span><span class="p">(</span><span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">two_pair</span><span class="p">(</span><span class="n">ranks</span><span class="p">),</span> <span class="n">ranks</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ranks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ranks</span><span class="p">),</span> <span class="n">ranks</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ranks</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">card_ranks</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+    <span class="s">&quot;Return a list of the ranks, sorted with higher first.&quot;</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;--23456789TJQKA&#39;</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">hand</span><span class="p">]</span>
+    <span class="n">ranks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">ranks</span> <span class="o">==</span> <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="k">else</span> <span class="n">ranks</span>
+
+<span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="n">hand</span><span class="p">):</span>
+    <span class="s">&quot;Return True if all the cards have the same suit.&quot;</span>
+    <span class="n">suits</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">hand</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">suits</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">straight</span><span class="p">(</span><span class="n">ranks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return True if the ordered </span>
+<span class="sd">    ranks form a 5-card straight.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">ranks</span><span class="p">)</span><span class="o">-</span><span class="nb">min</span><span class="p">(</span><span class="n">ranks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ranks</span><span class="p">))</span> <span class="o">==</span> <span class="mi">5</span>
+
+<span class="k">def</span> <span class="nf">kind</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">ranks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the first rank that this hand has </span>
+<span class="sd">    exactly n-of-a-kind of. Return None if there </span>
+<span class="sd">    is no n-of-a-kind in the hand.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ranks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ranks</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">r</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">two_pair</span><span class="p">(</span><span class="n">ranks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If there are two pair here, return the two </span>
+<span class="sd">    ranks of the two pairs, else None.&quot;&quot;&quot;</span>
+    <span class="n">pair</span> <span class="o">=</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ranks</span><span class="p">)</span>
+    <span class="n">lowpair</span> <span class="o">=</span> <span class="n">kind</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">ranks</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">pair</span> <span class="ow">and</span> <span class="n">lowpair</span> <span class="o">!=</span> <span class="n">pair</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">lowpair</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span> 
+</pre></div>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>

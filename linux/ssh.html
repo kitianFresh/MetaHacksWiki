@@ -129,6 +129,43 @@ ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98<br />
 加个 <code>-r</code> 参数 <code>scp -r</code> </p>
 </li>
 </ol>
+<h2 id="scp-ssh">SCP 原理其实是基于SSH的</h2>
+<ul>
+<li><a href="https://blog.xiaket.org/2010/how-scp-protocol-works.html">SCP原理</a></li>
+</ul>
+<h1 id="ssh_1">ssh 远程执行命令和脚本</h1>
+<h3 id="_4">在远程主机上执行命令</h3>
+<div class="hlcode"><pre>ssh user@remoteNode <span class="s2">&quot;cd /home ; ls&quot;</span>
+ssh user@remoteHost <span class="s2">&quot;cat /proc/cpuinfo&quot;</span>
+</pre></div>
+
+
+<h3 id="_5">直接执行远程主机上的脚本</h3>
+<p>ssh 调用远程命令后不能自动退出解决方法<br />
+可以将标准输出与标准错误输出重定向到/dev/null，这样就不会一直处于等待状态。<br />
+ssh -l www-online 192.168.110.34 “/home/www-online/uptimelog.sh &gt; /dev/null 2&gt;&amp;1 &amp;”</p>
+<h3 id="_6">让一个本地脚本在远程主机执行</h3>
+<p>以下这个脚本test.sh可以在远程主机执行的方式</p>
+<div class="hlcode"><pre>ls
+<span class="nb">pwd</span>
+<span class="nb">echo</span> <span class="nv">$0</span>
+<span class="nb">echo</span> <span class="nv">$1</span>
+<span class="nb">echo</span> <span class="nv">$2</span>
+</pre></div>
+
+
+<p><code>ssh user@remoteHost "bash -s" &lt; test.sh helloword kiki</code>; 执行结果如下，helloword kiki 是脚本的 $1 和 $2 参数。</p>
+<div class="hlcode"><pre>dockerapp
+py2virtualenv
+qemu-2.11.0-rc0.tar.xz
+test_encoding.py
+uts.c
+work
+/home/ubuntu
+bash
+helloworld
+kiki
+</pre></div>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
