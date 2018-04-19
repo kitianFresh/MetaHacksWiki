@@ -33,6 +33,13 @@ $ readlink -f /usr/bin/awk
 /usr/bin/gawk  
 ```
 
+# 修改密码出错
+```bash
+passwd: Authentication token manipulation error
+passwd: password unchanged
+```
+`mount -o remount,rw /`
+
 # screen 启动一个可执行文件
 ```bash
 function check_service {

@@ -43,6 +43,7 @@ ssh的三个强大的端口转发命令：
 3. `ssh -C -f -N -g -D listen_port user@Tunnel_Host`
 ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98
 端口转发 ssh -p 44392 root@10.4.225.98
+让本地机器从浏览器访问远程的 jupyter server。`ssh -L 8000:localhost:8888 ubuntu@hacksmeta.com` 这样就可以从本地浏览器的8000端口，访问服务器hacksmeta.com上8888端口的jupyter了。
 
 # ssh
 ```
