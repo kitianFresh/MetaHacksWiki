@@ -2,6 +2,8 @@
 title: "CentosTips"
 date: 2017-07-29 18:36
 ---
+[TOC]
+
 # 配置 sudo 用户.
 首先使用 `useradd username` 添加新用户，然后设置用户密码 `passwd usernmae`.
 然后 使用 `visudo` 自动打开 `/etc/sudoers` 配置文件，在文件加入sudo权限，配置如下：

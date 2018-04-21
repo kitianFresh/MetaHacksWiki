@@ -2,6 +2,8 @@
 title: "ssh"
 date: 2017-03-31 15:14
 ---
+[TOC]
+
 # ssh 设置 linux 主机互信，不输入密码
 ## 手动方式
 将机器A 的公钥 `id_rsa.pub` 加入到 机器B的 `.ssh` 目录下的 `authorized_keys` 文件中即可； 但是一般使用 ssh-keygen 命令使用默认设置产生的密钥对`.ssh`目录里面没有 `authorized_keys`, 此时需要手动新建，这个时候很容易出错，新建之后，你会发现每次使用ssh登陆还是需要密码，重启 sshd 服务也不管用。

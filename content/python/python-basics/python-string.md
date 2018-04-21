@@ -2,6 +2,7 @@
 title: "python-string"
 date: 2017-04-30 11:22
 ---
+[TOC]
 
 ## 格式字符串手册
 数字格式化

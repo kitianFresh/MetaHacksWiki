@@ -2,6 +2,7 @@
 title: "linux-ops"
 date: 2017-07-02 22:39
 ---
+[TOC]
 
 # Linux 软件源更新
 更改之前注意备份: `sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup`

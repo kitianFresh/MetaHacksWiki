@@ -2,7 +2,7 @@
 title: "ipython-notebook"
 date: 2017-04-02 10:58
 ---
-
+[TOC]
 
 ## ipython notebook
 <shift>+<tab>可以查看docString
