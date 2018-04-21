@@ -60,11 +60,30 @@
 <div class="clearfix"></div>
 <div id="title">MacTips</div>
 <div id="content">
-  <h1 id="osx">OSX 环境配置</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#osx">OSX 环境配置</a><ul>
+<li><a href="#mac">Mac 快捷键</a></li>
+</ul>
+</li>
+<li><a href="#mac-os-xrootpython">Mac OS X新版本系统root用户也无法安装python包</a><ul>
+<li><a href="#mac-os-mysql">在MAC OS 上安装MYSQL</a></li>
+<li><a href="#mysql-root">重置MySQL root 密码</a></li>
+<li><a href="#mac-vpn">Mac 配置科大VPN教程</a></li>
+</ul>
+</li>
+<li><a href="#iterm2-tmuxscreen">iTerm2 和 Tmux以及Screen配置</a><ul>
+<li><a href="#iterm2">iTerm2</a></li>
+<li><a href="#screen">screen 使用简介</a></li>
+<li><a href="#tmux">配置 tmux</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="osx">OSX 环境配置</h1>
 <p>OS X 下载 brew<br />
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" &lt; /dev/null 2&gt; /dev/null ; brew install caskroom/cask/brew-cask 2&gt; /dev/null</p>
 <p>brew cask install pycharm</p>
-<h1 id="mac">Mac 快捷键</h1>
+<h2 id="mac">Mac 快捷键</h2>
 <p>Mac 下的 home 和 end<br />
 Ctrl+A：到行首（达到Home键的效果）<br />
 Ctrl+E：到行尾（达到End键的效果）<br />
@@ -152,6 +171,77 @@ In order to connect to MySQL using command line client, do the following from OS
 
 <h2 id="mac-vpn">Mac 配置科大VPN教程</h2>
 <p><a href="http://netfee.ustc.edu.cn/faq/index.html#howtosetupvpn">科大VPN教程</a></p>
+<h1 id="iterm2-tmuxscreen">iTerm2 和 Tmux以及Screen配置</h1>
+<h2 id="iterm2">iTerm2</h2>
+<p><a href="https://www.iterm2.com/">iTerm2</a> 直接到官网下载并安装即可. 这里说一下配置iTerm2主题颜色以及背景透明。让你的shell色彩斑斓，提高文字区分度。<br />
+<a href="https://github.com/mbadolato/iTerm2-Color-Schemes">iTerm2-Color-Schemes</a> 里面有很多款不同的主题，按照教程配置主题即可。背景色透明直接在 iTerm2--&gt;Preferences--&gt;Profiles--&gt;Window--&gt;Transparency中自行调节。<br />
+最后，还需要将下面的脚本粘贴到 <code>~/.bash_profile</code> 配置文件中，并执行 <code>source ~/.bash_profile</code> 使其生效即可。主要是配置<code>ls</code> 命令的显示。</p>
+<p>command+alt+t 即可唤出 ITerm2 终端。</p>
+<div class="hlcode"><pre><span class="nb">export </span><span class="nv">CLICOLOR</span><span class="o">=</span>1
+<span class="nb">export </span><span class="nv">LSCOLORS</span><span class="o">=</span>gxfxcxdxbxegedabagacad
+<span class="nb">export </span><span class="nv">PS1</span><span class="o">=</span><span class="s1">&#39;\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\w\[\033[00m\]\$ &#39;</span>
+<span class="nb">export </span><span class="nv">TERM</span><span class="o">=</span>xterm-color
+</pre></div>
+
+
+<h2 id="screen">screen 使用简介</h2>
+<p>screen 和 tmux有类似的服务。只是screen开启会话后不会新建窗口，还是在当前窗口。</p>
+<ol>
+<li>screen 创建一个session</li>
+</ol>
+<div class="hlcode"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">S</span> <span class="n">myNewSession</span>
+<span class="err">或者</span>
+<span class="n">screen</span> <span class="err">创建一个名字默认是</span><span class="n">ttys</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="err">的</span><span class="n">session</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>从当前 session 暂时断开退出。 <code>ctrl+a+d</code></p>
+</li>
+<li>
+<p>列出当前所有的session. <code>screen -ls</code> </p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>恢复某一个session。<code>screen -r myNewSession</code></p>
+</li>
+<li>
+<p>强制杀死一个 session. <code>kill -9 28091</code></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Dead</span> <span class="o">???</span><span class="p">)</span>
+<span class="n">Remove</span> <span class="n">dead</span> <span class="n">screens</span> <span class="n">with</span> <span class="err">&#39;</span><span class="n">screen</span> <span class="o">-</span><span class="n">wipe</span><span class="err">&#39;</span><span class="p">.</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>按照提示清理。 <code>screen -wipe</code></p>
+</li>
+<li>
+<p><code>Cannot open your terminal '/dev/pts/0' - please check.</code></p>
+</li>
+<li>Sign out and properly connect / sign in as the user you wish to use.</li>
+<li>Run <code>script /dev/null</code> to own the shell (more info over at Server Fault); then try screen again.</li>
+</ol>
+<h2 id="tmux">配置 tmux</h2>
+<p>Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意思。 </p>
+<p>场景就是，第一种是在本地电脑，你打开了好几个terminal， 每一个terminal由当前的工作环境， 然后这个时候没电了或者你电脑关机了，那么这些terminal的工作状态就没有了。如果使用tmux记录下来，那么这些terminal下次还可以继续使用，并且恢复到关闭时的状态。</p>
+<p>第二种就是 ssh 登陆到远程主机， 然后ssh 基本上很容易断开，一般使用 nohup &amp; 在后台运行命令， 但是如果使用 tmux， 就可以记录下来，关闭了也没关系，还可以再次恢复。</p>
+<p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
+<p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>

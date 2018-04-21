@@ -60,7 +60,22 @@
 <div class="clearfix"></div>
 <div id="title">python-time</div>
 <div id="content">
-  <h1 id="_1">时间和日期</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">时间和日期</a><ul>
+<li><a href="#_2">时间的流逝是绝对的，但是程序中的时间是相对的，不是绝对的！所以，时间差更有使用价值！</a></li>
+<li><a href="#unaware-aware">unaware 和 aware时间</a></li>
+<li><a href="#date-time-datetime-calendar">date &amp; time &amp; datetime &amp; calendar</a><ul>
+<li><a href="#time-datetime">time 模块和 datetime 模块的简单转换</a></li>
+<li><a href="#_3">格式化输出时间</a></li>
+<li><a href="#python-time-cheetsheet">python time 转换 cheetsheet</a></li>
+<li><a href="#_4">计算快照过期时间的小例子</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">时间和日期</h1>
 <p>编码乱码问题可能仅仅是中国程序员遇到的问题，但是时间时区问题可能是世界上所有的程序员都会遇到的问题！我们得搞清楚服务器的时间和用户所在地的时间关系，才能正确无误的进行编程！这个问题在进行定时任务设置的时候尤为明显！你需要考虑时区，和服务器所在的地的时区！</p>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">time</span>
 

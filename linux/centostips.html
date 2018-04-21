@@ -60,7 +60,31 @@
 <div class="clearfix"></div>
 <div id="title">CentosTips</div>
 <div id="content">
-  <h1 id="sudo">配置 sudo 用户.</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#sudo">配置 sudo 用户.</a></li>
+<li><a href="#rpm">rpm删除安装</a></li>
+<li><a href="#_1">修改密码出错</a></li>
+<li><a href="#screen">screen 启动一个可执行文件</a></li>
+<li><a href="#shell">shell 各种判断</a><ul>
+<li><a href="#_2">按照文件类型进行判断</a></li>
+<li><a href="#_3">按照文件权限进行判断</a></li>
+<li><a href="#_4">两个文件之间的比较</a></li>
+<li><a href="#_5">两个整数之间的比较</a></li>
+<li><a href="#_6">字符串之间的判断</a></li>
+<li><a href="#_7">多重条件判断</a></li>
+<li><a href="#_8">判断条件</a><ul>
+<li><a href="#21">2.1 字符串判断</a></li>
+<li><a href="#22">2.2 数字的判断</a></li>
+<li><a href="#23">2.3 文件的判断</a></li>
+<li><a href="#24">2.4 逻辑判断</a></li>
+<li><a href="#_9">退出状态</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="sudo">配置 sudo 用户.</h1>
 <p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.<br />
 然后 使用 <code>visudo</code> 自动打开 <code>/etc/sudoers</code> 配置文件，在文件加入sudo权限，配置如下：</p>
 <div class="hlcode"><pre><span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">ALL</span>
@@ -91,6 +115,13 @@ sudo -iu tianqi05</p>
 </pre></div>
 
 
+<h1 id="_1">修改密码出错</h1>
+<div class="hlcode"><pre>passwd: Authentication token manipulation error
+passwd: password unchanged
+</pre></div>
+
+
+<p><code>mount -o remount,rw /</code></p>
 <h1 id="screen">screen 启动一个可执行文件</h1>
 <div class="hlcode"><pre><span class="k">function </span>check_service <span class="o">{</span>
     <span class="nb">local </span><span class="nv">URL</span><span class="o">=</span><span class="nv">$1</span>
@@ -180,7 +211,7 @@ sudo -iu tianqi05</p>
 
 <h1 id="shell">shell 各种判断</h1>
 <p>Shell判断</p>
-<h2 id="_1">按照文件类型进行判断</h2>
+<h2 id="_2">按照文件类型进行判断</h2>
 <p>-b 判断文件是否存在，并且是否为快设备文件（是块设备文件为真）<br />
 -c 判断文件是否存在，并且是否为字符设备文件（是字符设备文件为真）<br />
 -d 判断文件是否存在，并且是否为目录文件（是目录为真）<br />
@@ -190,31 +221,31 @@ sudo -iu tianqi05</p>
 -p 判断文件是否存在，并且是否为管道文件（是管道文件为真）<br />
 -s 判断文件是否存在，并且是否为空（非空为真）<br />
 -S 判断文件是否存在，并且是否为套接字文件（是套接字文件为真）</p>
-<h2 id="_2">按照文件权限进行判断</h2>
+<h2 id="_3">按照文件权限进行判断</h2>
 <p>-r 判断文档是否有读权限<br />
 -w 判断是否有写权限<br />
 -x 判断是否可执行</p>
-<h2 id="_3">两个文件之间的比较</h2>
+<h2 id="_4">两个文件之间的比较</h2>
 <p>文件1 -nt 文件2 判断文件1的修改时间是否比文件2的新（如果新为真）<br />
 文件1 -ot 文件2 判断文件1的修改时间是否比文件2的旧（如果旧为真）<br />
 文件1 -ef 文件2 判断文件1是否和文件2的inode号一致，可以理解为两个文件是否为同一个文件，这个判断是判断硬链接的最好方法</p>
-<h2 id="_4">两个整数之间的比较</h2>
+<h2 id="_5">两个整数之间的比较</h2>
 <p>-eq 判断两个数值是否相等<br />
 -ne 判断两个数值是否不相等<br />
 -gt 判断是否大于<br />
 -lt 判断是否小于<br />
 -ge 判断是否大于等于<br />
 -le 判断是否小于等于</p>
-<h2 id="_5">字符串之间的判断</h2>
+<h2 id="_6">字符串之间的判断</h2>
 <p>-z 判断字符串是否为空<br />
 -n 判断字符串是否为非空<br />
 字符串1 == 2 判断字符串1是否和字符串2相等 <br />
 字符串1 != 2 判断字符串1是否和字符串2不相等</p>
-<h2 id="_6">多重条件判断</h2>
+<h2 id="_7">多重条件判断</h2>
 <p>判断1 -a 判断2 逻辑与，判断1和判断2都成立，最终结果为真<br />
 判断1 -o 判断2 逻辑或，判断1和判断2有一个成立，结果为真<br />
 ！判断 逻辑非  使原始的判断式取反</p>
-<h2 id="_7">判断条件</h2>
+<h2 id="_8">判断条件</h2>
 <ol>
 <li>Linux的shell中的测试命令，用于测试某种条件或某几种条件是否真实存在</li>
 <li>测试条件为真，返回一个0值；为假，返回一个非0整数值</li>
@@ -271,7 +302,7 @@ $0                 正在被执行命令的名字。对于shell脚本而言，�
 $@                 所有这些参数都分别被双引号引住。若一个脚本接收到两个参数，$@等价于$1$2<br />
 $$                 当前shell的进程号。对于shell脚本，这是其正在执行时的进程ID<br />
 $!                 前一个后台命令的进程号</p>
-<h3 id="_8">退出状态</h3>
+<h3 id="_9">退出状态</h3>
 <ol>
 <li>
 <p>Linux系统，每当命令执行完成后，系统返回一个退出状态。若退出状态值为0，表示命令运行成功；反之若退出状态值不为0，则表示命令运行失败。最后一次执行命令的退出状态值被保存在内置变量”$?”中。</p>

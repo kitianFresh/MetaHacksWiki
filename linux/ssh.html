@@ -60,7 +60,27 @@
 <div class="clearfix"></div>
 <div id="title">ssh</div>
 <div id="content">
-  <h1 id="ssh-linux">ssh 设置 linux 主机互信，不输入密码</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#ssh-linux">ssh 设置 linux 主机互信，不输入密码</a><ul>
+<li><a href="#_1">手动方式</a></li>
+<li><a href="#_2">自动方式</a></li>
+</ul>
+</li>
+<li><a href="#_3">端口转发映射</a></li>
+<li><a href="#ssh">ssh</a></li>
+<li><a href="#scpsecurity-copying">scp(Security Copying)</a><ul>
+<li><a href="#scp-ssh">SCP 原理其实是基于SSH的</a></li>
+</ul>
+</li>
+<li><a href="#ssh_1">ssh 远程执行命令和脚本</a><ul>
+<li><a href="#_4">在远程主机上执行命令</a></li>
+<li><a href="#_5">直接执行远程主机上的脚本</a></li>
+<li><a href="#_6">让一个本地脚本在远程主机执行</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="ssh-linux">ssh 设置 linux 主机互信，不输入密码</h1>
 <h2 id="_1">手动方式</h2>
 <p>将机器A 的公钥 <code>id_rsa.pub</code> 加入到 机器B的 <code>.ssh</code> 目录下的 <code>authorized_keys</code> 文件中即可； 但是一般使用 ssh-keygen 命令使用默认设置产生的密钥对<code>.ssh</code>目录里面没有 <code>authorized_keys</code>, 此时需要手动新建，这个时候很容易出错，新建之后，你会发现每次使用ssh登陆还是需要密码，重启 sshd 服务也不管用。</p>
 <p><code>ssh -v user@host</code> 去查看登陆过程的异常；<br />
@@ -99,7 +119,8 @@ rized_keys on the remote machine <span class="o">(</span>creating the file, and 
 <li>转发到本地：<code>ssh -C -f -N -g –R 本地端口:目标IP:目标端口 用户名@目标IP</code></li>
 <li><code>ssh -C -f -N -g -D listen_port user@Tunnel_Host</code><br />
 ssh -g -L 44392:localhost:22 tianqi05@10.4.225.98<br />
-端口转发 ssh -p 44392 root@10.4.225.98</li>
+端口转发 ssh -p 44392 root@10.4.225.98<br />
+让本地机器从浏览器访问远程的 jupyter server。<code>ssh -L 8000:localhost:8888 ubuntu@hacksmeta.com</code> 这样就可以从本地浏览器的8000端口，访问服务器hacksmeta.com上8888端口的jupyter了。</li>
 </ol>
 <h1 id="ssh">ssh</h1>
 <div class="hlcode"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="n">user</span><span class="err">@</span><span class="n">host</span>

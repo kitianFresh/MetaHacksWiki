@@ -60,7 +60,22 @@
 <div class="clearfix"></div>
 <div id="title">linux-ops</div>
 <div id="content">
-  <h1 id="linux">Linux 软件源更新</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#linux">Linux 软件源更新</a></li>
+<li><a href="#openstack">OpenStack 安装问题</a></li>
+<li><a href="#sudo">配置 sudo 用户.</a></li>
+<li><a href="#screen">screen 使用简介</a></li>
+<li><a href="#iterm2-tmux">配置 iTerm2 和 tmux</a><ul>
+<li><a href="#_1">局域网下互传大文件</a></li>
+<li><a href="#ifconfig-vs-ip">ifconfig VS ip</a></li>
+<li><a href="#_2">删除某个目录下的大量的文件</a></li>
+</ul>
+</li>
+<li><a href="#check-dev-file-system">check dev file system</a></li>
+<li><a href="#_3">检查占用空间大的文件</a></li>
+</ul>
+</div>
+<h1 id="linux">Linux 软件源更新</h1>
 <p>更改之前注意备份: <code>sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup</code></p>
 <div class="hlcode"><pre><span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
 <span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
