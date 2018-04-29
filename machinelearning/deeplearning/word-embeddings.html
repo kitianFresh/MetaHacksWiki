@@ -114,7 +114,34 @@
 <li><a href="https://towardsdatascience.com/learn-word2vec-by-implementing-it-in-tensorflow-45641adaf2ac">Learn Word2Vec by implementing it in tensorflow</a></li>
 <li><a href="http://blog.csdn.net/u014595019/article/details/51884529">自己动手写word2vec</a></li>
 <li><a href="http://www.thushv.com/natural_language_processing/word2vec-part-1-nlp-with-deep-learning-with-tensorflow-skip-gram/">Word2Vec (Part 1): NLP With Deep Learning with Tensorflow (Skip-gram)</a></li>
+<li>Word2Vec Resources</li>
+<li><a href="http://mccormickml.com/2016/04/27/word2vec-resources/">Word2Vec Resources</a></li>
+<li><a href="http://adventuresinmachinelearning.com/word2vec-tutorial-tensorflow/">Word2Vec word embedding tutorial in Python and TensorFlow</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27234078">理解 Word2Vec 之 Skip-Gram 模型</a></li>
+<li>
+<p><a href="http://www.cnblogs.com/pinard/p/7243513.html">1. 基于Hierarchical Softmax的模型概述</a></p>
+</li>
+<li>
+<p>Projects</p>
+</li>
+<li><a href="http://zake7749.github.io/2016/12/17/how-to-develop-chatbot/">聊天机器人的开发思路</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/26729228">新闻上的文本分类：机器学习大乱斗</a></li>
+<li><a href="https://jizhi.im/index">jizhi</a></li>
+<li><a href="https://biendata.com/">biendata</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27424282">分分钟带你杀入Kaggle Top 1%</a></li>
+<li>文本分类和标签</li>
+<li><a href="https://www.cs.cmu.edu/~diyiy/docs/naacl16.pdf">Hierarchical Attention Networks for Document Classification</a></li>
+<li><a href="https://cs224d.stanford.edu/reports/BergerMark.pdf">Large Scale Multi-label Text Classification with Semantic Word Vectors</a></li>
+<li><a href="https://www.ijcai.org/Proceedings/16/Papers/408.pdf">Recurrent Neural Network for Text Classification with Multi-Task Learning</a></li>
+<li><a href="https://arxiv.org/pdf/1510.03820.pdf">A Sensitivity Analysis of (and Practitioners’ Guide to) Convolutional Neural Networks for Sentence Classification</a></li>
+<li>
+<p><a href="https://arxiv.org/abs/1509.01626">Character-level Convolutional Networks for Text Classification</a></p>
+</li>
+<li>
+<p><a href="http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/">Implementing a CNN for Text Classification in TensorFlow</a></p>
+</li>
 </ul>
+<p>https://github.com/Qinbf/Tensorflow/blob/master/Tensorflow%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%E4%B8%8E%E6%96%87%E6%9C%AC%E5%88%86%E7%B1%BB%E5%BA%94%E7%94%A8/%E7%A8%8B%E5%BA%8F/data_handle.ipynb</p>
 <p>就是如何判断一篇文章是否抄袭了另一篇文章，哪里抄袭了。如果是人工去判断的话，非常简单。我们一般会先扫描一遍，发现有很多重复的段落和句子，基本就可以判定他们很相似了。但是如果这两篇文章表达的是同样的内容，但是很多词被替换了，语句顺序也被打乱了，这个时候，光靠扫描句子词已经无法判断了，我们得看语义。这是我们人工的做法，具体到计算机，它要如何识别这种相似呢？我们也从人工上最简单的方法开始，文档基本上就是词构成的序列，如果我们比较这两个序列的差异（计算机里面有个算法叫最小编辑距离），就可以大致得到他们是否在字面上相似。但是当面临第二个问题的时候，这种做法就失效了。</p>
 <p>第二个问题，最简单的办法是TF-IDF，把每一个文档看成是一个TF-IDF构成的向量，计算向量之间的距离来判断。TF-IDF靠的是词频统计，就是我们做一个词汇表，然后每一篇文章都是一个这种词汇表构成的向量，向量的每一个值是这个词在该文章中出现的统计词频。但是这种方法其实只是大致估算了一个文章中词的含量信息，没有给出更加具体的语义和语序比较，因此往往也不能有很高的识别率。</p>
 <p>第二种方法就是分类器，如果两篇文章的作者都是丰富的写手，他们以前写过很多文章的话，我们可以做分类器，就是作者1的文章是一类，作者2的文章是一类，如果作者2的新文章被分到作者1的类，那这篇文章可能就是抄袭的。</p>

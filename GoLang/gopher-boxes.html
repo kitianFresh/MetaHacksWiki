@@ -60,7 +60,40 @@
 <div class="clearfix"></div>
 <div id="title">gopher-boxes</div>
 <div id="content">
-  <h1 id="interative-go-programming">Interative Go Programming</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#go-tutorial-material">Go Tutorial &amp; Material</a><ul>
+<li><a href="#basics">basics</a></li>
+<li><a href="#go-patterns">go patterns</a></li>
+<li><a href="#funny">funny</a></li>
+</ul>
+</li>
+<li><a href="#interative-go-programming">Interative Go Programming</a><ul>
+<li><a href="#_1">参考</a></li>
+</ul>
+</li>
+<li><a href="#golang-for-datascience">Golang for Datascience</a><ul>
+<li><a href="#_2">参考</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="go-tutorial-material">Go Tutorial &amp; Material</h1>
+<h2 id="basics">basics</h2>
+<ul>
+<li><a href="https://tour.golang.org/">a tour of Go</a></li>
+<li><a href="https://miek.nl/go/#preface">LEARNING GO</a></li>
+<li><a href="https://yar999.gitbooks.io/gopl-zh/content/ch0/ch0-01.html">Go语言圣经</a></li>
+</ul>
+<h2 id="go-patterns">go patterns</h2>
+<ul>
+<li><a href="https://github.com/tmrts/go-patterns">Go design patterns example</a></li>
+<li><a href="https://ecs.victoria.ac.nz/foswiki/pub/Main/TechnicalReportSeries/ECSTR11-01.pdf">Evaluating the GO Programming Language with Design Patterns</a></li>
+</ul>
+<h2 id="funny">funny</h2>
+<ul>
+<li><a href="https://jeiwan.cc/posts/building-blockchain-in-go-part-1/">Building Blockchain in Go</a></li>
+</ul>
+<h1 id="interative-go-programming">Interative Go Programming</h1>
 <p>Jupyter 目前支持多种语言的内核，使得我们可以像学习Python这种动态的交互式解释型语言一样，学习GoLang这种静态的编译型语言，Amazing! <br />
 目前github上star最多的是<a href="https://github.com/gopherdata/gophernotes">Gophernotes</a>, Mac OS X支持的不完美，不支持第三方库的动态导入，因此最好在Linux下使用，最简单的办法是直接使用Docker. 另一款是<a href="https://github.com/yunabe/lgo#install">lgo</a>.</p>
 <p>采用Docker Jupyter Notebook，那关闭容器之后，当再次重启容器，就看不到jupyter 的服务端口以及token输出了，可以执行 <code>docker exec -it a7a0a00c50c9 jupyter notebook list</code> 查看当前运行的jupyter url。如果无法访问，可以执行 <code>jupyter notebook --ip 0.0.0.0 --no-browser --allow-root</code></p>
@@ -75,6 +108,7 @@
 <h2 id="_2">参考</h2>
 <ul>
 <li><a href="https://www.mjhall.org/golang-data-science-libraries/">Golang libraries for data science</a></li>
+<li><a href="https://pgaleone.eu/tensorflow/go/2017/05/29/understanding-tensorflow-using-go/">Understanding Tensorflow using Go</a></li>
 </ul>
 </div>
 <div id="content-footer">

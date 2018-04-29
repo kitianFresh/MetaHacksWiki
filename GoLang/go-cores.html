@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
-        <title>go-basics - MetaHacks Wiki</title>
+        <title>go-cores - MetaHacks Wiki</title>
         <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
         <meta name="description" content="my personal wiki"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -55,46 +55,74 @@
         <div id="container">
             
 <div id="header">
-  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#GoLang">GoLang</a>&nbsp;»&nbsp;go-basics</div>
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#GoLang">GoLang</a>&nbsp;»&nbsp;go-cores</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">go-basics</div>
+<div id="title">go-cores</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#streaming-io-in-go">Streaming IO in Go</a></li>
+<li><a href="#go-features">Go Features</a><ul>
+<li><a href="#with">with</a></li>
+<li><a href="#without">without</a></li>
+</ul>
+</li>
+<li><a href="#go-concurrency">Go Concurrency</a><ul>
+<li><a href="#communication-by-channel-without-locks">Communication by Channel without Locks</a></li>
+<li><a href="#shared-memory-and-locks">Shared Memory and Locks</a></li>
+</ul>
+</li>
+<li><a href="#go-core-concepts-diff">Go core concepts diff</a></li>
 </ul>
 </div>
-<h1 id="streaming-io-in-go">Streaming IO in Go</h1>
-<p><a href="https://medium.com/learning-the-go-programming-language/streaming-io-in-go-d93507931185">Streaming IO in Go</a></p>
-<blockquote>
-<p>bytes.NewReader creates a Reader from a byte slice (that is, a chunk of memory you already have in your program.) Useful if you want to pass a byte slice to some other API that expects a Reader. bufio.NewReader on the other hand is for wrapping existing Readers (usually ones whose Read method is relatively expensive, like a TCP connection or a file) to coalesce a bunch of easy-to-program small Read calls into a few larger ones.</p>
-<p>A bytes.Buffer is a buffer with two ends; you can only read from the <br />
-start of it, and you can only write to the end of it. No seeking. <br />
-There's no need to use both sides though; I often use it to construct <br />
-a chunk of encoded stuff in memory (by passing it to serialization <br />
-libraries expecting a Writer) then pull out the []byte at the end <br />
-(with (*bytes.Buffer).Bytes()), then stop using the bytes.Buffer and <br />
-pass the []byte I got to another layer for more work. </p>
-</blockquote>
-<p>A bytes.Reader is more explicitly only for turning a []byte into <br />
-something that's a Reader; since no modifications are possible, it can <br />
-also implement Seek and ReadAt without ambiguity, thus being more <br />
-useful to pass to other functions expecting a ReaderAt or a ReadSeeker <br />
-or whatever. </p>
+<h1 id="go-features">Go Features</h1>
+<h2 id="with">with</h2>
+<ul>
+<li>并发</li>
+<li>垃圾回收</li>
+<li>高效的实现</li>
+<li>给人以动态类型体验的静态类型系统</li>
+<li>丰富但规模有限的标准库</li>
+<li>工具化</li>
+<li>gofmt</li>
+<li>在大规模系统中的应用</li>
+</ul>
+<h2 id="without">without</h2>
+<ul>
+<li>没有隐式的数值转换</li>
+<li>没有构造函数和析构函数</li>
+<li>没有运算符重载</li>
+<li>没有默认默认参数</li>
+<li>没有继承</li>
+<li>没有泛型</li>
+<li>没有异常</li>
+<li>没有宏</li>
+<li>没有函数修饰</li>
+<li>没有线程局部存储</li>
+</ul>
+<h1 id="go-concurrency">Go Concurrency</h1>
+<h2 id="communication-by-channel-without-locks">Communication by Channel without Locks</h2>
+<h2 id="shared-memory-and-locks">Shared Memory and Locks</h2>
+<ul>
+<li><a href="https://medium.com/@kf99916/multiple-lock-based-on-input-in-golang-74931a3c8230">Multiple Lock Based on Input in Golang</a></li>
+</ul>
+<h1 id="go-core-concepts-diff">Go core concepts diff</h1>
+<ul>
+<li><a href="https://www.godesignpatterns.com/">Go core diffs</a></li>
+</ul>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
 <table>
   <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
   <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
-</table>created in <span class="create-date date"> 2018-01-28 20:30 </span></div>
+</table>created in <span class="create-date date"> 2018-04-22 18:06 </span></div>
 <div id="comments"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script type="text/javascript">
 const gitment = new Gitment({
-  id: 'go-basics',
-  title: 'go-basics',
+  id: 'go-cores',
+  title: 'go-cores',
   owner: 'kitianFresh',
   repo: 'MetaHacksWiki',
   oauth: {

@@ -1,0 +1,424 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>python-thread-locals - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-core">python-core</a>&nbsp;»&nbsp;python-thread-locals</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python-thread-locals</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#threadlocal">什么是线程局部存储(ThreadLocal)</a></li>
+<li><a href="#tls-python">TLS 在Python中的运用和实现</a><ul>
+<li><a href="#_1">简单实用</a></li>
+<li><a href="#_2">实现源码分析</a></li>
+</ul>
+</li>
+<li><a href="#tls-java">TLS 在Java 中的运用和实现</a><ul>
+<li><a href="#_3">简单实用</a></li>
+<li><a href="#_4">源码实现</a></li>
+</ul>
+</li>
+<li><a href="#_5">小结</a></li>
+<li><a href="#_6">参考</a></li>
+</ul>
+</div>
+<h1 id="threadlocal">什么是线程局部存储(ThreadLocal)</h1>
+<p>这个概念最早是相对于全局变量来说的，就是我们在编程的时候，会涉及到希望所有线程都能够共享访问同一个变量，在 Python/Go/C 中，我们就可以定义一个全局变量，这样Global Variable 对多个线程就是可见的，大家都可以操作。例如，一个全局的配置变量或单实例对象，所有线程就可以很方便访问了，但是仅仅这样有一个前提，就是这个变量的并发操作必须是幂等的，读写不影响我们程序的正确性。但是往往多线程共同操作一个全局变量，就会影响程序的正确性，因此我们必须枷锁，比如经典的并发加操作。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">threading</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">inc</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">count</span><span class="p">,</span> <span class="n">lock</span>
+    <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>上面那个例子很多博客用来做ThreadLocal变量的讲解，实际上我觉得是有误导的，不恰当的。因为这种共享变量，你必须枷锁，因为他的目的就是为了大家一起去更新一个共享变量，多线程环境下必须枷锁。就算你使用ThreadLocal替换也没用，ThreadLocal能替换这个Count变量让所有线程单独存储一份么，不满足需求。你单独存一份，更改之后还得把结果再次写回到全局变量去更新，那写会的过程还是得枷锁。除非使用Golang中的单Channel更新机制，才能避免枷锁。</p>
+<p>所以ThreadLocal变量使用强调的侧重点不在这里，更多的是在编程范式上面。其实就是有些时候，我们某个变量类型很多函数或者类都需要用，但是我又不想写死在代码里，每次传递参数都要传递这个类或者变量，因为一旦这个类发生类型上的变化，可能对于静态类型的语言，很多地方就得修改参数，而且这种变量一直在程序代码的参数传递中层层出现，你如果写过代码就会有感觉，有时候你设计的函数API好像一层层的得把一个参数传递进去，即使某些层好像用不到这个参数。</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">MySQLdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="n">charset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span>
+
+<span class="k">def</span> <span class="nf">func1</span><span class="p">(</span><span class="n">zzz</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">getMysqlConn</span><span class="p">(</span><span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">charset</span><span class="p">)</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">func2</span><span class="p">(</span><span class="n">xxx</span><span class="p">,</span><span class="n">yyy</span><span class="p">,</span><span class="n">zzz</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&quot;root&quot;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">func1</span><span class="p">(</span><span class="n">zzz</span><span class="p">,</span><span class="n">passwd</span><span class="p">,</span><span class="n">db</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">user</span><span class="p">,</span><span class="n">charset</span><span class="p">)</span>
+</pre></div>
+
+
+<p>上面的代码你可能会疯掉。那么你可能就考虑想把这个参数提出来，当成全局变量算了，哪一层用到了直接用就好了，不能让他无缘无故的不停的被当成局部变量传参。文章<a href="https://tomassetti.me/alternatives-to-global-variables-and-passing-the-same-value-over-a-long-chain-of-calls/">Alternatives to global variables and passing the same value over a long chain of calls</a>描述了这个问题，但是这个时候出现的问题就是，可能其他代码线程会不可控的更改这个变量，导致你的程序发生未知错误。你把这种参数变成全局的暴露出来，那么基于的假设就是该参数不会被随意修改！一旦这个假设崩塌，你的程序可能会发生灾难后果。这不符合软件设计的开闭原则。所以我们使用TLS技术化解这种矛盾。</p>
+<p>那么我们就设计了一种方案，就是有这样一种变量，他是全局的，但是每个线程在访问的时候都会存储一份成为自己的局部变量，修改就不会相互影响了。比如 Linux/Unix 的 C 程序库 libc 的全局变量<code>errno</code>, 这个其实就是TLS的例子。当系统调用从内核空间返回用户空间时，如果系统调用出错，那么便设置<code>errno</code>的值为一个负值，这样就不需要每次在函数内部定义局部变量。但是当多线程的概念和技术被提出后，这套机制就不再适用了，可以使用局部变量，但是不太可能去更改已有的代码了，比较好的解决方案是让每个线程都有自己的<code>errno</code>。实际上，现在的C库函数不是把出错代码写入全局量<code>errno</code>，而是通过一个函数<code>__errno_location()</code>获取一个地址，再把出错代码写入该地址，其意图就是让不同的线程使用不同的出错代码存储地点，而<code>errno</code>，现在一般已经变成了一个宏定义。每一个线程都会维护自己的一份，修改不影响其他线程。</p>
+<p>这是不是意味着ThreadLocal对象不用枷锁了？ 其实这个ThreadLocal和同步没有关系，他仅仅是提供了一种方便每个线程快速访问变量的方式，但是如果这个对象本身有些共享状态需要大家一起维护(比如Count++)，你就必须枷锁，尽管每个线程操作的是ThreadLocal副本。<a href="https://en.wikipedia.org/wiki/Thread-local_storage">维基百科</a>上有以下原话：</p>
+<blockquote>
+<p>A second use case would be multiple threads accumulating information into a global variable. To avoid a race condition, every access to this global variable would have to be protected by a mutex. Alternatively, each thread might accumulate into a thread-local variable (that, by definition, cannot be read from or written to from other threads, implying that there can be no race conditions). <strong>Threads then only have to synchronise a final accumulation from their own thread-local variable into a single, truly global variable.</strong></p>
+</blockquote>
+<p>比如我们写了一个共享的Manager类，这个类可能是用来做数据库连接，网络连接或者其他的做底层管理功能。我们有很多线程需要使用这个Manager的某些功能，并且这种类不是用来表示一种状态，供所有线程并发修改其状态并将最终修改的结果表现在该类上面（上面count的例子）。Manager只是可以提供给线程使用某些功能，然后每个线程可以把这个Manager复制一份成为自己的局部变量，自己可以随意修改，但是不会影响到其他线程，因为是复制的一份。但是如果你需要让管理器记录所有的连接操作次数，那么多线程对立面的某些变量访问比如Count就需要枷锁了。</p>
+<h1 id="tls-python">TLS 在Python中的运用和实现</h1>
+<h2 id="_1">简单实用</h2>
+<p>ThreadLocal不仅仅可以解决全局变量访问冲突，其实还有其他好处，在<a href="https://www.python.org/dev/peps/pep-0266/">PEP266</a>中有提到，ThreadLocal变量是可以减少指令加速运算的，因为全局变量往往需要更多的指令(需要for loop)来做查询访问，而ThreadLocal 之后，有了索引表，直接可以一条指令找到这个对象。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="n">userName</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">SessionThread</span><span class="p">(</span><span class="n">userName_in</span><span class="p">):</span>
+    <span class="n">userName</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">userName_in</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">userName</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>   
+
+<span class="n">Session1</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">SessionThread</span><span class="p">(</span><span class="s">&quot;User1&quot;</span><span class="p">))</span>
+<span class="n">Session2</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">SessionThread</span><span class="p">(</span><span class="s">&quot;User2&quot;</span><span class="p">))</span>
+
+<span class="c"># start the session threads</span>
+<span class="n">Session1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">Session2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="c"># wait till the session threads are complete</span>
+<span class="n">Session1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">Session2</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<p>上述Threadlocal的实现原理类似有一个全局的词典，词典的key是线程id，value就是共享的全局变量的副本。每次访问全局变量的时候，你访问到的其实是副本，只是Python使用黑魔法帮我们屏蔽了这个 <code>userName.val</code> 的访问细节，其实他访问的是词典中的对应线程所拥有的对象副本。</p>
+<h2 id="_2">实现源码分析</h2>
+<div class="hlcode"><pre><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;local&quot;</span><span class="p">]</span>
+<span class="k">class</span> <span class="nc">_localbase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="s">&#39;_local__key&#39;</span><span class="p">,</span> <span class="s">&#39;_local__args&#39;</span><span class="p">,</span> <span class="s">&#39;_local__lock&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="c"># 新建一个类对象</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="c"># 在主线程中初始化这个这个全局对象的某些属性，比如 `_local__key`, 这个key以后会用作其他线程使用全局变量副本的查询依据，以后每个线程都会根据这个key来查找自己的局部副本数据</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;_local__key&#39;</span><span class="p">,</span> <span class="s">&#39;thread.local.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__key&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__args&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
+        <span class="c"># 多线程会并发设置全局变量的属性，这时候会并发访问设置属性，因此需要一把全局锁，进行互斥操作</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__lock&#39;</span><span class="p">,</span> <span class="n">RLock</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">args</span> <span class="ow">or</span> <span class="n">kw</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__init__</span> <span class="ow">is</span> <span class="nb">object</span><span class="o">.</span><span class="n">__init__</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Initialization arguments are not supported&quot;</span><span class="p">)</span>
+
+        <span class="c"># We need to create the thread dict in anticipation of</span>
+        <span class="c"># __init__ being called, to make sure we don&#39;t call it</span>
+        <span class="c"># again ourselves.</span>
+        <span class="nb">dict</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;__dict__&#39;</span><span class="p">)</span>
+        <span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+<span class="k">def</span> <span class="nf">_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># 拿到全局的key</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__key&#39;</span><span class="p">)</span>
+    <span class="c"># 在当前线程中根据key找到线程的私有数据副本，并替换掉 ThreadLocal自己的__dict__属性。如果没有，就创建一个，并添加</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># 线程还没得私有数据副本，创建一个并加入线程自己的属性中</span>
+        <span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="c"># 替换ThreadLocal的__dict__为当前线程的私有数据词典d</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;__dict__&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+        <span class="c"># we have a new instance dict, so call out __init__ if we have</span>
+        <span class="c"># one</span>
+        <span class="c"># 这段的意思其实是，如果原来的全局变量ThreadLocal 本身有一些其他的属性和数据，那么直接替换掉一个新dict之后，以前的数据就丢失了，这里我们必须初始化以前的数据到新dict中</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">__init__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">object</span><span class="o">.</span><span class="n">__init__</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__args&#39;</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;__dict__&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">local</span><span class="p">(</span><span class="n">_localbase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__lock&#39;</span><span class="p">)</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;__dict__&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s">&quot;</span><span class="si">%r</span><span class="s"> object attribute &#39;__dict__&#39; is read-only&quot;</span>
+                <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="c"># 拿到早已经在主线程设置的共享的一把锁</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__lock&#39;</span><span class="p">)</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="c"># 关键代码，这个patch会导致 Threadlocal 这个数据的__dict__直接被换成了所在线程自己的私有数据, Python 里面有很多这种patch的替换手段，就是直接把基础库的某些功能和函数直接替换成了第三方库的比如monkey patch</span>
+            <span class="c"># 再次设置属性的时候，设置的__dict__ 其实不是 Threadlocal 自己的属性了，是而是当前所在线程的__dict__的某一个key-value 副本数据的value，这个value是一个dict</span>
+            <span class="c"># object 的setattr默认行为其实就是在自己的__dict__对象中添加一对key-pair，但是现在他的__dict__已经更换成所在线程的一个数据副本词典了，黑魔法替换就在这里</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;__dict__&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s">&quot;</span><span class="si">%r</span><span class="s"> object attribute &#39;__dict__&#39; is read-only&quot;</span>
+                <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__lock&#39;</span><span class="p">)</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">threading</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__key&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># We use the non-locking API since we might already hold the lock</span>
+            <span class="c"># (__del__ can be called at any point by the cyclic GC).</span>
+            <span class="n">threads</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">_enumerate</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c"># If enumerating the current threads fails, as it seems to do</span>
+            <span class="c"># during shutdown, we&#39;ll skip cleanup under the assumption</span>
+            <span class="c"># that there is nothing to clean up.</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">thread</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">__dict__</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">__dict__</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c"># Thread is dying, rest in peace.</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">__dict__</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">pass</span> <span class="c"># didn&#39;t have anything in this thread</span>
+
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">current_thread</span><span class="p">,</span> <span class="n">RLock</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">local</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">data</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">data</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">print</span> <span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">__dict__</span>
+    <span class="k">print</span> <span class="n">data</span><span class="o">.</span><span class="n">__dict__</span>
+    <span class="k">print</span>
+
+
+<span class="n">t1</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">777</span><span class="p">,))</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">888</span><span class="p">,))</span>
+<span class="k">print</span> <span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">t2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">t2</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">data</span><span class="o">.</span><span class="n">__dict__</span>
+</pre></div>
+
+
+<p>关键技术就在patch上面，据, Python 里面有很多这种patch的替换手段，就是直接把基础库的某些功能和函数直接替换成了第三方库的比如monkey patch. 再次设置属性的时候，设置的 <code>__dict__</code> 其实不是 <code>ThreadLocal</code> 自己的，是而是当前所在线程的 <code>__dict__</code> 的某一个 <code>key-value</code> 副本数据， <code>key</code> 就是线程访问的某个TLS变量生成的（一个线程可以有很多TLS变量，每个有不同的key），<code>value</code>是一个<code>dict</code>. <code>object</code> 的 <code>setattr</code> 默认行为其实就是在自己的<code>__dict__</code> 对象中添加一对key-pair，但是现在他的<code>__dict__</code>已经更换成所在线程的一个数据副本词典<code>dict</code>了，黑魔法替换就在这里.</p>
+<p>下面的例子展示了Python黑魔法的一个替换词典的方式，可以运行看看</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">substitute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;__dict__&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">()</span>
+<span class="n">a</span><span class="o">.</span><span class="n">y</span>  <span class="o">=</span> <span class="mi">3</span>
+<span class="n">old_dict</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">print</span> <span class="n">old_dict</span>
+<span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;x&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="n">a</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">777</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">print</span> <span class="n">d</span>
+</pre></div>
+
+
+<p>如果A本身已经含有一些数据，那就不能简单的直接复制了，还需要初始化以前的数据填充新的词典，这也是在源码中看到的。</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">current_thread</span>
+<span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_local__args&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_x</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&quot;shared_x&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_y</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&quot;shared_y&quot;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">substitute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;__dict__&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">__init__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">object</span><span class="o">.</span><span class="n">__init__</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;7---------------&quot;</span>
+            <span class="n">args</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_local__args&#39;</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">(</span><span class="n">shared_x</span><span class="o">=</span><span class="mi">111</span><span class="p">,</span> <span class="n">shared_y</span><span class="o">=</span><span class="mi">222</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">y</span>  <span class="o">=</span> <span class="mi">3</span>
+<span class="n">old_dict</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">print</span> <span class="n">old_dict</span>
+<span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;x&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="n">a</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">777</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">__dict__</span>
+<span class="k">print</span> <span class="n">d</span>
+<span class="k">print</span> <span class="n">old_dict</span>
+</pre></div>
+
+
+<p>下图就是访问每个线程访问过程，实际上操作的是线程自己的私有数据副本。同时需要注意的还是那句话，<strong>使用 ThreadLocal 对象不意味着你的程序不需要再枷锁</strong>，比如这个 ThreadLocal 对象可能又引用了其他共享状态的对象，那么就要对这个共享状态对象的操作进行枷锁实现同步和互斥。<br />
+<img src="/static/images/Python/Core/threadlocal.png" style="width:700px;height:300px;"><br />
+<caption><center> ThreadLocal 实现过程 </center></caption></p>
+<h1 id="tls-java">TLS 在Java 中的运用和实现</h1>
+<h2 id="_3">简单实用</h2>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ThreadLocalExample</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyRunnable</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+
+        <span class="kd">private</span> <span class="n">ThreadLocal</span> <span class="n">threadLocal</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ThreadLocal</span><span class="o">();</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">threadLocal</span><span class="o">.</span><span class="na">set</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">Math</span><span class="o">.</span><span class="na">random</span><span class="o">()</span> <span class="o">*</span> <span class="mi">100</span><span class="n">D</span><span class="o">));</span>
+            <span class="k">try</span> <span class="o">{</span>
+            <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">2000</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="o">}</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">threadLocal</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+         <span class="n">MyRunnable</span> <span class="n">sharedRunnableInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MyRunnable</span><span class="o">();</span>
+         <span class="n">Thread</span> <span class="n">thread1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="n">sharedRunnableInstance</span><span class="o">);</span>
+         <span class="n">Thread</span> <span class="n">thread2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="n">sharedRunnableInstance</span><span class="o">);</span>
+         <span class="n">thread1</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+         <span class="n">thread2</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2 id="_4">源码实现</h2>
+<p>有了Python版本的分析，Java版本就不再多做解释，感兴趣的可以看看源码，实现原理肯定都是大同小异，只是语言上的差异，导致 Java 不可能像Python这种动态类型语言一样灵活。 </p>
+<p><strong>需要每个线程都维护一个 key-value 集合数据结构，记录每个线程访问到的 TLS 变量副本，这样每个线程可以根据 key 来找到相应的 TLS副本数据，对副本数据进行真实的操作，而不是TLS全局变量或者静态类（Java中）</strong>。在Python中直接很简单的使用了动态数据绑定的词典数据结构，在Java中稍显麻烦，需要实现一个类似Map的结构，ThreadLocal.get() 方法其实本质上也是和Python中一样，先获取当前线程自己的ThreadLocalMap对象（就是每个线程维护的TLS key-value集合啦）。再从ThreadLocalMap对象中找出当前的ThreadLocal变量副本，和HashMap一样的采用了链地址法的hash结构。可以参考文章<a href="https://segmentfault.com/a/1190000010251063">Java 多线程（7）： ThreadLocal 的应用及原理</a>。Java 里一般是采用泛型规定你共享的变量类型，然后每个线程维护该变量的副本。</p>
+<h1 id="_5">小结</h1>
+<p>TLS技术的使用和属性：<br />
+ - 解决多线程编程中的<strong>对同一变量的访问冲突</strong>的一种技术，TLS会为<strong>每一个线程维护一个和该线程绑定的变量的副本</strong>。而<strong>不是无止尽的传递局部参数的方式编程</strong>。<br />
+ - 每一个线程都拥有自己的变量副本，<strong>并不意味着就一定不会对TLS变量中某些操作枷锁了</strong>。<br />
+ - Java平台的<code>java.lang.ThreadLocal</code>是TLS技术的一种实现， Python 中有<code>thread.local()</code>。<br />
+ - TLS使用的缺陷是，如果你的线程都不退出，那么<strong>副本数据可能一直不被GC回收，会消耗很多资源</strong>，比如线程池中，线程都不退出，使用TLS需要非常小心。</p>
+<p>TLS技术的实现原理：<br />
+<strong>需要每个线程都维护一个 key-value 集合数据结构，记录每个线程访问到的 TLS 变量副本，这样每个线程可以根据 key 来找到相应的 TLS副本数据，对副本数据进行真实的操作，而不是TLS全局变量或者静态类（Java中）</strong>。</p>
+<p><strong>TLS 变量自己会根据当前调用他的Thread对象，根据Thread对象得到该线程维护的 TLS 副本集合，然后进一步根据当前TLS的key，查到到key对一个的TLS副本数据。这样就给每个线程造成一种假象，以为大家可以同时更新一个全局共享变量或者静态类对象。</strong></p>
+<h1 id="_6">参考</h1>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000010251063">Java 多线程（7）： ThreadLocal 的应用及原理</a></li>
+</ul>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-04-28 18:32 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'python-thread-locals',
+  title: 'python-thread-locals',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
