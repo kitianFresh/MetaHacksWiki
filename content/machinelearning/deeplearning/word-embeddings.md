@@ -41,6 +41,28 @@ date: 2018-02-23 13:01
   - [Learn Word2Vec by implementing it in tensorflow](https://towardsdatascience.com/learn-word2vec-by-implementing-it-in-tensorflow-45641adaf2ac)
   - [自己动手写word2vec](http://blog.csdn.net/u014595019/article/details/51884529)
   - [Word2Vec (Part 1): NLP With Deep Learning with Tensorflow (Skip-gram)](http://www.thushv.com/natural_language_processing/word2vec-part-1-nlp-with-deep-learning-with-tensorflow-skip-gram/)
+ - Word2Vec Resources
+  - [Word2Vec Resources](http://mccormickml.com/2016/04/27/word2vec-resources/)
+  - [Word2Vec word embedding tutorial in Python and TensorFlow](http://adventuresinmachinelearning.com/word2vec-tutorial-tensorflow/)
+  - [理解 Word2Vec 之 Skip-Gram 模型](https://zhuanlan.zhihu.com/p/27234078)
+  - [1. 基于Hierarchical Softmax的模型概述](http://www.cnblogs.com/pinard/p/7243513.html)
+
+ - Projects
+  - [聊天机器人的开发思路](http://zake7749.github.io/2016/12/17/how-to-develop-chatbot/)
+  - [新闻上的文本分类：机器学习大乱斗](https://zhuanlan.zhihu.com/p/26729228)
+  - [jizhi](https://jizhi.im/index)
+  - [biendata](https://biendata.com/)
+  - [分分钟带你杀入Kaggle Top 1%](https://zhuanlan.zhihu.com/p/27424282)
+- 文本分类和标签
+  - [Hierarchical Attention Networks for Document Classification](https://www.cs.cmu.edu/~diyiy/docs/naacl16.pdf)
+  - [Large Scale Multi-label Text Classification with Semantic Word Vectors](https://cs224d.stanford.edu/reports/BergerMark.pdf)
+  - [Recurrent Neural Network for Text Classification with Multi-Task Learning](https://www.ijcai.org/Proceedings/16/Papers/408.pdf)
+  - [A Sensitivity Analysis of (and Practitioners’ Guide to) Convolutional Neural Networks for Sentence Classification](https://arxiv.org/pdf/1510.03820.pdf)
+  - [Character-level Convolutional Networks for Text Classification](https://arxiv.org/abs/1509.01626)
+
+  - [Implementing a CNN for Text Classification in TensorFlow](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)
+
+  https://github.com/Qinbf/Tensorflow/blob/master/Tensorflow%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%E4%B8%8E%E6%96%87%E6%9C%AC%E5%88%86%E7%B1%BB%E5%BA%94%E7%94%A8/%E7%A8%8B%E5%BA%8F/data_handle.ipynb
 
 就是如何判断一篇文章是否抄袭了另一篇文章，哪里抄袭了。如果是人工去判断的话，非常简单。我们一般会先扫描一遍，发现有很多重复的段落和句子，基本就可以判定他们很相似了。但是如果这两篇文章表达的是同样的内容，但是很多词被替换了，语句顺序也被打乱了，这个时候，光靠扫描句子词已经无法判断了，我们得看语义。这是我们人工的做法，具体到计算机，它要如何识别这种相似呢？我们也从人工上最简单的方法开始，文档基本上就是词构成的序列，如果我们比较这两个序列的差异（计算机里面有个算法叫最小编辑距离），就可以大致得到他们是否在字面上相似。但是当面临第二个问题的时候，这种做法就失效了。
 

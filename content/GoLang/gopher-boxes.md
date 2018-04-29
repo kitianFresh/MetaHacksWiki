@@ -3,6 +3,22 @@ title: "gopher-boxes"
 date: 2018-04-21 18:55
 ---
 
+[TOC]
+
+# Go Tutorial & Material
+## basics
+ - [a tour of Go](https://tour.golang.org/)
+ - [LEARNING GO](https://miek.nl/go/#preface)
+ - [Go语言圣经](https://yar999.gitbooks.io/gopl-zh/content/ch0/ch0-01.html)
+
+## go patterns
+ - [Go design patterns example](https://github.com/tmrts/go-patterns)
+ - [Evaluating the GO Programming Language with Design Patterns](https://ecs.victoria.ac.nz/foswiki/pub/Main/TechnicalReportSeries/ECSTR11-01.pdf)
+## funny
+ - [Building Blockchain in Go](https://jeiwan.cc/posts/building-blockchain-in-go-part-1/)
+
+
+
 # Interative Go Programming
 Jupyter 目前支持多种语言的内核，使得我们可以像学习Python这种动态的交互式解释型语言一样，学习GoLang这种静态的编译型语言，Amazing! 
 目前github上star最多的是[Gophernotes](https://github.com/gopherdata/gophernotes), Mac OS X支持的不完美，不支持第三方库的动态导入，因此最好在Linux下使用，最简单的办法是直接使用Docker. 另一款是[lgo](https://github.com/yunabe/lgo#install).
@@ -23,4 +39,5 @@ Jupyter 目前支持多种语言的内核，使得我们可以像学习Python这
 
 ## 参考
  - [Golang libraries for data science](https://www.mjhall.org/golang-data-science-libraries/)
+ - [Understanding Tensorflow using Go](https://pgaleone.eu/tensorflow/go/2017/05/29/understanding-tensorflow-using-go/)
 
