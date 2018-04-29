@@ -61,7 +61,7 @@
 <div id="title">python-thread-locals</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#threadlocal">什么是线程局部存储(ThreadLocal)</a></li>
+<li><a href="#thread-local-storage">什么是线程局部存储(Thread Local Storage)</a></li>
 <li><a href="#tls-python">TLS 在Python中的运用和实现</a><ul>
 <li><a href="#_1">简单使用</a></li>
 <li><a href="#_2">实现源码分析</a></li>
@@ -76,8 +76,8 @@
 <li><a href="#_6">参考</a></li>
 </ul>
 </div>
-<h1 id="threadlocal">什么是线程局部存储(ThreadLocal)</h1>
-<p>这个概念最早是相对于全局变量来说的，就是我们在编程的时候，会涉及到希望所有线程都能够共享访问同一个变量，在 Python/Go/C 中，我们就可以定义一个全局变量，这样Global Variable 对多个线程就是可见的，大家都可以操作。例如，一个全局的配置变量或单实例对象，所有线程就可以很方便访问了，但是仅仅这样有一个前提，就是这个变量的并发操作必须是幂等的，读写不影响我们程序的正确性。但是往往多线程共同操作一个全局变量，就会影响程序的正确性，因此我们必须枷锁，比如经典的并发加操作。</p>
+<h1 id="thread-local-storage">什么是线程局部存储(Thread Local Storage)</h1>
+<p>这个概念最早是相对于全局变量来说的，就是我们在编程的时候，会涉及到希望所有线程都能够共享访问同一个变量，在 Python/Go/C 中，我们就可以定义一个全局变量，这样Global Variable 对多个线程就是可见的，因为同一个进程所有线程共享地址空间，大家都可以操作。例如，一个全局的配置变量或单实例对象，所有线程就可以很方便访问了，但是仅仅这样有一个前提，就是这个变量的并发操作必须是幂等的，读写不影响我们程序的正确性。但是往往多线程共同操作一个全局变量，就会影响程序的正确性，因此我们必须枷锁，比如经典的并发加操作。</p>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">threading</span>
 <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
@@ -365,13 +365,13 @@
 <p><strong>需要每个线程都维护一个 key-value 集合数据结构，记录每个线程访问到的 TLS 变量副本，这样每个线程可以根据 key 来找到相应的 TLS副本数据，对副本数据进行真实的操作，而不是TLS全局变量或者静态类（Java中）</strong>。在Python中直接很简单的使用了动态数据绑定的词典数据结构，在Java中稍显麻烦，需要实现一个类似Map的结构，ThreadLocal.get() 方法其实本质上也是和Python中一样，先获取当前线程自己的ThreadLocalMap对象（就是每个线程维护的TLS key-value集合啦）。再从ThreadLocalMap对象中找出当前的ThreadLocal变量副本，和HashMap一样的采用了链地址法的hash结构。可以参考文章<a href="https://segmentfault.com/a/1190000010251063">Java 多线程（7）： ThreadLocal 的应用及原理</a>。Java 里一般是采用泛型规定你共享的变量类型，然后每个线程维护该变量的副本。</p>
 <h1 id="_5">小结</h1>
 <p>TLS技术的使用和属性：<br />
- - 解决多线程编程中的<strong>对同一变量的访问冲突</strong>的一种技术，TLS会为<strong>每一个线程维护一个和该线程绑定的变量的副本</strong>。而<strong>不是无止尽的传递局部参数的方式编程</strong>。<br />
- - 每一个线程都拥有自己的变量副本，<strong>并不意味着就一定不会对TLS变量中某些操作枷锁了</strong>。<br />
- - Java平台的<code>java.lang.ThreadLocal</code>是TLS技术的一种实现， Python 中有<code>thread.local()</code>。<br />
- - TLS使用的缺陷是，如果你的线程都不退出，那么<strong>副本数据可能一直不被GC回收，会消耗很多资源</strong>，比如线程池中，线程都不退出，使用TLS需要非常小心。</p>
+ - <font color="red"> 解决多线程编程中的<strong>对同一变量的访问冲突</strong>的一种技术，TLS会为<strong>每一个线程维护一个和该线程绑定的变量的副本</strong>。而<strong>不是无止尽的传递局部参数的方式编程</strong>。</font><br />
+ - <font color="red"> 每一个线程都拥有自己的变量副本，<strong>并不意味着就一定不会对TLS变量中某些操作枷锁了</strong>。</font><br />
+ - Java平台的<code>java.lang.ThreadLocal</code> 和 Python 中的<code>threading.local()</code>都是TLS技术的一种实现，。<br />
+ - <font color="red"> TLS使用的缺陷是，如果你的线程都不退出，那么<strong>副本数据可能一直不被GC回收，会消耗很多资源</strong>，比如线程池中，线程都不退出，使用TLS需要非常小心。</font></p>
 <p>TLS技术的实现原理：<br />
-<strong>需要每个线程都维护一个 key-value 集合数据结构，记录每个线程访问到的 TLS 变量副本，这样每个线程可以根据 key 来找到相应的 TLS副本数据，对副本数据进行真实的操作，而不是TLS全局变量或者静态类（Java中）</strong>。</p>
-<p><strong>TLS 变量自己会根据当前调用他的Thread对象，根据Thread对象得到该线程维护的 TLS 副本集合，然后进一步根据当前TLS的key，查到到key对一个的TLS副本数据。这样就给每个线程造成一种假象，以为大家可以同时更新一个全局共享变量或者静态类对象。</strong></p>
+<font color="blue"> 需要每个线程都维护一个 key-value 集合数据结构，记录每个线程访问到的 TLS 变量副本，这样每个线程可以根据 key 来找到相应的 TLS副本数据，对副本数据进行真实的操作，而不是TLS全局变量或者静态类(Java中).</font></p>
+<p><font color="blue"> TLS 变量自己会根据当前调用他的Thread对象，根据Thread对象得到该线程维护的 TLS 副本集合，然后进一步根据当前TLS的key，查到到key对一个的TLS副本数据。这样就给每个线程造成一种假象，以为大家可以同时更新一个全局共享变量或者静态类对象。</font></p>
 <h1 id="_6">参考</h1>
 <ul>
 <li><a href="https://segmentfault.com/a/1190000010251063">Java 多线程（7）： ThreadLocal 的应用及原理</a></li>
