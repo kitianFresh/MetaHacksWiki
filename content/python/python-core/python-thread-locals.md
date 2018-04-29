@@ -45,7 +45,7 @@ def func2(xxx,yyy,zzz, passwd, db, host="localhost", port=3306, user="root", cha
 比如我们写了一个共享的Manager类，这个类可能是用来做数据库连接，网络连接或者其他的做底层管理功能。我们有很多线程需要使用这个Manager的某些功能，并且这种类不是用来表示一种状态，供所有线程并发修改其状态并将最终修改的结果表现在该类上面（上面count的例子）。Manager只是可以提供给线程使用某些功能，然后每个线程可以把这个Manager复制一份成为自己的局部变量，自己可以随意修改，但是不会影响到其他线程，因为是复制的一份。但是如果你需要让管理器记录所有的连接操作次数，那么多线程对立面的某些变量访问比如Count就需要枷锁了。
 
 # TLS 在Python中的运用和实现
-## 简单实用
+## 简单使用
  ThreadLocal不仅仅可以解决全局变量访问冲突，其实还有其他好处，在[PEP266](https://www.python.org/dev/peps/pep-0266/)中有提到，ThreadLocal变量是可以减少指令加速运算的，因为全局变量往往需要更多的指令(需要for loop)来做查询访问，而ThreadLocal 之后，有了索引表，直接可以一条指令找到这个对象。
 
 ```python
@@ -260,12 +260,12 @@ print old_dict
 ```
 
 下图就是访问每个线程访问过程，实际上操作的是线程自己的私有数据副本。同时需要注意的还是那句话，**使用 ThreadLocal 对象不意味着你的程序不需要再枷锁**，比如这个 ThreadLocal 对象可能又引用了其他共享状态的对象，那么就要对这个共享状态对象的操作进行枷锁实现同步和互斥。
-<img src="/static/images/Python/Core/threadlocal.png" style="width:700px;height:300px;">
-<caption><center> ThreadLocal 实现过程 </center></caption>
+<div align="center"><img src="/static/images/Python/Core/threadlocal.png" style="width:700px;height:500px;">
+<caption><center> ThreadLocal 实现过程 </center></caption></div>
 
 
 # TLS 在Java 中的运用和实现
-## 简单实用
+## 简单使用
 ```java
 public class ThreadLocalExample {
 
