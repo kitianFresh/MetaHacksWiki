@@ -6,6 +6,7 @@ date: 2018-02-23 13:01
 [TOC]
 
 # Word Embeddings#
+## Intuition
 在介绍词向量之前，我们先说如何在计算机中表示一个词。
 
 不论是哪一国语言，如果我们考虑请语言学家，根据语法和规则来学习某门语言，由于每种语言有他的语法，耗费的人力成本和时间成本非常高，并且基于语法和规则的翻译，系统也是很难编写的。Google 就是一个例子，他们每开除一名语言学家，机器翻译准确率就会提升。尽管不同语言有不同的语法，但是他们都有更抽象abstract和更加通用general的结构能够被学习到，那是什么呢，你会发现，大多数语言都是由字符构成单词（词素，词素再构成单词un+fortunate+ly）（汉语，日语，韩语可能是基本笔画构成字），词构成句子，句子构成段落，段落构成文章。然后从语义上来讲，不同语言相同语义的某些词，他必定出现在不同语言相同语义的上下文，什么意思呢？比如，"机器学习是实现人工智能的最好的方法之一"，"machine learning is one of best ways of achieving artificial intelligience"。不管是哪一种语言，机器学习(machine learning)可能往往出现在人工智能(artificial intelligience)的上下文。这些都是可以学习的隐含pattern。你会发现，一旦你找到了一种可以学习这些pattern的模型，那么你就找到了更加通用的解决方案，不同的语言，使用语料库进行训练即可得到模型，不需要和传统的基于规则和语法的编程一样，每次换一门语言，需要重新学习规则，重新编写系统。
@@ -21,10 +22,23 @@ date: 2018-02-23 13:01
 词嵌入向量具有很强的泛化和迁移学习能力，即使使用很小的训练集学习出来的词向量，也很容易应用与其他词。
 ## word represention
 ## embedding matrix
+### 为什么Word2Vec 不使用正则项？
+因为Word2Vec的目的并不是为了让这个模型去适应语料库意外的语料，也不是用来再去预测其他的未见过测用例，他只是为了训练出当前语料库中所有单词的词向量。只需要拟合当前数据即可，不需要泛化。
+### 为什么Word2Vec 隐藏层没有使用激活函数？
+目的不是为了泛化，也不需要激活，激活是为了
+
+### Word2Vec 两个矩阵能够使用同一个吗？也就是说 W.T = W'
+目前网上没人思考过这个问题，如果我们得到了第一个矩阵是词嵌入矩阵，他的每一行代表的是对应单词的词向量，然后采用计算隐层向量（他其实就是某个词向量）和其他所有词向量的距离，用这个距离来度量输入词和其他词之间的关系，以此再进行softmax概率分布来评估误差，但是你不能还是用第一个矩阵来学习，因为第一个矩阵是用来学习词嵌入的，第二个矩阵是用来学习词嵌入和他的上下文单词关系的，这是两个不同的学习对象，因此我们需要再引入一个新矩阵来学习。
+
+目前我认为如果不能的话，应该是这个原因。但是如果可以的话，我觉得也说得通，这得做实验了。
+
+### 为什么取第一个矩阵做词向量而不是第二个矩阵？
+目前网上没人思考过这个问题，目前的解释认为从one-hot 输入到隐层其实是编码进入词向量空间，第一层映射是真实的拿到词向量，也就是说第一个矩阵才是学习我们需要的词向量的矩阵，从隐层到输出是解码到one-hot，但是第二层映射解码出来的目的不是变会原来输入单词的one-hot,而是尽可能匹配出上下文单词的one-hot。也即是说第二层映射过程中发生的是距离计算和度量，第二个矩阵学习到的是某个词向量和他上下文距离远近的关系。
 
 # Learning Word Embeddings
 ## word2vec
-## negative sampling
+## hierarchical softmax & negative sampling for speeding training
+
 ## GloVe word vectors
 ## 参考资料
  - 论文
@@ -37,15 +51,15 @@ date: 2018-02-23 13:01
   - [秒懂词向量Word2vec的本质](https://mp.weixin.qq.com/s/aeoFx6sIX6WNch51XRF5sg)
   - [理解 Word2Vec 之 Skip-Gram 模型](https://zhuanlan.zhihu.com/p/27234078)
   - [深度学习word2vec笔记之基础篇算法篇应用篇--写的非常到位](http://blog.csdn.net/han____shuai/article/details/50882135)
+  - [词嵌入的直觉理解：从计数向量到 Word2Vec](http://blog.idejie.com/2017/08/13/word-embeding/)
  - 实现
   - [Learn Word2Vec by implementing it in tensorflow](https://towardsdatascience.com/learn-word2vec-by-implementing-it-in-tensorflow-45641adaf2ac)
   - [自己动手写word2vec](http://blog.csdn.net/u014595019/article/details/51884529)
   - [Word2Vec (Part 1): NLP With Deep Learning with Tensorflow (Skip-gram)](http://www.thushv.com/natural_language_processing/word2vec-part-1-nlp-with-deep-learning-with-tensorflow-skip-gram/)
+  - [Word2Vec word embedding tutorial in Python and TensorFlow](http://adventuresinmachinelearning.com/word2vec-tutorial-tensorflow/)
  - Word2Vec Resources
   - [Word2Vec Resources](http://mccormickml.com/2016/04/27/word2vec-resources/)
-  - [Word2Vec word embedding tutorial in Python and TensorFlow](http://adventuresinmachinelearning.com/word2vec-tutorial-tensorflow/)
   - [理解 Word2Vec 之 Skip-Gram 模型](https://zhuanlan.zhihu.com/p/27234078)
-  - [1. 基于Hierarchical Softmax的模型概述](http://www.cnblogs.com/pinard/p/7243513.html)
 
  - Projects
   - [聊天机器人的开发思路](http://zake7749.github.io/2016/12/17/how-to-develop-chatbot/)

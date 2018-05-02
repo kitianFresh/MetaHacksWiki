@@ -14,8 +14,9 @@ date: 2018-04-21 18:55
 ## go patterns
  - [Go design patterns example](https://github.com/tmrts/go-patterns)
  - [Evaluating the GO Programming Language with Design Patterns](https://ecs.victoria.ac.nz/foswiki/pub/Main/TechnicalReportSeries/ECSTR11-01.pdf)
-## funny
+## funny projects tutorial
  - [Building Blockchain in Go](https://jeiwan.cc/posts/building-blockchain-in-go-part-1/)
+ - [Writing a Static Blog Generator in Go](https://zupzup.org/static-blog-generator-go/)
 
 
 

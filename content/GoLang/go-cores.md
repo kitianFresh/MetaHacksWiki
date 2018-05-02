@@ -33,5 +33,10 @@ date: 2018-04-22 18:06
 ## Shared Memory and Locks
  - [Multiple Lock Based on Input in Golang](https://medium.com/@kf99916/multiple-lock-based-on-input-in-golang-74931a3c8230)
 
+## Go coroutine so many and multi-core parallel programming
+ - [Why you can have millions of Goroutines but only thousands of Java Threads](https://rcoh.me/posts/why-you-can-have-a-million-go-routines-but-only-1000-java-threads/)
+ - [GoLang vs Python: deep dive into the concurrency](https://made2591.github.io/posts/go-py-benchmark)
+ - [Multi-Core Parallel Programming in Go](http://www.ualr.edu/pxtang/papers/acc10.pdf)
+
 # Go core concepts diff
  - [Go core diffs](https://www.godesignpatterns.com/)

@@ -48,3 +48,6 @@ At last, this course specification will lay a solid foundation about deep learni
 ```python
 
 ```
+
+# courses
+ - [course.fast.ai](http://course.fast.ai/index.html)
