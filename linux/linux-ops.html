@@ -73,6 +73,7 @@
 </li>
 <li><a href="#check-dev-file-system">check dev file system</a></li>
 <li><a href="#_3">检查占用空间大的文件</a></li>
+<li><a href="#md5">大文件分块计算md5 的命令</a></li>
 </ul>
 </div>
 <h1 id="linux">Linux 软件源更新</h1>
@@ -244,6 +245,18 @@ ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
 </ol>
 <h1 id="_3">检查占用空间大的文件</h1>
 <div class="hlcode"><pre><span class="n">sudo</span> <span class="n">find</span> <span class="p">.</span> <span class="o">-</span><span class="n">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">size</span> <span class="o">+</span><span class="mi">1000</span><span class="n">M</span>  <span class="o">-</span><span class="n">print0</span> <span class="o">|</span> <span class="n">xargs</span> <span class="o">-</span><span class="mi">0</span> <span class="n">du</span> <span class="o">-</span><span class="n">h</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">nr</span>
+</pre></div>
+
+
+<h1 id="md5">大文件分块计算md5 的命令</h1>
+<p>例如 5M 一块，可以设置块大小1M, 一次读入5个就是可以当成读一大块5M了，然后skip可以设置偏移量。比如 14M 可以如下操作，分三块读。</p>
+<div class="hlcode"><pre><span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">0</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">5</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">10</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+<span class="c"># 最后计算连接的md5</span>
+<span class="n">cat</span> <span class="n">checksums</span><span class="o">.</span><span class="n">txt</span> <span class="o">|</span> <span class="n">md5</span>
 </pre></div>
 </div>
 <div id="content-footer">

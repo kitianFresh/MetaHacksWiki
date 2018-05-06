@@ -69,6 +69,17 @@
 <li><a href="#go">Go测试未提供的东西</a></li>
 <li><a href="#http">Http 框架测试</a></li>
 <li><a href="#gin">Gin 框架的测试</a></li>
+<li><a href="#_5">测试参数</a></li>
+</ul>
+</li>
+<li><a href="#go_1">Go 项目依赖管理</a><ul>
+<li><a href="#go_2">Go 项目目录</a></li>
+<li><a href="#go-get">Go Get</a></li>
+<li><a href="#go-vendor">Go Vendor</a><ul>
+<li><a href="#govendor">govendor更多命令</a></li>
+<li><a href="#_6">测试出错</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -116,7 +127,7 @@
 <h2 id="_2">测试单个文件或者单个函数</h2>
 <p>测试整个包，直接到包目录运行<code>go test</code>, 或者运行 <code>go test cloud-go/pkg/glance-go/store</code>。</p>
 <p>如果你不想测试整个包，而是单个文件，这个时候你得注意了！如果你直接用 <code>go test xxx_test.go</code>, 可能会一直报 <code>yyy variable not defined</code>. 你明明已经定义了，其实这和 gcc 编译器一样的，如果你 test 文件里边引用了其他文件或者包的变量，你必须在后面添加相应的文件，指明依赖。因此这个比较蛋疼。所以我们还可以采用正则匹配函数名的形式，单独测试某些函数即可。</p>
-<p>采用命令 <code>go test -v -run="French|Canal"</code> 会自动执行名字含有 <code>French</code> 或者 <code>Canal</code> 的测试函数。也可以这样写 <code>go test -v -test.run TestSwiftClient</code>。 但是执行函数测试，你必须到函数所在的包目录下执行才行。</p>
+<p>采用命令 <code>go test -v -run="French|Canal"</code> 会自动执行名字含有 <code>French</code> 或者 <code>Canal</code> 的测试函数。里面是正则匹配，可以写<code>^French$</code>只匹配一个。 但是执行函数测试，你必须到函数所在的包目录下执行才行。</p>
 <h2 id="_3">黑盒测试和白盒测试</h2>
 <p>黑盒测试只关注某个函数的功能输出是否和预期相同，不关心包内部变量的变化，如果需要查看包内数据结构和变量的变化，得采用白盒测试。</p>
 <p>什么时候需要白盒测试，比如下面的例子，有的时候某些功能是需要和数据库或者其他的网络文件打交道的，这些函数我们想要在测试的时候直接替换成其他的我们写的函数，那么测试框架必须要知道替换谁，能够访问到包的内部函数以及变量。这里需要注意的时，每一次测试完成之后一定要修改回去原来的值，以避免影响其他测试正常进行。</p>
@@ -185,6 +196,99 @@
    <span class="nx">assert</span><span class="p">.</span><span class="nx">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">[</span><span class="s">&quot;hello&quot;</span><span class="p">],</span> <span class="nx">value</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
+
+
+<h2 id="_5">测试参数</h2>
+<ol>
+<li>测试的时候无法输出glog日志到控制台<br />
+<code>go test -logtostderr=true  -v -run 'TestSwiftClientLargeObject'</code></li>
+<li>测试的时候因为IO等待10分钟以上被导致进程被kill<br />
+<code>go test -timeout 30m  -v -run ^TestSwiftClientLargeObject$</code></li>
+</ol>
+<h1 id="go_1">Go 项目依赖管理</h1>
+<h2 id="go_2">Go 项目目录</h2>
+<p>一般GOPATH设置的是所有GO项目的根目录，比如<code>GOPATH="/home/user/go-projects:/usr/local/go"</code>, 比如我们的项目一般在<code>go-projects</code>目录下，该目录组织结构是这样的，没有就新建文件夹。</p>
+<div class="hlcode"><pre><span class="o">.</span>
+<span class="err">├──</span> <span class="nb">bin</span>
+<span class="err">├──</span> <span class="n">pkg</span>
+<span class="err">└──</span> <span class="n">src</span>
+</pre></div>
+
+
+<p>那我们的项目在哪里，源码都会放在src目录下，项目的打包都在pkg目录，二进制文件都在bin目录，我们自己的项目和第三方库都是在src目录下面。比如我的几个不同的项目 <code>cloud-go</code>, <code>client-go</code>, 第三方库项目都会在<code>github.com</code>目录下面。</p>
+<div class="hlcode"><pre><span class="err">├──</span> <span class="n">bin</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">fillstruct</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">go</span><span class="o">-</span><span class="n">find</span><span class="o">-</span><span class="n">references</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">go</span><span class="o">-</span><span class="n">outline</span>
+<span class="err">├──</span> <span class="n">pkg</span>
+<span class="err">│  </span> <span class="err">└──</span> <span class="n">darwin_amd64</span>
+<span class="err">└──</span> <span class="n">src</span>
+    <span class="err">├──</span> <span class="n">client</span><span class="o">-</span><span class="n">go</span>
+    <span class="err">├──</span> <span class="n">cloud</span><span class="o">-</span><span class="n">go</span>
+    <span class="err">├──</span> <span class="n">github</span><span class="p">.</span><span class="n">com</span>
+    <span class="err">├──</span> <span class="n">golang</span><span class="p">.</span><span class="n">org</span>
+    <span class="err">├──</span> <span class="n">paas</span><span class="o">-</span><span class="n">dbha</span>
+    <span class="err">└──</span> <span class="n">sourcegraph</span><span class="p">.</span><span class="n">com</span>
+</pre></div>
+
+
+<h2 id="go-get">Go Get</h2>
+<p><code>go get</code> 命令自动会找到GOPATH 里的第一个目录，让后把第三方库下载安装到上面的src目录里。</p>
+<h2 id="go-vendor">Go Vendor</h2>
+<p>自己项目的包需要单独管理，而不是公用公共的包的时候，我们可以使用 <code>govendor</code> 工具。在自己项目根目录下面执行<code>govendor init</code>,即会生产一个 <code>vendor</code>目录。</p>
+<p>如果你需要在自己的项目中引用所有需要的库，可以在你自己的项目目录下执行 <code>govendor add +external</code>，他会将GOPATH目录下下载的包，拷贝到你自己的项目的vendor目录下面。 <code>vendor.json</code> 文件里面记录了所有引用的包。如果你的外部依赖更新了，但是vendor里面没有重新加入，有时候会出现模型奇妙的参数类型错误。</p>
+<div class="hlcode"><pre><span class="err">├──</span> <span class="n">Makefile</span>
+<span class="err">├──</span> <span class="n">README</span><span class="p">.</span><span class="n">md</span>
+<span class="err">├──</span> <span class="n">cmd</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">glance</span><span class="o">-</span><span class="n">go</span>
+<span class="err">├──</span> <span class="n">deploy</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">glance</span><span class="o">-</span><span class="n">go</span>
+<span class="err">├──</span> <span class="n">etc</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">glance</span><span class="o">-</span><span class="n">go</span><span class="p">.</span><span class="n">toml</span>
+<span class="err">├──</span> <span class="n">pkg</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">glance</span><span class="o">-</span><span class="n">go</span>
+<span class="err">│  </span> <span class="err">├──</span> <span class="n">util</span>
+<span class="err">│  </span> <span class="err">└──</span> <span class="n">version</span>
+<span class="err">└──</span> <span class="n">vendor</span>
+    <span class="err">├──</span> <span class="n">git</span><span class="p">.</span><span class="n">openstack</span><span class="p">.</span><span class="n">org</span>
+    <span class="err">├──</span> <span class="n">git</span><span class="p">.</span><span class="n">sankuai</span><span class="p">.</span><span class="n">com</span>
+    <span class="err">├──</span> <span class="n">github</span><span class="p">.</span><span class="n">com</span>
+    <span class="err">├──</span> <span class="n">golang</span><span class="p">.</span><span class="n">org</span>
+    <span class="err">├──</span> <span class="n">gopkg</span><span class="p">.</span><span class="n">in</span>
+    <span class="err">├──</span> <span class="n">k8s</span><span class="p">.</span><span class="n">io</span>
+    <span class="err">└──</span> <span class="n">vendor</span><span class="p">.</span><span class="n">json</span>
+</pre></div>
+
+
+<h3 id="govendor">govendor更多命令</h3>
+<ul>
+<li><a href="https://github.com/kardianos/govendor">govendor</a><br />
+状态  缩写状态    含义<br />
++local  l   本地包，即项目自身的包组织<br />
++external   e   外部包，即被 $GOPATH 管理，但不在 vendor 目录下<br />
++vendor v   已被 govendor 管理，即在 vendor 目录下<br />
++std    s   标准库中的包<br />
++unused u   未使用的包，即包在 vendor 目录下，但项目并没有用到<br />
++missing    m   代码引用了依赖包，但该包并没有找到<br />
++program    p   主程序包，意味着可以编译为执行文件<br />
++outside        外部包和缺失的包<br />
++all        所有的包<br />
+常见的命令如下，格式为 govendor COMMAND。</li>
+</ul>
+<p>通过指定包类型，可以过滤仅对指定包进行操作。</p>
+<p>命令  功能<br />
+init    初始化 vendor 目录<br />
+list    列出所有的依赖包<br />
+add 添加包到 vendor 目录，如 govendor add +external 添加所有外部包<br />
+add PKG_PATH    添加指定的依赖包到 vendor 目录<br />
+update  从 $GOPATH 更新依赖包到 vendor 目录<br />
+remove  从 vendor 管理中删除依赖<br />
+status  列出所有缺失、过期和修改过的包<br />
+fetch   添加或更新包到本地 vendor 目录<br />
+sync    本地存在 vendor.json 时候拉去依赖包，匹配所记录的版本<br />
+get 类似 go get 目录，拉取依赖包到 vendor 目录</p>
+<h3 id="_6">测试出错</h3>
+<p><code>use of internal package not allowed</code>, 一般是你引用的包出问题了，在vendor 目录下删除报错的包，然后重新 <code>govendor add +external</code></p>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
