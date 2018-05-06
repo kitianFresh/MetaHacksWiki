@@ -171,3 +171,16 @@ ls -1 | wc -l && time find . -type f -delete
 ```
 sudo find . -type f -size +1000M  -print0 | xargs -0 du -h | sort -nr
 ```
+
+
+# 大文件分块计算md5 的命令
+例如 5M 一块，可以设置块大小1M, 一次读入5个就是可以当成读一大块5M了，然后skip可以设置偏移量。比如 14M 可以如下操作，分三块读。
+```python
+dd bs=1m count=5 skip=0 if=someFile | md5 >>checksums.txt
+
+dd bs=1m count=5 skip=5 if=someFile | md5 >>checksums.txt
+
+dd bs=1m count=5 skip=10 if=someFile | md5 >>checksums.txt
+# 最后计算连接的md5
+cat checksums.txt | md5
+```
