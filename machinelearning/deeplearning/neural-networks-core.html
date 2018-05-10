@@ -60,18 +60,183 @@
 <div class="clearfix"></div>
 <div id="title">neural-networks-core</div>
 <div id="content">
-  <h1 id="_1">神经网络实践核心概念</h1>
-<h2 id="traindevtest">Train/Dev/Test</h2>
-<h2 id="bias-variances">偏差bias 和 方差 variances</h2>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#traindevtest">Train/Dev/Test</a><ul>
+<li><a href="#_1">注意</a></li>
+</ul>
+</li>
+<li><a href="#bias-variances">偏差bias 和 方差 variances</a><ul>
+<li><a href="#-">偏差-方差分解</a></li>
+<li><a href="#_2">过拟合与欠拟合</a></li>
+</ul>
+</li>
+<li><a href="#_3">解决方案</a><ul>
+<li><a href="#_4">高方差(过拟合)</a><ul>
+<li><a href="#regularization">正则化 Regularization</a></li>
+<li><a href="#inverted-dropout">反向随机失活 Inverted Dropout</a></li>
+<li><a href="#data-augmentation">数据集扩增 Data Augmentation</a></li>
+<li><a href="#early-stop">提前终止训练 Early Stop</a></li>
+</ul>
+</li>
+<li><a href="#_5">高偏差(欠拟合)</a></li>
+<li><a href="#normalizing-inputs">数据归一化(Normalizing inputs)</a></li>
+<li><a href="#vanishingexploding-gradients">梯度消失与爆炸(Vanishing/Exploding Gradients)</a></li>
+<li><a href="#weights-initialization">权重初始化(Weights Initialization)</a><ul>
+<li><a href="#xavier-initialization">Xavier Initialization</a></li>
+<li><a href="#he-initialization">He Initialization</a></li>
+</ul>
+</li>
+<li><a href="#gradient-checking">梯度检查(Gradient Checking)</a></li>
+</ul>
+</li>
+<li><a href="#neural-network-optimization">神经网络优化(Neural Network Optimization)</a><ul>
+<li><a href="#bgdsgdmini-batch-gd">BGD/SGD/mini-batch-GD</a></li>
+<li><a href="#exponetially-weighted-averages-and-bias-correction">指数加权平均与校正(Exponetially weighted averages and bias correction)</a></li>
+<li><a href="#gradient-descent-with-momentum">动量梯度下降法(gradient descent with momentum)</a></li>
+<li><a href="#rmsprop">RMSprop(均方根传播)</a></li>
+<li><a href="#adamadaptive-momentum-estimation-momentum-rmsprop">Adam(Adaptive momentum estimation) = Momentum + RMSprop</a></li>
+<li><a href="#learning-rate-decay">学习率衰减(Learning rate decay)</a></li>
+</ul>
+</li>
+<li><a href="#gridsearch-randomsearch">GridSearch &amp; RandomSearch</a></li>
+<li><a href="#courses">courses</a></li>
+</ul>
+</div>
+<h1 id="traindevtest">Train/Dev/Test</h1>
+<p>数据样本划分一下几部分：<br />
+ - 训练集(Train set):　用来训练模型的数据集合<br />
+ - 验证集(Development set): 利用验证集（有时候叫cross validation set） 进行交叉验证，选出最好的模型。一般会用来进行交叉验证来选取出组好的超参数。<br />
+ - 测试集(Test set): 在训练完成之后对测试集合进行测试，获取模型运行的无偏估计。该集合是用来评估我们的模型好坏的。<br />
+在小数据集和传统机器学习时代，比如100,1000,10000,100000等，数据集划分比例一般是:<br />
+ - 无验证集合情况：　70%/30%<br />
+ - 有验证集合情况：　60%/20%/20%<br />
+在大数据时代以及深度学习时代，数据集合规模达到百万级别，验证集合和测试集合比重趋于更小。</p>
+<p>验证集的目的是评估不同的模型(一般是不同的超参数得到的模型)那种更加有效，所以验证集合只要足够大到可以验证2-10种模型那种更好，不需要使用20%数据集验证，百万数据集抽取１万即可验证。</p>
+<p>测试集的目标是评估模型效果，所以当数据集百万的时候也只需要１%就足够了。以上的少量不能随意，要剧本和训练集一样的多样性和相同的分布，虽然只有１万个，但是要具备多样性，要能够代表你数据集合整体。<br />
+ - 100万数据: 98%/1%/1%<br />
+ - 百万以上：　99.5%/0.25%/0.25%</p>
+<h2 id="_1">注意</h2>
+<p><strong>验证集要和训练集来自于同一个分布</strong>（数据来源一致），可以使得机器学习算法变得更快并获得更好的效果。<br />
+如果不需要用无偏估计来评估模型的性能，则可以不需要测试集</p>
+<h1 id="bias-variances">偏差bias 和 方差 variances</h1>
+<h2 id="-">偏差-方差分解</h2>
+<p>“偏差-方差分解”（bias-variance decomposition）是解释学习算法泛化性能的一种重要工具。</p>
+<p>泛化误差可分解为偏差、方差与噪声之和：<br />
+ - 偏差：度量了学习算法的期望预测与真实结果的偏离程度，即刻画了<strong>学习算法本身的拟合能力</strong>；<br />
+ - 方差：度量了同样大小的训练集的变动所导致的学习性能的变化，即刻画了<strong>数据扰动所造成的影响</strong>；<br />
+ - 噪声：表达了在当前任务上任何学习算法所能够达到的期望泛化误差的下界，即刻画了<strong>学习问题本身的难度</strong>。<br />
+偏差-方差分解说明，<strong>泛化性能是由学习算法的能力、数据的充分性以及学习任务本身的难度所共同决定的</strong>。给定学习任务，为了取得好的泛化性能，则需要使偏差较小，即能够充分拟合数据，并且使方差较小，即使得数据扰动产生的影响小。</p>
 <h2 id="_2">过拟合与欠拟合</h2>
-<h2 id="regularization">正则化 Regularization</h2>
-<h2 id="inverted-dropout">反向随机失活 Inverted Dropout</h2>
-<h2 id="data-augmentation">数据集扩增 Data Augmentation</h2>
-<h2 id="early-stop">提前终止训练 Early Stop</h2>
+<ul>
+<li>过拟合: 训练集上的误差非常小，测试集上的误差非常大</li>
+<li>欠拟合: 训练集和测试集上的误差都比较大且两者相当<br />
+在欠拟合（underfitting）的情况下，出现高偏差（high bias）的情况，即不能很好地对数据进行分类。</li>
+</ul>
+<p>当模型设置的太复杂时，训练集中的一些噪声没有被排除，使得模型出现过拟合（overfitting）的情况，在验证集上出现高方差（high variance）的现象。</p>
+<p>当训练出一个模型以后，如果：</p>
+<ul>
+<li>训练集的错误率较小，而验证集的错误率却较大，说明模型存在较大方差，可能出现了过拟合；</li>
+<li>训练集和开发集的错误率都较大，且两者相当，说明模型存在较大偏差，可能出现了欠拟合；</li>
+<li>训练集错误率较大，且开发集的错误率远较训练集大，说明方差和偏差都较大，模型很差；</li>
+<li>训练集和开发集的错误率都较小，且两者的相差也较小，说明方差和偏差都较小，这个模型效果比较好。</li>
+</ul>
+<p>需要指出的是，误差的概念是相对的，不是说15% 误差就一定是不好，他是相对于我们实际最优误差而言的，如果你的误差比这个可接受的最优误差好或者接近，则也是好的。最优误差通常也称为“贝叶斯误差”。</p>
+<h1 id="_3">解决方案</h1>
+<h2 id="_4">高方差(过拟合)</h2>
+<h3 id="regularization">正则化 Regularization</h3>
+<p>正则化在机器学习中非常适用，通过对参数引入惩罚，减低模型复杂度，提高模型泛华能力，解决高偏差问题。<br />
+逻辑斯特回归的正则化例子<br />
+$$<br />
+J(w,b) = \frac{1}{m}\sum_{i=1}^mL(\hat{y}^{(i)},y^{(i)})+\frac{\lambda}{2m}{||w||}^2_2<br />
+$$<br />
+ - L2<br />
+ $$<br />
+ \frac{\lambda}{2m}{||w||}^2_2 = \frac{\lambda}{2m}\sum_{j=1}^{n_x}w^2_j = \frac{\lambda}{2m}w^Tw<br />
+ $$<br />
+ - L1<br />
+ $$<br />
+ \frac{\lambda}{2m}{||w||}<em j="1">1 = \frac{\lambda}{2m}\sum</em>^{n_x}{|w_j|}<br />
+ $$<br />
+神经网络正则化例子<br />
+成本函数：<br />
+$$<br />
+J(w^{[1]}, b^{[1]}, ..., w^{[L]}, b^{[L]}) = \frac{1}{m}\sum_{i=1}^mL(\hat{y}^{(i)},y^{(i)})+\frac{\lambda}{2m}\sum_{l=1}^L{{||w^{[l]}||}}^2_F<br />
+$$<br />
+$w^{[l]} shape = (n^{[l-1]}, n^{[l]})$. 有如下公式：<br />
+$$<br />
+{{||w^{[l]}||}}^2_F = \sum^{n^{[l-1]}}<em j="1">{i=1}\sum^{n^{[l]}}</em>(w^{[l]}_{ij})^2<br />
+$$</p>
+<p>正则化可以让参数和损失一起减小，这样可以让某些参数不会太大，就可以防止过多参数对某些特征维度的过度关心和学习，减小对噪声的学习，从而提高泛化能力。</p>
+<h3 id="inverted-dropout">反向随机失活 Inverted Dropout</h3>
+<p>Dropout 是神经网络模型的另外一种正则化手段，一般用在CNN。就是在训练过程中随机去除某些节点，不参与权重更新。这个效果会使得我们的神经元不会过度依赖某些输入数据特征，也就不会给某些权重设置的过大，达到和L2正则一样的权重收缩效果。<br />
+实现dropout的代码是反向随机失活，这里有一个技巧是对输出的激活值除以保留概率:</p>
+<div class="hlcode"><pre><span class="n">keep_prob</span> <span class="o">=</span> <span class="mf">0.8</span>    <span class="c"># 设置神经元保留概率</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">al</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">keep_prob</span>
+<span class="n">al</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">al</span><span class="p">,</span> <span class="n">dl</span><span class="p">)</span>
+<span class="n">al</span> <span class="o">/=</span> <span class="n">keep_prob</span>
+</pre></div>
+
+
+<p>最后一步<code>al /= keep_prob</code>是因为 $a^{[l]}$ 中的一部分元素失活（相当于被归零），为了在下一层计算时不影响 $Z^{[l+1]} = W^{[l+1]}a^{[l]} + b^{[l+1]}$ 的期望值，因此除以一个<code>keep_prob</code>。</p>
+<p>注意，<strong>在测试阶段不使用 dropout</strong>，因为那样会使得预测结果变得随机。</p>
+<h3 id="data-augmentation">数据集扩增 Data Augmentation</h3>
+<p>通过图片的一些变换（旋转，平移，对称，扭曲，翻转，局部放大后切割等），得到更多的训练集和验证集。</p>
+<h3 id="early-stop">提前终止训练 Early Stop</h3>
+<p>将训练集和验证集进行梯度下降时的成本变化曲线画在同一个坐标轴内，在两者开始发生较大偏差时及时停止迭代，避免过拟合。这种方法的缺点是无法同时达成偏差和方差的最优。</p>
+<h2 id="_5">高偏差(欠拟合)</h2>
+<ul>
+<li>增大数据集</li>
+<li>减少正则数量</li>
+</ul>
 <h2 id="normalizing-inputs">数据归一化(Normalizing inputs)</h2>
+<p>归一化一般采用的是　<code>Z-score standardization</code> 即0均值标准化。<br />
+$$<br />
+x = \frac{x - \mu}{\sigma}<br />
+$$<br />
+其中，<br />
+$$<br />
+\mu = \frac{1}{m}\sum^m_{i=1}x^{(i)}<br />
+\sigma = \sqrt{\frac{1}{m}\sum^m_{i=1}x^{{(i)}^2}}<br />
+$$<br />
+由于模型的形状不一样，在不使用标准化的成本函数中，如果设置一个较小的学习率，可能需要很多次迭代才能到达全局最优解；</p>
+<p>而如果使用了标准化，那么无论从哪个位置开始迭代，都能以相对较少的迭代次数找到全局最优解。</p>
 <h2 id="vanishingexploding-gradients">梯度消失与爆炸(Vanishing/Exploding Gradients)</h2>
+<p>在梯度函数上出现的以指数级递增或者递减的情况分别称为梯度爆炸或者梯度消失。<br />
+假设　$ g(z) = z, b^{[l]} = 0 $, 对目标输出：<br />
+$$<br />
+\hat{y} = W^{[L]}W^{[L-1]}...W^{[2]}W^{[1]}X<br />
+$$<br />
+ - 对于 $ W^{[l]} $的值大于 1 的情况，激活函数的值将以指数级递增；<br />
+ - 对于 $ W^{[l]} $的值小于 1 的情况，激活函数的值将以指数级递减。</p>
 <h2 id="weights-initialization">权重初始化(Weights Initialization)</h2>
+<p>我们在每一层输出：<br />
+$$<br />
+z={w}_1{x}_1+{w}_2{x}_2 + ... + {w}_n{x}_n + b<br />
+$$<br />
+希望ｚ尽量较小。当输入数量n较大的时候，每个 $w_i$ 较小的话，就可以避免ｚ过大。两种初始化权重方法:</p>
+<h3 id="xavier-initialization">Xavier Initialization</h3>
+<div class="hlcode"><pre><span class="n">WL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">WL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">WL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+
+
+<p>采用激活函数一般是 <code>tanh</code>. 设置　<code>Var(wi)=1/n</code>　就是　<code>Xavier Initialization</code></p>
+<h3 id="he-initialization">He Initialization</h3>
+<p>采用激活函数一般是 <code>Relu</code>, 设置　<code>Var(wi)=2/n</code> 就是　<code>He Initialization</code></p>
 <h2 id="gradient-checking">梯度检查(Gradient Checking)</h2>
+<p>梯度检查采用双侧差值法，因为更精确，单侧差值法不够精确。<br />
+$$<br />
+d\theta_{approx}[i] ＝ \frac{J(\theta_1, \theta_2, ..., \theta_i+\varepsilon, ...) - J(\theta_1, \theta_2, ..., \theta_i-\varepsilon, ...)}{2\varepsilon}</p>
+<p>\approx{d\theta[i]} = \frac{\partial J}{\partial \theta_i}<br />
+$$<br />
+梯度检查:<br />
+$$<br />
+\frac{{||d\theta_{approx} - d\theta||}<em approx="approx">2}{{||d\theta</em>||}_2+{||d\theta||}_2}<br />
+$$</p>
+<p>梯度检查注意事项:<br />
+ - 不要在训练中使用梯度检验，它只用于调试（debug）。使用完毕关闭梯度检验的功能；<br />
+ - 如果算法的梯度检验失败，要检查所有项，并试着找出 bug，即确定哪个 dθapprox[i] 与 dθ 的值相差比较大；<br />
+ - 当成本函数包含正则项时，也需要带上正则项进行检验；<br />
+ - 梯度检验不能与 dropout 同时使用。因为每次迭代过程中，dropout 会随机消除隐藏层单元的不同子集，难以计算 dropout 在梯度下降上的成本函数 J。建议关闭 dropout，用梯度检验进行双重检查，确定在没有 dropout 的情况下算法正确，然后打开 dropout；</p>
 <h1 id="neural-network-optimization">神经网络优化(Neural Network Optimization)</h1>
 <h2 id="bgdsgdmini-batch-gd">BGD/SGD/mini-batch-GD</h2>
 <h2 id="exponetially-weighted-averages-and-bias-correction">指数加权平均与校正(Exponetially weighted averages and bias correction)</h2>
