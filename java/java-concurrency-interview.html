@@ -298,6 +298,15 @@ String/Byte/Character/Short/Integer/Long/Float/Double　都重写了． <strong>
 
 
 <p>把 <code>int</code> 和 <code>Integer</code> 之间的隐式转换其实就是 <code>Integer.valueOf(param)</code> 和 <code>Integer.intValue()</code>; 而在java中, Integer.valueOf() 方法带有缓存机制, 即默认情况下, 对于 -128~127 的整数, 返回的是同一个对象! 对于缓存的上限 128 其实可以通过设置 JVM 参数 <code>-XX:AutoBoxCacheMax=?</code> 来更改!</p>
+<h2 id="4-jvm">4. JVM 内存布局和模型</h2>
+<p><div align="center"><img src="/static/images/Java/jvm_memory_arch.png" style="width:700px;height:500px;"><br />
+<caption><center> JVM 内存整体布局 </center></caption></div></p>
+<div align="center"><img src="/static/images/Java/stack_heap_info.png" style="width:700px;height:500px;">
+<caption><center> JVM stack & heap 详情 </center></caption></div>
+
+<div align="center"><img src="/static/images/Java/java_object.png" style="width:700px;height:500px;">
+<caption><center> JVM 内存堆内对象存储 </center></caption></div>
+
 <h1 id="_1">多线程并发初级主题</h1>
 <h2 id="1_1">1. <del>什么是线程? 为何使用线程?</del></h2>
 <p>线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 一个进程内至少有一个主线程作为执行单位执行; 线程比进程更加轻量级, 创建时间更短, 资源消耗更少.</p>
