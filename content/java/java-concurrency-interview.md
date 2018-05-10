@@ -224,6 +224,16 @@ System.out.println(b1 == b2); // 不设置JVM参数的情况下是 false
 ```
 把 `int` 和 `Integer` 之间的隐式转换其实就是 `Integer.valueOf(param)` 和 `Integer.intValue()`; 而在java中, Integer.valueOf() 方法带有缓存机制, 即默认情况下, 对于 -128~127 的整数, 返回的是同一个对象! 对于缓存的上限 128 其实可以通过设置 JVM 参数 `-XX:AutoBoxCacheMax=?` 来更改!
 
+## 4. JVM 内存布局和模型
+<div align="center"><img src="/static/images/Java/jvm_memory_arch.png" style="width:700px;height:500px;">
+<caption><center> JVM 内存整体布局 </center></caption></div>
+
+<div align="center"><img src="/static/images/Java/stack_heap_info.png" style="width:700px;height:500px;">
+<caption><center> JVM stack & heap 详情 </center></caption></div>
+
+<div align="center"><img src="/static/images/Java/java_object.png" style="width:700px;height:500px;">
+<caption><center> JVM 内存堆内对象存储 </center></caption></div>
+
 # 多线程并发初级主题
 ## 1. <del>什么是线程? 为何使用线程?</del>
 线程是操作系统调度执行的基本单位, 进程是操作系统进行资源分配的基本单位. 一个进程内至少有一个主线程作为执行单位执行; 线程比进程更加轻量级, 创建时间更短, 资源消耗更少.
