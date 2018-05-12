@@ -210,13 +210,20 @@ public class TryCatchFinally {
 }
 
 ```
+ 
  - 情况一：如果finally中有return语句，则会将try中的return语句”覆盖“掉，直接执行finally中的return语句，得到返回值，这样便无法得到try之前保留好的返回值。
  - 情况二：如果finally中没有return语句，也没有改变要返回值，则执行完finally中的语句后，会接着执行try中的return语句，返回之前保留的值。
  - 情况三：如果finally中没有return语句，但是改变了要返回的值，这里有点类似与引用传递和值传递的区别，分以下两种情况，：
- 
-  1. 如果return的数据是基本数据类型或文本字符串，则在finally中对该基本数据的改变不起作用，try中的return语句依然会返回进入finally块之前保留的值。
-  2. 如果return的数据是引用数据类型，而在finally中对该引用数据类型的属性值的改变起作用，try中的return语句返回的就是在finally中改变后的该属性的值。
+    1. 如果return的数据是基本数据类型或文本字符串，则在finally中对该基本数据的改变不起作用，try中的return语句依然会返回进入finally块之前保留的值。
+    2. 如果return的数据是引用数据类型，而在finally中对该引用数据类型的属性值的改变起作用，try中的return语句返回的就是在finally中改变后的该属性的值。
 
+## 5. Java i=i++ 的坑
+```java
+i = 0;
+i = i++;
+System.out.println(i);
+```
+这个实际上i 最后还是0.
 
 # Java Collection Framework
 ## 1. 那些集合的容量理论(假设内存足够)上是无限的, 哪些是有限制的?
@@ -304,6 +311,27 @@ System.out.println(b1 == b2); // 不设置JVM参数的情况下是 false
 
 <div align="center"><img src="/static/images/Java/java_object.png" style="width:700px;height:500px;">
 <caption><center> JVM 内存堆内对象存储 </center></caption></div>
+
+## 5. 方法块和静态语句执行顺序
+Java虚拟机在看到左边的类出现的时候，就回去寻找该类的代码，**首先初始化该类的类属性，也就是static属性(包括static variable，static blocks)，按照在代码中出现的先后顺序，依次执行可以执行的初始化语句或者代码块**。
+
+这也是为啥**static里面无法访问在后面顺序申明的静态成员变量**，并且更加不能访问非静态变量即实例变量，因为这不符合**先有类后有类实例的原则**；
+
+并且类在jvm加载一次初始化完成之后就不会再执行初始化了，也就是**所有的static在类被首次load到jvm时仅仅执行一次**.
+
+对于类的实例，则是当java虚拟机扫描到new关键字的时候，就会执行构造函数创建类的实例，此时**非static{}代码块**会被**插入到类的构造函数最前面**(其实就等价于在{}里面的代码写到构造函数最前面一样)。
+
+这也是为啥jvm在扫描类的时候不管{}代码块的原因，因为他是类实例的，和类无关，并且此时的实例变量都是默认值，因为这个实例还没有完全构造出来，{}只是插在构造函数前面的一段代码.
+ 
+ 1. jvm解释执行代码时，遇到新的类时，首先加载这个类；
+ 2. 类初始化过程中，按static顺序执行静态成员初始化语句或static blocks；且只执行一次；
+ 3. 先有类，后才有类实例原则，静态成员属于类，实例成员属于实例-->一系列规则 
+    - 静态方法中可以存取静态变量和其他静态方法，不可以存取实例变量和方法
+    - 非静态方法可以存取一切静态方法和静态成员变量
+    - 类实例可以调用一切静态方法
+ 4. 实例从new中产生，必定由构造函数构造出；
+ 5. 类实例的初始化不管时成员初始化private a = 3;还是{}代码块初始化，实际上都是按照在代码中出现的先后顺序被插入到构造函数最前面；
+
 
 # 多线程并发初级主题
 ## 1. <del>什么是线程? 为何使用线程?</del>
@@ -781,11 +809,11 @@ Volatile变量可以确保先行关系，即写操作会发生在后续的读操
 ## 48. Java中的fork join框架是什么？
 fork join框架是JDK7中出现的一款高效的工具，Java开发人员可以通过它充分利用现代服务器上的多处理器。**它是专门为了那些可以递归划分, 分治并行成许多子模块设计的，目的是将所有可用的处理能力用来提升程序的性能。**fork join框架一个巨大的优势是它使用了工作窃取算法，可以完成更多任务的工作线程可以从其它线程中窃取任务来执行。
 
-#＃ 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del>
+## 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del>
 Java程序中wait 和 sleep都会造成某种形式的暂停，它们可以满足不同的需要。**wait()方法用于线程间通信，如果等待条件为真且其它线程被唤醒时它会释放锁**，而**sleep()方法仅仅释放CPU资源或者让当前线程停止执行一段时间，但不会释放锁.**
 
 ## 50. notify 会立即释放锁么？
-不会！！ 只有退出 synchronized 同步块之后才会释放锁，这和 wait 是不一样的， wait 调用之后立即释放锁，并挂起。
+**不会！！ 只有退出 synchronized 同步块之后才会释放锁，这和 wait 是不一样的， wait 调用之后立即释放锁，并挂起**。
 
 ## 51. 实现三个线程分别打印ABC,但是打印按照 ABCABCABC循环进行。
 同步信号的设计和选择非常重要，如果你选择正确的同步信号，代码会非常容易写。如果选错了，代码非常容易出错。
@@ -931,7 +959,7 @@ public class ABCSyncNotifyWell {
 
 ```
 ### 版本2(Condition/Lock)
-这个同步信号设计的是，通过全局计数器整除3的结果，来判断轮到谁执行。当然全局计数器累加也是互斥的！ 并且这里采用更加高级的条件变量，这样允许更多的谓词信号单独发送，也可以说是精准发送和唤醒。前面使用基本同步原语是无法精确提醒的，因为只能使用单一谓词条件。
+这个同步信号设计的是，**通过全局计数器整除3的结果，来判断轮到谁执行。当然全局计数器累加也是互斥的**！ 并且这里采用更加高级的**条件变量，这样允许更多的谓词信号单独发送，也可以说是精准发送和唤醒**。前面使用基本同步原语是无法精确提醒的，因为只能使用单一谓词条件。
 
 ```java
 public class ABCCondition {
@@ -1163,7 +1191,7 @@ public class Lock{
 [Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
 
 ### Consumer & Producer 的两种实现方式
-1. 基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。
+#### 基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。
 ```java
 public class PCModel {
 	
@@ -1272,7 +1300,8 @@ public class PCModel {
 
 ```
 
-2. 基于 Condition 和 ReentrantLock 的实现，利用 `java.util.concurrent` 并发包实现，会更加灵活，同步粒度也会更细。
+#### 基于 Condition 和 ReentrantLock 的实现
+利用 `java.util.concurrent` 并发包实现，会更加灵活，同步粒度也会更细。
 ```java
 public class PCModel2 {
 	
@@ -1380,7 +1409,7 @@ public class PCModel2 {
 	}
 }
 ```
-wait/notify 有个缺点，就是他们的条件谓词信号只能是同一个，也就是等待和唤醒都是同一个锁，因为 Java 要求 wait/notify 必须是在 synchronized 同步快内部使用，这里我们可以看到基础版本的 生产者消费者模型，当消费者唤醒调用的时候，可能唤醒的还是消费者自己，而不一定是生产者！！导致效率比较低，甚至出现饥饿现象。 
+**wait/notify 有个缺点，就是他们的条件谓词信号只能是同一个，也就是等待和唤醒都是同一个锁，因为 Java 要求 wait/notify 必须是在 synchronized 同步快内部使用，这里我们可以看到基础版本的 生产者消费者模型，当消费者唤醒调用的时候，可能唤醒的还是消费者自己，而不一定是生产者！！导致效率比较低，甚至出现饥饿现象。** 
 
 ### Semaphore
 >A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.
