@@ -209,6 +209,11 @@ public class TryCatchFinally {
 
 }
 
+// 80
+// 20
+// 10
+// 80
+
 ```
  
  - 情况一：如果finally中有return语句，则会将try中的return语句”覆盖“掉，直接执行finally中的return语句，得到返回值，这样便无法得到try之前保留好的返回值。
