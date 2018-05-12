@@ -76,6 +76,13 @@ date: 2018-02-23 13:01
 
   - [Implementing a CNN for Text Classification in TensorFlow](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)
 
+- 比赛
+ - [2017BDCI-360搜索：AlphaGo之后“人机大战”Round 2 ——机器写作与人类写作的巅峰对决](https://github.com/a550461053/BDCI2017-360)
+ - [kaggle-toxic_comment](https://github.com/peterhurford/kaggle-toxic_comment)
+ - [34th, Lots of FE and Poor Understanding of NNs CODE INCLUDED](https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/discussion/52645)
+ - [Top 1% Solution to Toxic Comment Classification Challenge](https://medium.com/@zake7749/top-1-solution-to-toxic-comment-classification-challenge-ea28dbe75054)
+ - [Lessons from Toxic : Blending is the new sexy](https://www.kaggle.com/jagangupta/lessons-from-toxic-blending-is-the-new-sexy)
+
   https://github.com/Qinbf/Tensorflow/blob/master/Tensorflow%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%E4%B8%8E%E6%96%87%E6%9C%AC%E5%88%86%E7%B1%BB%E5%BA%94%E7%94%A8/%E7%A8%8B%E5%BA%8F/data_handle.ipynb
 
 就是如何判断一篇文章是否抄袭了另一篇文章，哪里抄袭了。如果是人工去判断的话，非常简单。我们一般会先扫描一遍，发现有很多重复的段落和句子，基本就可以判定他们很相似了。但是如果这两篇文章表达的是同样的内容，但是很多词被替换了，语句顺序也被打乱了，这个时候，光靠扫描句子词已经无法判断了，我们得看语义。这是我们人工的做法，具体到计算机，它要如何识别这种相似呢？我们也从人工上最简单的方法开始，文档基本上就是词构成的序列，如果我们比较这两个序列的差异（计算机里面有个算法叫最小编辑距离），就可以大致得到他们是否在字面上相似。但是当面临第二个问题的时候，这种做法就失效了。
