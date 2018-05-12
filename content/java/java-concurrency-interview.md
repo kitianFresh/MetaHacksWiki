@@ -2,6 +2,8 @@
 title: "java-concurrency-interview"
 date: 2017-05-05 20:22
 ---
+[TOC]
+
 # Java Basics
 ## 1. equals/'=='/hashCode()
 **`==` 其实是真正比较等式两边的值，值无非就是基本数据类型，或者是指针即引用．**使用 `==` 比较对象引用其实就是比较的对象地址，因此两个不同的对象　`==` 必定为false;
@@ -145,6 +147,75 @@ class Professor implements Serializable{
 在Java语言里深层复制一个对象，常常可以先使对象实现`Serializable`接口(或者其子接口如 `Externalizable`)，然后把对象（实际上只是对象的一个拷贝）写到一个流中，再从流中读出来，便可以重建对象。
 
 这样做的前提是对象以及对象内部所有引用到的对象都是可串行化的，否则，就需要仔细考察那些不可串行化的对象是否设成transient，从而将之排除在复制过程之外.另外, 静态成员是属于类的,不可串行化.
+
+## 4. try catch finally
+对于 try 和 finally都有 return语句的时候，返回值覆盖问题的讨论。主要区别就在修改的是引用类型的对象，还是值类型。
+
+```java
+public class TryCatchFinally {
+	
+	public static int test() {
+		int num = 10;
+		try {
+			return num += 10;
+		} finally {
+			num = 80;
+			return num;
+		}
+	}
+	
+	public static int test1() {
+		int num = 10;
+		try {
+			return num += 10;
+		} finally {
+			num = 80;
+		}
+	}
+	
+	public static int test2() {
+		Number n = new Number(10);
+		try {
+			return n.num;
+		} finally {
+			n.num = 80;
+		}
+	}
+	
+	public static Number test3() {
+		Number n = new Number(10);
+		try {
+			return n;
+		} finally {
+			n.num = 80;
+		}
+	}
+	
+	
+	
+	static class Number {
+		int num = 0;
+		public Number(int i) {
+			this.num = i;
+		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(test());
+		System.out.println(test1());
+		System.out.println(test2());
+		System.out.println(test3().num);
+	}
+
+}
+
+```
+ - 情况一：如果finally中有return语句，则会将try中的return语句”覆盖“掉，直接执行finally中的return语句，得到返回值，这样便无法得到try之前保留好的返回值。
+ - 情况二：如果finally中没有return语句，也没有改变要返回值，则执行完finally中的语句后，会接着执行try中的return语句，返回之前保留的值。
+ - 情况三：如果finally中没有return语句，但是改变了要返回的值，这里有点类似与引用传递和值传递的区别，分以下两种情况，：
+ 
+  1. 如果return的数据是基本数据类型或文本字符串，则在finally中对该基本数据的改变不起作用，try中的return语句依然会返回进入finally块之前保留的值。
+  2. 如果return的数据是引用数据类型，而在finally中对该引用数据类型的属性值的改变起作用，try中的return语句返回的就是在finally中改变后的该属性的值。
 
 
 # Java Collection Framework
@@ -713,8 +784,317 @@ fork join框架是JDK7中出现的一款高效的工具，Java开发人员可以
 #＃ 49. <del>Java多线程中调用wait() 和 sleep()方法有什么不同？</del>
 Java程序中wait 和 sleep都会造成某种形式的暂停，它们可以满足不同的需要。**wait()方法用于线程间通信，如果等待条件为真且其它线程被唤醒时它会释放锁**，而**sleep()方法仅仅释放CPU资源或者让当前线程停止执行一段时间，但不会释放锁.**
 
+## 50. notify 会立即释放锁么？
+不会！！ 只有退出 synchronized 同步块之后才会释放锁，这和 wait 是不一样的， wait 调用之后立即释放锁，并挂起。
+
+## 51. 实现三个线程分别打印ABC,但是打印按照 ABCABCABC循环进行。
+同步信号的设计和选择非常重要，如果你选择正确的同步信号，代码会非常容易写。如果选错了，代码非常容易出错。
+
+### 分析
+要让三个线程最终按顺序打印，其实最终的执行是串行互斥的，就是线程A 打印的时候，B 和 C 都是不能打印的，这其实是一种互斥。另外，需要一个依赖顺序，对于如何控制这个顺序，就需要靠我们设计了。可以采用一个全局控制变量，控制三个线程的轮换执行，然后相互协调通知，比如 `A=ture,B=false,C=false` 表示目前A可以执行，完了之后设置 `A=false,B=true,C=false` 表示目前B可以执行，以此类推。我开始选择的同步信号不合理，导致代码死活写不出来，
+### 版本1(synrhonized/wait/notify)
+```java
+public class ABCSyncNotifyWell {
+	// 实际上三个线程互斥的， 同一个时刻只有一个线程执行。我们的条件变量应该是控制全局状态，每个线程根据这个全局状态决定是等待还是执行。条件控制变量的设计合理性非常重要！
+	public static void main(String[] args) {
+		Object lockABC = new Object();
+		Signal s = new Signal();
+		Thread ta = new Thread(new A(lockABC, s));
+		Thread tb = new Thread(new B(lockABC, s));
+		Thread tc = new Thread(new C(lockABC, s));
+		ta.start();
+		tb.start();
+		tc.start();
+	}
+	
+	private static class Signal {
+		boolean A = true;
+		boolean B = false;
+		boolean C = false;
+	}
+	
+	private static class A implements Runnable {
+
+		private Object lockABC = null;
+		private Signal s = null;
+		public A(Object lock, Signal s) {
+			this.lockABC = lock;
+			this.s = s;
+		}
+		@Override
+		public void run() {
+			while (true) {
+				synchronized(this.lockABC) {
+					while (!s.A) {
+						try {
+							lockABC.wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					System.out.println("A");
+					this.s.A = false;
+					this.s.B = true;
+					this.s.C = false;
+					lockABC.notifyAll();
+					
+				}
+			}
+			
+		}
+		
+	}
+
+	private static class B implements Runnable {
+
+		private Object lockABC = null;
+		private Signal s = null;
+		public B(Object lock, Signal s) {
+			this.lockABC = lock;
+			this.s = s;
+		}
+		@Override
+		public void run() {
+			while (true) {
+				synchronized(this.lockABC) {
+					while (!s.B) {
+						try {
+							lockABC.wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("B");
+					this.s.A = false;
+					this.s.B = false;
+					this.s.C = true;
+					lockABC.notifyAll();
+					
+				}
+			}
+			
+		}
+		
+	}
+
+	private static class C implements Runnable {
+		private Object lockABC = null;
+		private Signal s = null;
+		public C(Object lock, Signal s) {
+			this.lockABC = lock;
+			this.s = s;
+		}
+		@Override
+		public void run() {
+			while (true) {
+				synchronized(this.lockABC) {
+					while (!s.C) {
+						try {
+							lockABC.wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("C");
+					this.s.A = true;
+					this.s.B = false;
+					this.s.C = false;
+					lockABC.notifyAll();
+				}
+			}
+			
+		}
+	}
+}
+
+```
+### 版本2(Condition/Lock)
+这个同步信号设计的是，通过全局计数器整除3的结果，来判断轮到谁执行。当然全局计数器累加也是互斥的！ 并且这里采用更加高级的条件变量，这样允许更多的谓词信号单独发送，也可以说是精准发送和唤醒。前面使用基本同步原语是无法精确提醒的，因为只能使用单一谓词条件。
+
+```java
+public class ABCCondition {
+	private static Lock lock = new ReentrantLock();
+	private static int conditionVar = 0;
+	private static Condition A = lock.newCondition();
+	private static Condition B = lock.newCondition();
+	private static Condition C = lock.newCondition();
+
+	static class A extends Thread {
+
+		@Override
+		public void run() {
+			lock.lock();
+			try {
+				for (int i = 0; i < 10; i ++) {
+					while (conditionVar % 3 != 0) {
+						A.await();
+					}
+					System.out.println("A");
+					conditionVar ++;
+					B.signal();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+	
+	static class B extends Thread {
+
+		@Override
+		public void run() {
+			lock.lock();
+			try {
+				for (int i = 0; i < 10; i ++) {
+					while (conditionVar % 3 != 1) {
+						B.await();
+					}
+					System.out.println("B");
+					conditionVar ++;
+					C.signal();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+
+	static class C extends Thread {
+
+		@Override
+		public void run() {
+			lock.lock();
+			try {
+				for (int i = 0; i < 10; i ++) {
+					while (conditionVar % 3 != 2) {
+						C.await();
+					}
+					System.out.println("C");
+					conditionVar ++;
+					A.signal();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+	
+		new A().start();
+		new B().start();
+		new C().start();
+	}
+}
+
+```
+### 版本3(Semaphore/Lock)
+版本三是比较通用的做法，这种方法可以根据线程执行的图模型，构造出可执行路径，而且写起来非常简单，通过信号量给出的操作原语，在这种线程之间依赖关系执行的时候，显得非常有用。我们知道操作系统中的信号里是另外一种经典的同步互斥原语设计，这个设计能够同时支持
+
+信号量用来控制资源数量大于等于1的资源并发访问，对于n个可以同时访问的资源，最多可以有 n 个线程可以同时并发执行访问各个资源。当再有新线程需要访问资源的时候，会排队挂起，直到有就旧的线程释放资源。前面介绍的资源访问一般就是只有一个共享的资源，这里信号量机制可以做多资源并发处理的能手！
+
+另一个重要特性是，信号量只有1个资源的时候，就实现了互斥锁，并且当初始化为0个资源的时候，可以起到拦截和解决线程执行依赖关系的作用！资源为0的信号量，必须等到别人release一次才能acquire。
+
+看ABC 的依赖关系，A<--B, B<--C, C<--A. 也就是说，我们设置三个信号量，A=1,B=0,C=0。 这里B要等A release，才能顺利 acquire。以此类推。
+
+```java
+public class ABCSemaphore {
+
+	private static Semaphore A = new Semaphore(1);
+	private static Semaphore B = new Semaphore(0);
+	private static Semaphore C = new Semaphore(0);
+
+	static class A extends Thread {
+
+		@Override
+		public void run() {
+			try {
+				for (int i = 0; i < 10; i++) {
+					A.acquire();
+					System.out.println("A");
+					B.release();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	static class B extends Thread {
+
+		@Override
+		public void run() {
+			try {
+				for (int i = 0; i < 10; i++) {
+					B.acquire();
+					System.out.println("B");
+					C.release();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	static class C extends Thread {
+
+		@Override
+		public void run() {
+			try {
+				for (int i = 0; i < 10; i++) {
+					C.acquire();
+					System.out.println("C");
+					A.release();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+	
+		new A().start();
+		new B().start();
+		new C().start();
+	}
+}
+
+```
+
 ## 补充知识资深话题
-java 现在的并发实现互斥和同步的机制对新手来说看起来非常混乱！新手大多知道 `synchronized/volatile` 关键字可以实现互斥，再辅以　`wait/notify/notifyAll` 就可以实现同步．以上可以认为是JVM内置的原生互斥同步实现．但是在　JDK 5以后，java.util.concurrent 包里面又实现了很多额外的机制，比如 Lock(ReentrantLock/ReentrantReadWriteLock),Semaphore,CountDownLatch, AtomicInteger等，其实这个并发包并不是替代内置枷锁的方法，而是当内置枷锁方法不使用的时候，作为一种可选择的高级功能．
+java 现在的并发实现互斥和同步的机制对新手来说看起来非常混乱！新手大多知道 `synchronized/volatile` 关键字可以实现互斥，再辅以　`wait/notify/notifyAll` 就可以实现同步．以上可以认为是JVM内置的原生互斥同步实现．但是在　JDK 5以后，`java.util.concurrent` 包里面又实现了很多额外的机制，比如 Lock(ReentrantLock/ReentrantReadWriteLock),Semaphore,CountDownLatch, AtomicInteger等，其实这个并发包并不是替代内置枷锁的方法，而是当内置枷锁方法不使用的时候，作为一种可选择的高级功能．
 
 ## Locks
 
@@ -782,6 +1162,226 @@ public class Lock{
 其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 `while() wait; notify;`,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
 [Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
 
+### Consumer & Producer 的两种实现方式
+1. 基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。
+```java
+public class PCModel {
+	
+	public static void main(String[] args) {
+		SharedObject so = new SharedObject();
+		Producer p = new Producer(so);
+		Consumer c1 = new Consumer(so);
+		Consumer c2 = new Consumer(so);
+		
+		new Thread(c1, "c1").start();
+		new Thread(c2, "c2").start();
+		Thread pt = new Thread(p,"p");
+		//pt.setPriority(1);
+		pt.start();
+		
+	}
+	
+	static class SharedObject {
+		private int[] buffer = new int[64];
+		private int rindex = 0;
+		private int windex = 0;
+		private int count = 0;
+
+		public int get() {
+			synchronized(this) {
+				while (count == 0) {
+					try {
+//						System.out.println(Thread.currentThread().getName()+ " get() wait");
+						this.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				int item = this.buffer[rindex];
+				rindex = (rindex+1)%64;
+				count --;
+				this.notify();
+				return item;
+			}		
+		}
+		
+		public void put(int product) {
+			synchronized(this) {
+				while (count >= buffer.length) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				this.buffer[windex] = product;
+				windex = (windex+1)%64;
+				count ++;
+				this.notifyAll();
+			}
+		}
+	}
+
+	static class Producer implements Runnable {
+		SharedObject so = null;
+		Producer(SharedObject so) {
+			this.so = so;
+		}
+		@Override
+		public void run() {
+			int i = 0;
+			while(true){
+				so.put(++i);
+				System.out.println(Thread.currentThread().getName()+"-" + i);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+	}
+
+	static class Consumer implements Runnable {
+		SharedObject so = null;
+		Consumer(SharedObject so) {
+			this.so = so;
+		}
+		@Override
+		public void run() {
+			System.out.println(Thread.currentThread().getName() + " started");
+			while(true){
+				int item = so.get();
+				System.out.println(Thread.currentThread().getName()+"-"+item);	
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+	}
+
+
+}
+
+
+```
+
+2. 基于 Condition 和 ReentrantLock 的实现，利用 `java.util.concurrent` 并发包实现，会更加灵活，同步粒度也会更细。
+```java
+public class PCModel2 {
+	
+	
+	static class SharedObject {
+		private ReentrantLock lock = new ReentrantLock();
+		
+		private Condition notEmpty = lock.newCondition();
+		private Condition notFull = lock.newCondition();
+		private int[] buffer = new int[64];
+		private int rindex = 0;
+		private int windex = 0;
+		private int count = 0;
+		
+		public int get() {
+			lock.lock();
+			try {
+				while (count == 0) {
+					notEmpty.await();
+				}
+				int item = this.buffer[rindex];
+				rindex = (rindex+1)%buffer.length;
+				count --;
+				notFull.signal();
+				return item;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+			return 0;
+		}
+		
+		public void put(int item) {
+			lock.lock();
+			try {
+				while (count >= buffer.length) {
+					notFull.await();
+				}
+				this.buffer[windex] = item;
+				count ++;
+				windex = (windex+1)%buffer.length;
+				notEmpty.signal();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+	
+	static class Producer implements Runnable {
+		private SharedObject so = null;
+
+		Producer(SharedObject so) {
+			this.so = so;
+		}
+		@Override
+		public void run() {
+			int i = 0;
+			while(true){
+				so.put(++i);
+				System.out.println(Thread.currentThread().getName()+"-" + i);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+	}
+	
+	static class Consumer implements Runnable {
+		private SharedObject so = null;
+		Consumer(SharedObject so) {
+			this.so = so;
+		}
+		
+		public void run() {
+			while (true) {
+				int item = so.get();
+				System.out.println(Thread.currentThread().getName() + "-" + item);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		SharedObject so = new SharedObject();
+		Producer p = new Producer(so);
+		Consumer c1 = new Consumer(so);
+		Consumer c2 = new Consumer(so);
+		
+		new Thread(c1, "c1").start();
+		new Thread(c2, "c2").start();
+		Thread pt = new Thread(p,"p");
+		//pt.setPriority(1);
+		pt.start();
+	}
+}
+```
+wait/notify 有个缺点，就是他们的条件谓词信号只能是同一个，也就是等待和唤醒都是同一个锁，因为 Java 要求 wait/notify 必须是在 synchronized 同步快内部使用，这里我们可以看到基础版本的 生产者消费者模型，当消费者唤醒调用的时候，可能唤醒的还是消费者自己，而不一定是生产者！！导致效率比较低，甚至出现饥饿现象。 
+
 ### Semaphore
 >A Semaphore is a thread synchronization construct that can be used either to send signals between threads to avoid missed signals, or to guard a critical section like you would with a lock.
 
@@ -847,16 +1447,11 @@ public class BoundedSemaphore {
 
 PV原语就是有bound个资源,当剩余资源数目不是0的时候,就可以take,当到达bound的时候,后续take会被阻塞.当有线程release的时候,剩余资源又有了,又可以take了.
 
-这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号.
+这里资源的使用是用信号signal表示的,可以理解为使用一个资源,就发射一次信号. [Semaphores](http://tutorials.jenkov.com/java-concurrency/semaphores.html#counting)
 
-[Semaphores](http://tutorials.jenkov.com/java-concurrency/semaphores.html#counting)
-
-
-
-
-### 生产者消费者模型(synchronized/notify实现)
 
 ### AtomicInteger
+
 AtomicInteger 使用的是　CAS 操作进行的，即自旋＋CAS
 
 ```java
@@ -889,8 +1484,8 @@ public final boolean compareAndSet(int expect, int update) {
 }
 ```
 CAS模拟
-```java
 
+```java
 class SimulatedCAS {
 	private long value;
 	
@@ -939,7 +1534,7 @@ class SimulatedCASCounter {
 }
 ```
 
-使用sun.misc.Unsafe 实现CASCounter
+使用 `sun.misc.Unsafe` 实现CASCounter
 ```java
 public class CASCounter {
 	private Unsafe unsafe;
