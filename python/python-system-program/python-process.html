@@ -60,7 +60,24 @@
 <div class="clearfix"></div>
 <div id="title">python-process</div>
 <div id="content">
-  <h1 id="fork-and-exec">fork and exec</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#fork-and-exec">fork and exec</a></li>
+<li><a href="#daemon-process">daemon process</a><ul>
+<li><a href="#_1">终端</a></li>
+<li><a href="#_2">守护进程</a></li>
+<li><a href="#apue">创建守护进程的编程范式(参考APUE)</a></li>
+</ul>
+</li>
+<li><a href="#subprocess">subprocess</a><ul>
+<li><a href="#check_call">check_call</a></li>
+<li><a href="#subprocesspopen">subprocess.Popen</a></li>
+<li><a href="#process-groups-sessions">Process Groups / Sessions</a></li>
+<li><a href="#_3">参考</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="fork-and-exec">fork and exec</h1>
 <p>UNIX 中 fork 的行为就是一次调用，两次返回，其中父进程返回的是子进程进程id，子进程返回的是0；根据判断可以分别继续执行父进程和子进程中的代码，但是当我们的子进程都是通用的代码的时候，就要写很多重复的逻辑代码，因此在子进程中可以调用 exec 去执行子进程的程序主体，比如一个编译好的程序；关于 fork 和 exec 的使用，更多的可以去参考 APUE 或者 CSAPP;</p>
 <div class="hlcode"><pre><span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">pid</span> <span class="o">=</span> <span class="mi">0</span>

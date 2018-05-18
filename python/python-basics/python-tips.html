@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
-        <title>python-string - MetaHacks Wiki</title>
+        <title>python-tips - MetaHacks Wiki</title>
         <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
         <meta name="description" content="my personal wiki"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -55,19 +55,59 @@
         <div id="container">
             
 <div id="header">
-  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-basics">python-basics</a>&nbsp;»&nbsp;python-string</div>
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-basics">python-basics</a>&nbsp;»&nbsp;python-tips</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">python-string</div>
+<div id="title">python-tips</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#python-shell">Python 调用 shell 命令行程序</a><ul>
+<li><a href="#python">Python实现的文件编码转码工具</a></li>
+</ul>
+</li>
+<li><a href="#python_1">Python 实现解释器命令行中自动补全</a></li>
 <li><a href="#_1">格式字符串手册</a></li>
 <li><a href="#pythonapplication">Python获取application运行的路径</a></li>
-<li><a href="#chroot">chroot机制可以更改当前程序运行的参考根目录</a></li>
+<li><a href="#chroot">chroot机制可以更改当前程序运行的参考根目录</a><ul>
 <li><a href="#argparse-metavar-actionstore_true">argparse 中 metavar 不能和action=store_true 同时用。</a></li>
 </ul>
+</li>
+</ul>
 </div>
-<h2 id="_1">格式字符串手册</h2>
+<h1 id="python-shell">Python 调用 shell 命令行程序</h1>
+<h2 id="python">Python实现的文件编码转码工具</h2>
+<div class="hlcode"><pre><span class="c">#!/usr/bin/python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>  
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="c">#父目录中的.py文件  </span>
+<span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="s">r&#39;./*.csv&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&quot;enca -L zh_CN &quot;</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&quot;enca -L zh_CN -x utf-8 &quot;</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="python_1">Python 实现解释器命令行中自动补全</h1>
+<p>第一种方法是直接每次先执行以下语句:</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">readline</span><span class="o">,</span> <span class="nn">rlcompleter</span><span class="p">;</span> <span class="n">readline</span><span class="o">.</span><span class="n">parse_and_bind</span><span class="p">(</span><span class="s">&quot;tab: complete&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>方法二新建一个 <code>.pythonstartup.py</code> 的脚本, 然后在 <code>.bashrc</code> 中加入 <code>export PYTHONSTARTUP = ~/.pythonstartup.py</code> </p>
+<div class="hlcode"><pre><span class="c">#.pythonstartup.py</span>
+<span class="kn">import</span> <span class="nn">readline</span><span class="o">,</span> <span class="nn">rlcompleter</span> 
+<span class="n">readline</span><span class="o">.</span><span class="n">parse_and_bind</span><span class="p">(</span><span class="s">&quot;tab: complete&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>最后执行 <code>source .bashrc</code> 生效. 然后在解释器中使用 <code>tab</code> 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;</p>
+<h1 id="_1">格式字符串手册</h1>
 <p>数字格式化</p>
 <p>下面的表格展示了使用Python的后起新秀str.format()格式化数字的多种方法，包含浮点数格式化与整数格式化示例。可使用 print("FORMAT".format(NUMBER)); 来运行示例，因此你可以运行： print("{:.2f}".format(3.1415926)); 来得到第一个示例的输出。</p>
 <div class="hlcode"><pre>    <span class="err">数字</span>  <span class="err">格式</span>  <span class="err">输出</span>  <span class="err">描述</span>
@@ -87,7 +127,7 @@
 </pre></div>
 
 
-<h2 id="pythonapplication">Python获取application运行的路径</h2>
+<h1 id="pythonapplication">Python获取application运行的路径</h1>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="k">def</span> <span class="nf">is_packaged</span><span class="p">():</span>
@@ -131,7 +171,7 @@
 </pre></div>
 
 
-<h2 id="chroot">chroot机制可以更改当前程序运行的参考根目录</h2>
+<h1 id="chroot">chroot机制可以更改当前程序运行的参考根目录</h1>
 <p>chroot 可以实现安全隔离，从新制造一个新的根目录，并且程序只对该目新的根目录具有权限，其他目录对该进程就不可见了。从而实现安全隔离，但是如果程序还想要访问其他的库，命令，需要组织根目录，把相应的库文件放到相应的目录下面，可以用 busybox实现这个功能。就是有制造出一个linux系统资源目录出来给某个进程使用，类似容器隔离技术。</p>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
 <span class="n">newroot</span> <span class="o">=</span> <span class="s">&#39;/Users/kiki/tmp&#39;</span>
@@ -269,14 +309,14 @@
 <table>
   <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
   <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
-</table>created in <span class="create-date date"> 2017-04-30 11:22 </span></div>
+</table>created in <span class="create-date date"> 2018-05-18 22:14 </span></div>
 <div id="comments"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script type="text/javascript">
 const gitment = new Gitment({
-  id: 'python-string',
-  title: 'python-string',
+  id: 'python-tips',
+  title: 'python-tips',
   owner: 'kitianFresh',
   repo: 'MetaHacksWiki',
   oauth: {
