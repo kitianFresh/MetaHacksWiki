@@ -60,7 +60,30 @@
 <div class="clearfix"></div>
 <div id="title">java-tips</div>
 <div id="content">
-  <h1 id="java-jar">Java 打包成 jar</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#java-jar">Java 打包成 jar</a><ul>
+<li><a href="#agent-jar">打包代理 agent jar</a><ul>
+<li><a href="#_1">参考</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#java-string-format">Java String Format</a></li>
+<li><a href="#java-sorted-index">java Sorted Index</a></li>
+<li><a href="#java-cpu">Java 线程CPU占用率</a><ul>
+<li><a href="#java-exception">Java Exception</a><ul>
+<li><a href="#_2">使用异常的好处</a></li>
+<li><a href="#catch">catch 捕获异常</a></li>
+<li><a href="#_3">例子</a></li>
+<li><a href="#specify">specify 申明某函数会抛出异常</a></li>
+<li><a href="#chained-exceptions">chained exceptions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="java-jar">Java 打包成 jar</h1>
 <p>注意 manifest 文件的写法, 必须是 <code>property:+space+value+\n</code>; 另外, 类名需要写全名才行!</p>
 <div class="hlcode"><pre><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
 <span class="n">Premain</span><span class="o">-</span><span class="nl">Class:</span> <span class="n">test</span><span class="o">.</span><span class="na">ObjectSizeFetcher</span>
