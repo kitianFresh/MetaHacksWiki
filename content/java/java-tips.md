@@ -3,6 +3,7 @@ title: "java-tips"
 date: 2017-05-05 10:27
 ---
 
+[TOC]
 
 # Java 打包成 jar
 注意 manifest 文件的写法, 必须是 `property:+space+value+\n`; 另外, 类名需要写全名才行!

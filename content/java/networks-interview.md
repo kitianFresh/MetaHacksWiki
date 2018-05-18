@@ -18,6 +18,7 @@ date: 2017-06-05 20:31
    - 本地socket 套接字；
  - 不同主机之间
   1. 使用基于TCP/IP 协议栈的socket　套接字接口进行通讯; 可以利用已有协议或者实现自己的协议从而实现跨网络的进程间通信, 比如RPC调用，HTTP 连接，FTP 服务器等
+  2. 基于底层协议如TCP/UDP/HTTP 实现的远程过程调用RPC/RMI等，他是通讯的更高级层次的抽象，让一个主机上的进程可以调用另外一个主机上进程的一个函数或 对象方法！其实就是通过双方协商协议和接口，然后通过网络、协议解析、压缩、同步/异步、并发等手段实现双方函数相互调用的过程。
 
 # HTTP
 ## HTTP POST数据传输的四种方式
@@ -40,3 +41,12 @@ date: 2017-06-05 20:31
 - [HTTP-请求、响应、缓存](https://cnbin.github.io/blog/2016/02/20/http-qing-qiu-,-xiang-ying-,-huan-cun/)
 - [HTTP协议知识扫盲](http://movesan.me/2017/03/06/http/)
 - [四种常见的 POST 提交数据方式](https://imququ.com/post/four-ways-to-post-data-in-http.html)
+
+
+# HTTPS
+如何让HTTP变安全，HTTPS 的原理。
+
+# RPC
+
+## 安全的RPC
+其实原理和HTTPS原理类似，在数据交换之前，引入密钥认证授权等手段进行安全认证秘钥交换等。可以完全把HTTPS 中间的基于TCP的TLS层拿过来使用。
