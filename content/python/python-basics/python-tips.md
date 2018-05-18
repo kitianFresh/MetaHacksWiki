@@ -1,10 +1,45 @@
 ---
-title: "python-string"
-date: 2017-04-30 11:22
+title: "python-tips"
+date: 2018-05-18 22:14
 ---
+
 [TOC]
 
-## 格式字符串手册
+# Python 调用 shell 命令行程序
+
+## Python实现的文件编码转码工具
+
+```python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import glob  
+import subprocess
+
+#父目录中的.py文件  
+files = glob.iglob(r'./*.csv')
+
+for f in files:
+    subprocess.call("enca -L zh_CN " + f, shell=True)
+
+for f in files:
+    subprocess.call("enca -L zh_CN -x utf-8 " + f, shell=True)
+```
+
+# Python 实现解释器命令行中自动补全
+第一种方法是直接每次先执行以下语句:
+```python
+import readline, rlcompleter; readline.parse_and_bind("tab: complete")
+```
+方法二新建一个 `.pythonstartup.py` 的脚本, 然后在 `.bashrc` 中加入 `export PYTHONSTARTUP = ~/.pythonstartup.py` 
+```python
+#.pythonstartup.py
+import readline, rlcompleter 
+readline.parse_and_bind("tab: complete")
+```
+最后执行 `source .bashrc` 生效. 然后在解释器中使用 `tab` 就会是自动补全了, 不再是一个缩进!缩进只能使用四个空格;
+
+# 格式字符串手册
 数字格式化
 
 下面的表格展示了使用Python的后起新秀str.format()格式化数字的多种方法，包含浮点数格式化与整数格式化示例。可使用 print("FORMAT".format(NUMBER)); 来运行示例，因此你可以运行： print("{:.2f}".format(3.1415926)); 来得到第一个示例的输出。
@@ -26,7 +61,7 @@ date: 2017-04-30 11:22
 
 
 
-## Python获取application运行的路径
+# Python获取application运行的路径
 ```python
 import sys
 
@@ -70,7 +105,8 @@ def get_mclouds_workspace_path():
 
     return os.path.join(root_path, 'workspace')
 ```
-## chroot机制可以更改当前程序运行的参考根目录
+
+# chroot机制可以更改当前程序运行的参考根目录
 chroot 可以实现安全隔离，从新制造一个新的根目录，并且程序只对该目新的根目录具有权限，其他目录对该进程就不可见了。从而实现安全隔离，但是如果程序还想要访问其他的库，命令，需要组织根目录，把相应的库文件放到相应的目录下面，可以用 busybox实现这个功能。就是有制造出一个linux系统资源目录出来给某个进程使用，类似容器隔离技术。
 ```python
 import os, sys
