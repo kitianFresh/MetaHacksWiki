@@ -195,7 +195,7 @@ sudo -iu tianqi05</p>
 <p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
 <p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
 <h2 id="_1">局域网下互传大文件</h2>
-<p>解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 wget http://[IP]:[port]/[path_to_file]</p>
+<p>解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 <code>wget http://[IP]:[port]/[path\_to\_file]</code>; 另外，下载某个目录下的所有文件，<code>wget -r -np -nH -R index.html http://url/including/files/you/want/to/download/</code>. <code>-r</code> 递归， <code>-R index.html</code> 不带 <code>index.html</code> 文件。</p>
 <h2 id="ifconfig-vs-ip">ifconfig VS ip</h2>
 <ul>
 <li><a href="https://www.tecmint.com/ifconfig-vs-ip-command-comparing-network-configuration/">ifconfig vs ip: What’s Difference and Comparing Network Configuration</a></li>
