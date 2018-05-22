@@ -8,7 +8,7 @@ date: 2018-05-18 22:06
 # Python OOP
 OOP 编程的三大法宝：多态、封装、和继承。 Python 也自然离不开这些概念。但作为一个动态类型的语言， Python 的 OOP 非常灵活，最强大的就是属性的动态绑定。 另外，Python 中的三大法宝在行为上和其他OOP语言（JAVA）有些差别，注意这些有毒的细节，避免踩坑。
 
-## Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性
+# Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性
 之前一直有一个误解，以为 Python 中的 func body 里面的 self.member_vars 对应的就是Java中的对象属性属于每一个对象，而在 class body 里面的成员就是 java 中的 静态成员变量属于类；在Python非类方法是无法修改静态成员的，这点在Java(this.XXX)是可行的，但是Python不能, 这个时候 Python 会在 对象的 `object.__dict__` 中产生一个新的 XXX，初始值来自 类的XXX， 而且此时不再和类的XXX 产生联系。正确的做法是使用 ClassName.XXX 来访问。
 
 ```python
@@ -492,3 +492,51 @@ S.howManyInstances()
 
 ## 参考
 　- [guide-python-static-class-abstract-methods](https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods)
+
+
+# Python 继承类数据的传递性
+Python 子类如果不覆盖父类的类属性的话，默认所有的子类是共享该属性的！！因此，我们最好覆盖掉父类的类属性，防止多个子类混用的时候出错！
+
+```python
+class BaseClient:
+    _default_clients = {}
+    def __init__(self, region):
+        self.region = region
+    
+    @classmethod
+    def get_client(cls, region=None):
+        print cls
+        print dir(cls)
+        if region not in cls._default_clients:
+            cls._default_clients[region] = cls(region)
+        return cls._default_clients[region]
+        
+
+class A(BaseClient):
+#     _default_clients = {}
+    def __init__(self, region):
+        self.region = region
+
+class B(BaseClient):
+#     _default_clients = {}
+    def __init__(self, region):
+        self.region = region
+
+a = A.get_client('yf')
+a._default_clients['xh'] = 'sd'
+print a
+b = B.get_client('yf')
+print b._default_clients['xh']
+print b
+
+'''
+__main__.A
+['__doc__', '__init__', '__module__', '_default_clients', 'get_client']
+<__main__.A instance at 0x10b04b200>
+__main__.B
+['__doc__', '__init__', '__module__', '_default_clients', 'get_client']
+sd
+<__main__.A instance at 0x10b04b200>
+
+'''
+```

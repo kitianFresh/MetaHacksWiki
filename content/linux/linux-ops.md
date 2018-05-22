@@ -110,7 +110,7 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 
 ## 局域网下互传大文件
 
- 解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 wget http://[IP]:[port]/[path\_to\_file]
+ 解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 `wget http://[IP]:[port]/[path\_to\_file]`; 另外，下载某个目录下的所有文件，`wget -r -np -nH -R index.html http://url/including/files/you/want/to/download/`. `-r` 递归， `-R index.html` 不带 `index.html` 文件。
 
 
 
