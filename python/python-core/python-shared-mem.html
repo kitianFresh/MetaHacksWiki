@@ -1,0 +1,217 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>python-shared-mem - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-core">python-core</a>&nbsp;»&nbsp;python-shared-mem</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python-shared-mem</div>
+<div id="content">
+  <h1 id="_1">多进程之间共享一份数据</h1>
+<h2 id="_2">控制信号</h2>
+<h3 id="_3">信号机制</h3>
+<h3 id="_4">同步互斥锁信号量</h3>
+<h2 id="_5">非结构化数据（字节数组）</h2>
+<h3 id="unix-fifo">UNIX 匿名管道/有名管道FIFO</h3>
+<h2 id="_6">结构化数据</h2>
+<h3 id="_7">消息队列</h3>
+<h2 id="_8">大数据量</h2>
+<h3 id="_9">通过队列共享</h3>
+<h3 id="tmpfsdevshm">通过文件共享（普通文件，或者tmpfs很快/dev/shm）</h3>
+<h3 id="mmap">通过内存共享（MMAP）</h3>
+<p>我们如何共享一个很大的 <code>numpy.ndarray</code> 数组呢？<br />
+1. 第一种方式是直接使用 <code>np.memmap</code> 这种方式读取数据。<br />
+   - 这其实没有把数据全部读入内存，而是通过对文件流进行封装. 其实是一种共享文件的方式。</p>
+<ol>
+<li>第二种方式，我们可以使用 <code>pickle/unpickle</code> 的方式。</li>
+<li>
+<p>这种其实是在复制数据，而且解析/反解析很费时间。<code>multiprocessing.Pool</code> 就是这种方式，内存数据还是多份的。</p>
+</li>
+<li>
+<p>第三种方式，我们可以使用 <code>mmap</code> 映射数组。</p>
+</li>
+<li>
+<p>这种方式</p>
+</li>
+<li>
+<p>第四种方式，ctypes + fork-copy-on-write 机制。</p>
+</li>
+<li>这种方法对于只读数据是有效的，可以把共享的numpy数组放在进程的全局变量当中，但是不要修改他，利用fork的写时复制特性，只要fork的子进程只读数据，就可以防止数据被复制。可以避免使用 pickle/unpickle解析/反解析数据。<blockquote>
+<p>create the shared array as a ctypes object, and pass it into the initializer of each process, making it a global variable in each process.</p>
+</blockquote>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># &lt;!-- 包装 --&gt;</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">sharedctypes</span>
+<span class="n">size</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">size</span>
+<span class="n">shape</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">S</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">size</span>
+<span class="n">S_ctypes</span> <span class="o">=</span> <span class="n">sharedctypes</span><span class="o">.</span><span class="n">RawArray</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">S_ctypes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+
+<span class="c"># &lt;!-- 拿到可用数组 --&gt;</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ctypeslib</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">S_ctypes</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+</pre></div>
+
+
+<p>需要使用ctypes把numpy数组包装起来，否则不能直接使用。</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">sharedctypes</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Populates the portion of the shared array arr indicated by the offset and blocksize options &quot;&quot;&quot;</span>
+    <span class="n">offset</span><span class="p">,</span> <span class="n">blocksize</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">blocksize</span><span class="o">+</span><span class="n">offset</span><span class="p">):</span>
+        <span class="n">v</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">offset</span>
+
+    <span class="k">return</span> <span class="n">offset</span>
+
+<span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="n">arr_to_populate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Each pool process calls this initializer. Load the array to be populated into that process&#39;s global namespace &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">arr</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr_to_populate</span>
+
+<span class="n">size</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">blocksize</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_ctypes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="mi">10</span><span class="p">)))</span>
+<span class="n">shared_arr</span> <span class="o">=</span> <span class="n">sharedctypes</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">_type_</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> 
+
+<span class="n">pool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">_init</span><span class="p">,</span> <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="n">shared_arr</span><span class="p">,</span> <span class="p">))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">populate</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">blocksize</span><span class="p">),</span> <span class="p">[</span><span class="n">blocksize</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">size</span><span class="o">/</span><span class="n">blocksize</span><span class="p">)))</span>
+
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+    <span class="n">final_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">shared_arr</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">final_arr</span>
+</pre></div>
+
+
+<h1 id="mac-ubuntu-numpy">Mac 和 Ubuntu 系统对numpy数组分配的区别</h1>
+<h2 id="mac-linux">Mac 系统和 Linux系统内存管理方式</h2>
+<p>同样一份代码和数据，机器物理内存配置都是一样的，Mac上运行良好，但是在 Ubuntu 上却频繁出现 MemoryError. 我使用的是Google Cloud Platform VM 实例，15G 内存还是爆炸了。这是为什么，后来发现，GCP VM 默认没有Swap分区的，没有内存页面和磁盘的交换。</p>
+<blockquote>
+<p>OSX machine is paging RAM onto disk allowing you to have more data in memory that is in physical RAM. The EC2 instance probably doesn't have swap set up since a system and a volume on EC2 are different concepts.</p>
+</blockquote>
+<p>添加交换区并开启, 交换区大小一般可以设置为物理内存的1到2倍。</p>
+<div class="hlcode"><pre>sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo swapon -s
+</pre></div>
+
+
+<p>可以在文件 <code>/etc/fstab</code> 中添加一行 <code>/swapfile none swap sw 0 0</code>. 可以在系统启动的时候自动挂载并开启交换区。如果需要扩容交换区，</p>
+<div class="hlcode"><pre>sudo swapoff /swapfile 
+sudo fallocate -l 8G /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-05-22 21:43 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'python-shared-mem',
+  title: 'python-shared-mem',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
