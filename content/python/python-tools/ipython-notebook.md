@@ -18,3 +18,6 @@ python2 -m pip install ipykernel
 python2 -m ipykernel install # register Python 2 kernel
 
  - [Installing the IPython kernel](https://ipython.readthedocs.io/en/latest/install/kernel_install.html)
+
+
+ - [27 个Jupyter Notebook的小提示与技巧](http://liuchengxu.org/pelican-blog/jupyter-notebook-tips.html)

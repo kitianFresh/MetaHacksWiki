@@ -184,3 +184,8 @@ dd bs=1m count=5 skip=10 if=someFile | md5 >>checksums.txt
 # 最后计算连接的md5
 cat checksums.txt | md5
 ```
+
+# Linux分区和增大交换区
+ - [How to increase swap space?](https://askubuntu.com/questions/178712/how-to-increase-swap-space/389067#389067)
+
+ - [ How To Add Swap Space on Ubuntu 16.04](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-16-04)

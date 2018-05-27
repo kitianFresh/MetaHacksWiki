@@ -91,6 +91,15 @@ date: 2017-05-26 12:53
 
  - [机器学习之特征工程](http://blog.csdn.net/dream_angel_z/article/details/49388733)
 
+### 特征分类:
+(1)Low level特征和High level特征。(2)稳定特征与动态特征。(3)二值特征、连续特征、枚举特征。
+
+### 特征处理与分析
+1. 特征归一化，离散化，缺省值处理
+2. 特征降维
+3. 特征选择
+[机器学习中的数据清洗与特征处理综述](https://tech.meituan.com/machinelearning-data-feature-process.html)
+
 ### 数据量和特征维度对模型选取的影响
 先用简单模型,
 SVM一般做到几十万的数据量就会变得很慢了.SVM对数据范围敏感,需要归一化.
