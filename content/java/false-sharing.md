@@ -11,8 +11,8 @@ date: 2018-05-30 16:02
 现在CPU的多核和多级缓存cache的特性，缓存系统往往是一行(cache line) 为基本单位（而不是单个字节或者变量）进行缓存的，当多线程修改相互独立的变量时，如果变量共享了同一个缓存行，就会无意的影响彼此的性能。
 
 现代CPU为了cache数据的一致性，通过MESI协议来协调CPU核心的数据同步。
-
-![false-sharing](cache-false-sharing.png)
+<div align="center"><img src="/static/images/Java/cache-false-sharing.png" style="width:700px;height:500px;">
+<caption><center> False Sharing </center></caption></div>
 
 数据X、Y、Z被加载到同一Cache Line中，线程A在Core1修改X，线程B在Core2上修改Y。根据MESI，假设是Core1是第一个发起操作的CPU核，Core1上的L1 Cache Line由S（共享）状态变成M（修改，脏数据）状态，然后告知其他的CPU核，图例则是Core2，引用同一地址的Cache Line已经无效了；当Core2发起写操作时，首先导致Core1将X写回主存，Cache Line状态由M变为I（无效），而后才是Core2从主存重新读取该地址内容，Cache Line状态由I变成E（独占），最后进行修改Y操作， Cache Line从E变成M。
 
