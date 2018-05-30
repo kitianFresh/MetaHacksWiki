@@ -1,0 +1,588 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>mysql - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#database">database</a>&nbsp;»&nbsp;mysql</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">mysql</div>
+<div id="content">
+  <h1 id="centosmysql">在centos上安装MySQL</h1>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">Percona</span><span class="o">-</span><span class="n">Server</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mf">55.</span><span class="n">x86_64</span>
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">start</span>
+<span class="n">sudo</span> <span class="n">chkconfig</span> <span class="o">--</span><span class="n">level</span> <span class="mi">2345</span> <span class="n">mysql</span> <span class="n">on</span>
+<span class="n">mysql_secure_installation</span>
+</pre></div>
+
+
+<h1 id="mysql-root">重置MySQL root 密码</h1>
+<ol>
+<li>
+<p>停止MySQL服务 <code>sudo service mysql stop</code></p>
+</li>
+<li>
+<p>设置MySQL安全模式 <code>sudo mysqld_safe --skip-grant-tables --skip-networking &amp;</code></p>
+</li>
+<li>
+<p>无密码进入MySQL <code>mysql -u root</code></p>
+</li>
+<li>
+<p>重置密码</p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">mysql</span><span class="p">;</span>  
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">update</span> <span class="k">user</span> <span class="k">set</span> <span class="n">password</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;mynewpassword&quot;</span><span class="p">)</span> <span class="k">where</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>  
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span> 
+</pre></div>
+
+
+<p>如果 update 不成功，比如报错说没有 password 字段，看看自己的MYSQL版本，新版本 5.7 密码字段叫 <code>authentication_string</code></p>
+<div class="hlcode"><pre><span class="k">UPDATE</span> <span class="k">user</span> <span class="k">SET</span> <span class="n">authentication_string</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;NEWPASSWORD&quot;</span><span class="p">)</span> <span class="k">WHERE</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>重启MySQL服务 <code>sudo service mysql restart</code></p>
+</li>
+<li>
+<p>苹果上重启后可能还遇到问题<code>ERROR 1820 (HY000): You must reset your password using ALTER USER statement before executing this statement.</code></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;YourNewPass&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<h1 id="mysql">MYSQL 创建用户并授权</h1>
+<p>创建</p>
+<div class="hlcode"><pre><span class="k">insert</span> <span class="k">into</span> <span class="n">mysql</span><span class="p">.</span><span class="k">user</span><span class="p">(</span><span class="k">Host</span><span class="p">,</span><span class="k">User</span><span class="p">,</span><span class="n">Password</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="ss">&quot;localhost&quot;</span><span class="p">,</span><span class="ss">&quot;cron&quot;</span><span class="p">,</span><span class="n">password</span><span class="p">(</span><span class="ss">&quot;cron&quot;</span><span class="p">));</span>
+<span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
+</pre></div>
+
+
+<p>授权</p>
+<div class="hlcode"><pre><span class="k">create</span> <span class="k">database</span> <span class="n">cron</span><span class="p">;</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron&#39;</span><span class="p">;</span>
+<span class="o">#</span> <span class="k">grant</span> <span class="k">select</span><span class="p">,</span><span class="k">update</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="n">xxx</span><span class="p">,</span> <span class="n">cron</span><span class="p">.</span><span class="n">yyy</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron(password)&#39;</span><span class="p">;</span>
+<span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
+</pre></div>
+
+
+<h1 id="mysql_1">MySQL 表定义范例</h1>
+<p>用于爬取 <a href="http://www.icd10data.com/ICD10CM/Codes">icd10data</a> 中的数据，mysql 数据库模式如下：</p>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+<span class="n">use</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+
+<span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">Tbl_ICD10CM</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">Tbl_ICD10CM</span><span class="o">`</span> <span class="p">(</span>
+    <span class="o">`</span><span class="n">ClinicalId</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span> <span class="n">auto_increment</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">DiagnosisCode</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span> <span class="k">default</span> <span class="s1">&#39;00&#39;</span> <span class="k">comment</span> <span class="s1">&#39;疾病诊断码&#39;</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">DiseaseName</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">comment</span> <span class="s1">&#39;疾病名称&#39;</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ClinicalInfo</span><span class="o">`</span> <span class="nb">text</span> <span class="k">comment</span> <span class="s1">&#39;临床信息描述&#39;</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">CodeIntervalUrl</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span> <span class="k">comment</span> <span class="s1">&#39;抓取该信息的url&#39;</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ScrapedTime</span><span class="o">`</span> <span class="k">timestamp</span> <span class="k">not</span> <span class="k">null</span> <span class="k">comment</span> <span class="s1">&#39;更新时间&#39;</span><span class="p">,</span>
+    <span class="k">primary</span> <span class="k">key</span> <span class="p">(</span><span class="o">`</span><span class="n">ClinicalId</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span>
+</pre></div>
+
+
+<h1 id="mysql_2">mysql 数据库备份</h1>
+<p>备份整个数据库</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
+</pre></div>
+
+
+<p>备份数据库中的某些表</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename1</span><span class="p">]</span> <span class="p">[</span><span class="n">tablename2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dumps</span><span class="p">.</span><span class="k">sql</span>
+</pre></div>
+
+
+<p>恢复数据库</p>
+<div class="hlcode"><pre><span class="n">mysql</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">databasename</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">databasename</span><span class="p">.</span><span class="k">sql</span>
+</pre></div>
+
+
+<p>另一种备份方式是数据库元数据和数据表分开在不同的文件中</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">T</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="n">directory</span> <span class="p">[</span><span class="k">database</span><span class="p">]</span> <span class="c1">--fields-enclosed-by=\&quot; --fields-terminated-by=,</span>
+</pre></div>
+
+
+<p>只获取数据库元数据备份或者表元数据备份</p>
+<div class="hlcode"><pre><span class="n">mysqldump</span> <span class="c1">--no-data -u someuser -p mydatabase</span>
+<span class="n">mysqldump</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">u</span> <span class="n">someuser</span> <span class="o">-</span><span class="n">p</span> <span class="n">mydatabase</span> <span class="n">table1</span> <span class="n">table2</span> <span class="n">table3</span>
+</pre></div>
+
+
+<h1 id="mysql-csv">导出 Mysql 数据 到 csv</h1>
+<p>导出到csv时，需要注意分隔符和转义字符的问题；<br />
+ - Excel saves \r\n for line separators.<br />
+ - Excel saves \n for newline characters within column data<br />
+ - Have to replace \r\n inside your data first otherwise Excel will think its a start of the next line.</p>
+<div class="hlcode"><pre><span class="n">USE</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>
+<span class="k">SELECT</span>
+<span class="n">DiagnosisCode</span><span class="p">,</span>
+<span class="k">REPLACE</span><span class="p">(</span> <span class="n">IFNULL</span><span class="p">(</span><span class="n">ClinicalInfo</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="s1">&#39;\r\n&#39;</span> <span class="p">,</span> <span class="s1">&#39;\n&#39;</span> <span class="p">)</span> <span class="k">AS</span> <span class="n">ClinicalInfo</span>
+<span class="k">FROM</span> <span class="n">Tbl_ICD10CM</span>
+<span class="k">INTO</span> <span class="n">OUTFILE</span> <span class="s1">&#39;/var/lib/mysql-files/icd.csv&#39;</span> 
+<span class="n">FIELDS</span> <span class="n">TERMINATED</span> <span class="k">BY</span> <span class="s1">&#39;,&#39;</span> <span class="n">ENCLOSED</span> <span class="k">BY</span> <span class="s1">&#39;&quot;&#39;</span> <span class="n">ESCAPED</span> <span class="k">BY</span> <span class="s1">&#39;&quot;&#39;</span>
+<span class="n">LINES</span> <span class="n">TERMINATED</span> <span class="k">BY</span> <span class="s1">&#39;\r\n&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<p>出错</p>
+<div class="hlcode"><pre><span class="n">The</span> <span class="n">MySQL</span> <span class="n">server</span> <span class="k">is</span> <span class="n">running</span> <span class="k">with</span> <span class="n">the</span> <span class="c1">--secure-file-priv option so it cannot execute this statement</span>
+</pre></div>
+
+
+<p>解决办法是Mysql默认有保护措施，只能输出文件到特定目录，通过一下命令查看目录</p>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">@@</span><span class="k">global</span><span class="p">.</span><span class="n">secure_file_priv</span><span class="p">;</span>
+</pre></div>
+
+
+<h1 id="mysql_3">mysql 查看索引</h1>
+<div class="hlcode"><pre><span class="k">show</span> <span class="k">index</span> <span class="k">from</span> <span class="k">table_name</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">disks_tbl</span> <span class="k">ADD</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_backup</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="s1">&#39;ascii&#39;</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">DROP</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">auto_take</span><span class="o">`</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">ADD</span> <span class="k">COLUMN</span> <span class="o">`</span><span class="n">snapshot_type</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="s1">&#39;ascii&#39;</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">disks_tbl</span> <span class="k">ADD</span> <span class="k">INDEX</span> <span class="n">ix_disks_tbl_auto_backup</span> <span class="p">(</span><span class="o">`</span><span class="n">auto_backup</span><span class="o">`</span><span class="p">);</span>
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">ADD</span> <span class="k">INDEX</span> <span class="n">ix_mebs_snapshots_tbl_snapshot_type</span> <span class="p">(</span><span class="o">`</span><span class="n">snapshot_type</span><span class="o">`</span><span class="p">);</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">mebs_snapshot_strategy_disks_tbl</span><span class="o">`</span> <span class="p">(</span>
+<span class="o">`</span><span class="n">created_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">updated_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">deleted_at</span><span class="o">`</span> <span class="n">datetime</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">deleted</span><span class="o">`</span> <span class="n">tinyint</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">row_id</span><span class="o">`</span> <span class="nb">bigint</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+<span class="o">`</span><span class="n">mebs_snapshot_strategy_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">disk_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="n">cron_job_id</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">ascii</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="o">`</span><span class="k">open</span><span class="o">`</span> <span class="n">tinyint</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">row_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_deleted</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">deleted</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_open</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="k">open</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_mebs_snapshot_strategy_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">mebs_snapshot_strategy_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_created_at</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">created_at</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_disk_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">disk_id</span><span class="o">`</span><span class="p">),</span>
+<span class="k">KEY</span> <span class="o">`</span><span class="n">ix_mebs_snapshot_strategy_disks_tbl_cron_job_id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">cron_job_id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="n">AUTO_INCREMENT</span><span class="o">=</span><span class="mi">92</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span>
+</pre></div>
+
+
+<h1 id="mysql-sql">mysql sql语句结果导出</h1>
+<div class="hlcode"><pre><span class="n">mysql</span> <span class="o">-</span><span class="n">uroot</span> <span class="o">-</span><span class="n">p1234</span> <span class="o">-</span><span class="n">Ne</span> <span class="ss">&quot;use cron; select id from cron_jobs_tbl;&quot;</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">jobs</span><span class="p">.</span><span class="n">txt</span>
+<span class="k">insert</span> <span class="k">into</span> <span class="n">cron_logs_tbl</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">cron_job_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">,</span><span class="n">updated_at</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="n">uuid</span><span class="p">(),</span><span class="ss">&quot;001d4865-127c-45ba-90de-6c1f74e5a782&quot;</span><span class="p">,</span><span class="n">now</span><span class="p">(),</span><span class="n">now</span><span class="p">());</span>
+</pre></div>
+
+
+<h1 id="mysqlcase-study">MySQL大数据统计Case Study</h1>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">database</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+<span class="n">use</span> <span class="o">`</span><span class="n">StudentManager</span><span class="o">`</span><span class="p">;</span>
+
+<span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">students</span><span class="o">`</span> <span class="p">(</span>
+    <span class="o">`</span><span class="n">Id</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span> <span class="n">auto_increment</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="k">Class</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Age</span><span class="o">`</span> <span class="nb">int</span> <span class="n">unsigned</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Sex</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">Math</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Computer</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Physics</span><span class="o">`</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Registry</span><span class="o">`</span> <span class="k">timestamp</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+    <span class="k">primary</span> <span class="k">key</span> <span class="p">(</span><span class="o">`</span><span class="n">Id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<h1 id="sql-join">SQL JOIN</h1>
+<h2 id="inner-join">inner join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A INNER JOIN TABLE_B B ON A.KEY = B.KEY</code><br />
+求左右两边相同键值的笛卡尔积。举个例子，假设 A.a1 在左边有两条记录，<code>rec_num(A.a1) = 2</code>, B.a1 在右边有一条记录 <code>rec_num(B.a1) = 1</code>（一般是B的主键）, 那么连接之后，a1 记录就有 2 x 1 条记录。如果 A.a1 有 m 条记录， B.a1在右边有多条设为 n 条记录，则最后 a1 记录就有 m x n 条， 这就是笛卡尔积。即 左边的每一条和右边的每一条都得组合。这里做的笛卡尔积只对 m &gt;= 1 &amp;&amp; n &gt;= 1 的时候才会加入最终的连接结果，这就是 inner join， 只包含 连接键值满足 m &gt;= 1 &amp;&amp; n &gt;= 1 的笛卡尔积。</p>
+<h2 id="left-join">left join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY</code><br />
+以左边基准，求左右两边相同键值的笛卡尔积。 这里的笛卡尔积必须包含左边表所有的键值，如果 <code>rec_num(A.a1) &gt; 0 &amp;&amp; rec_num(B.a1) = 0</code>，这在 inner join 中就会被去除，但是在 left join 中，会保留这些 A.a1 记录，连接起来的右边表的值都设置为默认 null。<code>A.a1, A.a2,..., B.null, B.null...</code></p>
+<h2 id="right-join">right join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY</code><br />
+和left join 相反，以右边基准，求左右两边相同键值的笛卡尔积。 这里的笛卡尔积必须包含右边表所有的键值，如果 <code>rec_num(A.a1) = 0 &amp;&amp; rec_num(B.a1) &gt; 0</code>，这在 inner join 中会被去除，但是在 left join 中，会保留这些 B.a1 记录，连接起来的左边表的值都设置为默认 null。 <code>A.null, A.null, ... A.null, B.a1, B.a2, B.a3...</code></p>
+<h2 id="outer-join">outer join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY</code><br />
+这个就是 left join + right join。 左右两边的键值都保留。</p>
+<h2 id="left-join-excluding-inner-join">left join excluding inner join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A LEFT JOIN TABLE_B B ON A.KEY = B.KEY WHERE B.KEY IS NULL</code></p>
+<h2 id="right-join-excluding-inner-join">right join excluding inner join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A RIGHT JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL</code></p>
+<h2 id="outer-join-excluding-inner-join">outer join excluding inner join</h2>
+<p><code>SELECT &lt;field_list&gt; FROM TABLE_A A FULL OUTER JOIN TABLE_B B ON A.KEY = B.KEY WHERE A.KEY IS NULL OR B.KEY IS NULL</code></p>
+<p>以上在SQLAlchemy中的对应关系<br />
+- <a href="https://www.codeproject.com/Articles/33052/Visual-Representation-of-SQL-Joins">Visual Representation of SQL Joins</a></p>
+<h1 id="sql">SQL 执行顺序</h1>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">column</span><span class="p">,</span> <span class="n">AGG_FUNC</span><span class="p">(</span><span class="n">column_or_expression</span><span class="p">),</span> <span class="err">…</span>
+<span class="k">FROM</span> <span class="n">mytable</span>
+    <span class="k">JOIN</span> <span class="n">another_table</span>
+      <span class="k">ON</span> <span class="n">mytable</span><span class="p">.</span><span class="k">column</span> <span class="o">=</span> <span class="n">another_table</span><span class="p">.</span><span class="k">column</span>
+    <span class="k">WHERE</span> <span class="n">constraint_expression</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">column</span>
+    <span class="k">HAVING</span> <span class="n">constraint_expression</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="k">column</span> <span class="k">ASC</span><span class="o">/</span><span class="k">DESC</span>
+    <span class="k">LIMIT</span> <span class="k">count</span> <span class="k">OFFSET</span> <span class="k">COUNT</span><span class="p">;</span>
+</pre></div>
+
+
+<p>根据数据库不同，其实内部的执行顺序是不确定的，同一中数据库不同查询语句也有可能不同，因为有sql优化器和执行计划，但是有一个大致默认的顺序，<br />
+FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTINCT -&gt; ORDER BY -&gt; LIMIT/OFFSET<br />
+- <a href="https://sqlbolt.com/lesson/select_queries_order_of_execution">Order of execution of a Query</a></p>
+<h2 id="mysql_4">MySQL 聚合函数</h2>
+<p><a href="https://dev.mysql.com/doc/refman/5.7/en/group-by-functions.html">MySQL 聚合函数</a>可以理解成 <code>Map/Reduce</code> 中的　<code>reduce</code> 函数，就是将一个集合经过运算之后降维成一个数．常见的聚合函数就是我们数学统计上的个数(不同值的个数)，求和，均值，最大，最小，极差，标准差，方差等．这些函数 SQL 直接提供的．<a href="http://www.xarg.org/2012/07/statistical-functions-in-mysql/">Statistical functions in MySQL</a></p>
+<ul>
+<li>COUNT()/COUNT(DISTINCT)</li>
+<li>SUM()/SUM(DISTINCT)</li>
+<li>AVG()/AVG(DISTINCT)</li>
+<li>MAX()</li>
+<li>MIN()</li>
+<li>STD()</li>
+<li>GROUP_CONCAT()</li>
+</ul>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">MAX</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">MIN</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">SUM</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">AVG</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">SUM</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="k">AVG</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">Age</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+</pre></div>
+
+
+<ul>
+<li>均值</li>
+<li>中位数  --将数据按大小顺序排列后处于中间位置的数。当中间剩余为2个数字时，取其算数平均数。</li>
+<li>众数    --数据中出现次数最多的数（所占比例最大的数），一组数据中，可能存在多个众数，也可能不存在众数。</li>
+<li>极差　--最大值和最小值的差，衡量数据范围</li>
+<li>标准差　-- 距离平均数的距离，数据分布距离均值的带宽</li>
+<li>方差　-- 标准差的平方</li>
+<li>偏度</li>
+<li>峰度</li>
+</ul>
+<p>优缺点</p>
+<table>
+<thead>
+<tr>
+<th align="right"></th>
+<th align="right">含义</th>
+<th align="right">优点</th>
+<th align="right">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">均值</td>
+<td align="right">AVG</td>
+<td align="right">充分利用所有数据，适用性强</td>
+<td align="right">容易受到极端值影响</td>
+</tr>
+<tr>
+<td align="right">中位数</td>
+<td align="right">MEDIUM</td>
+<td align="right">不受极端值影响</td>
+<td align="right">缺乏敏感性</td>
+</tr>
+<tr>
+<td align="right">众数</td>
+<td align="right">MODE</td>
+<td align="right">当数据具有明显的集中趋势时，代表性好；不受极端值影响</td>
+<td align="right">缺乏唯一性：可能有一个，可能有两个，可能一个都没有</td>
+</tr>
+</tbody>
+</table>
+<p><strong>众数Mode</strong>, 需要我们做更复杂的操作，寻找某一个组的众数．</p>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span> <span class="k">WHERE</span> <span class="k">Count</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">MAX</span><span class="p">(</span><span class="k">Count</span><span class="p">)</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="k">As</span> <span class="k">Count</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">WHERE</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Age</span><span class="p">)</span> <span class="k">AS</span> <span class="n">temp</span><span class="p">);</span>
+</pre></div>
+
+
+<p>聚合函数运用在一个集合数据上，因此对于查询出来的表或者分组都可用的，运用特别多的就是和　GROUP BY 一起使用．因为 GROUP BY 是无法打印出来每一个组的所有记录的！此时还有一个聚合函数　<code>GROUP_CONCAT()</code>;此函数可以将每一组的某个字段值连接成一个字符串字段；</p>
+<div class="hlcode"><pre><span class="n">GROUP_CONCAT</span><span class="p">([</span><span class="k">DISTINCT</span><span class="p">]</span> <span class="n">expr</span> <span class="p">[,</span><span class="n">expr</span> <span class="p">...]</span>
+             <span class="p">[</span><span class="k">ORDER</span> <span class="k">BY</span> <span class="err">{</span><span class="n">unsigned_integer</span> <span class="o">|</span> <span class="n">col_name</span> <span class="o">|</span> <span class="n">expr</span><span class="err">}</span>
+                 <span class="p">[</span><span class="k">ASC</span> <span class="o">|</span> <span class="k">DESC</span><span class="p">]</span> <span class="p">[,</span><span class="n">col_name</span> <span class="p">...]]</span>
+             <span class="p">[</span><span class="n">SEPARATOR</span> <span class="n">str_val</span><span class="p">])</span>
+</pre></div>
+
+
+<p>例如，查询每一个班上所有同学的Id, 并按照年龄大小降序．</p>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">Class</span><span class="p">,</span> <span class="n">GROUP_CONCAT</span><span class="p">(</span><span class="n">Id</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">-------+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="k">Class</span> <span class="o">|</span> <span class="n">GROUP_CONCAT</span><span class="p">(</span><span class="n">Id</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">)</span>                               <span class="o">|</span>
+<span class="o">+</span><span class="c1">-------+------------------------------------------------------------------+</span>
+<span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span> <span class="mi">95</span><span class="p">,</span><span class="mi">87</span><span class="p">,</span><span class="mi">86</span><span class="p">,</span><span class="mi">73</span><span class="p">,</span><span class="mi">89</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">66</span><span class="p">,</span><span class="mi">47</span><span class="p">,</span><span class="mi">55</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">52</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">21</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">85</span><span class="p">,</span><span class="mi">98</span>            <span class="o">|</span>
+<span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span> <span class="mi">34</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">38</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">69</span><span class="p">,</span><span class="mi">94</span><span class="p">,</span><span class="mi">29</span><span class="p">,</span><span class="mi">67</span><span class="p">,</span><span class="mi">68</span><span class="p">,</span><span class="mi">45</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">58</span><span class="p">,</span><span class="mi">31</span><span class="p">,</span><span class="mi">65</span><span class="p">,</span><span class="mi">33</span><span class="p">,</span><span class="mi">92</span><span class="p">,</span><span class="mi">49</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">83</span> <span class="o">|</span>
+<span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span> <span class="mi">37</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">48</span><span class="p">,</span><span class="mi">81</span><span class="p">,</span><span class="mi">74</span><span class="p">,</span><span class="mi">72</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">53</span><span class="p">,</span><span class="mi">36</span><span class="p">,</span><span class="mi">44</span><span class="p">,</span><span class="mi">23</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">59</span><span class="p">,</span><span class="mi">24</span><span class="p">,</span><span class="mi">35</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">84</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span> <span class="mi">62</span><span class="p">,</span><span class="mi">46</span><span class="p">,</span><span class="mi">54</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">57</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">93</span><span class="p">,</span><span class="mi">63</span><span class="p">,</span><span class="mi">41</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">78</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">82</span><span class="p">,</span><span class="mi">99</span><span class="p">,</span><span class="mi">26</span><span class="p">,</span><span class="mi">97</span><span class="p">,</span><span class="mi">39</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">80</span>        <span class="o">|</span>
+<span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span> <span class="mi">7</span><span class="p">,</span><span class="mi">96</span><span class="p">,</span><span class="mi">71</span><span class="p">,</span><span class="mi">42</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">79</span><span class="p">,</span><span class="mi">19</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">75</span><span class="p">,</span><span class="mi">22</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">61</span><span class="p">,</span><span class="mi">88</span><span class="p">,</span><span class="mi">76</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">27</span><span class="p">,</span><span class="mi">77</span>            <span class="o">|</span>
+<span class="o">+</span><span class="c1">-------+------------------------------------------------------------------+</span>
+<span class="mi">5</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="top-n">统计分组排序后的 TOP N</h2>
+<h3 id="_1">使用相关子查询</h3>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> 
+<span class="k">FROM</span> <span class="n">students</span> <span class="n">s</span> 
+<span class="k">WHERE</span>
+  <span class="p">(</span>
+   <span class="k">SELECT</span> <span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+   <span class="k">FROM</span> <span class="n">students</span>
+   <span class="k">WHERE</span>
+   <span class="n">students</span><span class="p">.</span><span class="k">Class</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="k">Class</span> <span class="k">AND</span> <span class="n">students</span><span class="p">.</span><span class="n">Age</span> <span class="o">&gt;=</span> <span class="n">s</span><span class="p">.</span><span class="n">Age</span>
+  <span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">,</span> <span class="n">Id</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">----+---------------+-------+------+</span>
+<span class="o">|</span> <span class="n">Id</span> <span class="o">|</span> <span class="n">Name</span>          <span class="o">|</span> <span class="k">Class</span> <span class="o">|</span> <span class="n">Age</span>  <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+---------------+-------+------+</span>
+<span class="o">|</span> <span class="mi">86</span> <span class="o">|</span> <span class="n">Bernd</span> <span class="n">Baker</span>   <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">87</span> <span class="o">|</span> <span class="n">Roger</span> <span class="n">Smith</span>   <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">95</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Moore</span>     <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">73</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Baker</span>    <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">34</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Smith</span>     <span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">64</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Smith</span>     <span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">43</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Baker</span>     <span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span>   <span class="mi">44</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">51</span> <span class="o">|</span> <span class="n">Bernard</span> <span class="n">Smith</span> <span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span>   <span class="mi">44</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">38</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">2</span> <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">37</span> <span class="o">|</span> <span class="n">Yvonne</span> <span class="n">Miller</span> <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">45</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">30</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Baker</span>     <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">44</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">48</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Baker</span>     <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">81</span> <span class="o">|</span> <span class="n">Bill</span> <span class="n">Miller</span>   <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">40</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">62</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">46</span> <span class="o">|</span> <span class="n">Bernd</span> <span class="n">Smith</span>   <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">54</span> <span class="o">|</span> <span class="n">Yvonne</span> <span class="n">Baker</span>  <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">50</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Baker</span>    <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">40</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">57</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">38</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">7</span> <span class="o">|</span> <span class="n">Simone</span> <span class="n">Miller</span> <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">44</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">96</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Looper</span>    <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">42</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">3</span> <span class="o">|</span> <span class="n">Bill</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">42</span> <span class="o">|</span> <span class="n">Zoe</span> <span class="n">Smith</span>     <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">71</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Smith</span>     <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+---------------+-------+------+</span>
+<span class="mi">23</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+</pre></div>
+
+
+<p>以上查询的意思就是，对于 students 表中的每一个学生，看他是不是该组的 TOP 5, 其实就是看有多少个和 s.Class 相同的学生他的年龄比　s.Age 大，如果个数小于 N 个，　就表明这个学生是　TOP N 中的，　因为　TOP N 中的记录，比他还大的必定少于 N 个；　但是这个版本的缺陷可以从结果看出来，　他无法正确统计值相同的情况！</p>
+<h3 id="union">UNION 集合并</h3>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">4</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">union</span> <span class="k">all</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">students</span> <span class="k">where</span> <span class="k">Class</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">order</span> <span class="k">by</span> <span class="n">Age</span> <span class="k">desc</span> <span class="k">limit</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="p">;</span>
+</pre></div>
+
+
+<p>方法就是单独查询每一类别的TOP N, 然后使用　UNION　并集；</p>
+<h3 id="user-defined-varibles">User Defined Varibles</h3>
+<div class="hlcode"><pre><span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span>
+<span class="k">FROM</span>
+<span class="p">(</span>
+    <span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span><span class="p">,</span>
+        <span class="o">@</span><span class="n">ClassRank</span> <span class="p">:</span><span class="o">=</span> <span class="n">IF</span><span class="p">(</span><span class="o">@</span><span class="n">CurrentClass</span> <span class="o">=</span> <span class="k">Class</span><span class="p">,</span> <span class="o">@</span><span class="n">ClassRank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">As</span> <span class="n">ClassRank</span><span class="p">,</span>
+        <span class="o">@</span><span class="n">CurrentClass</span> <span class="p">:</span><span class="o">=</span> <span class="k">Class</span>
+    <span class="k">FROM</span> <span class="n">students</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> <span class="k">DESC</span>
+<span class="p">)</span> <span class="n">ranked</span>
+<span class="k">WHERE</span> <span class="n">ClassRank</span> <span class="o">&lt;=</span> <span class="mi">5</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="k">Class</span><span class="p">,</span> <span class="n">Age</span> <span class="k">DESC</span><span class="p">;</span>
+</pre></div>
+
+
+<p>该SQL 的意思就是，给每一个类别中的学生设置rank, 他是通过已经排好序的　Age, 然后计算出每一个学生的 RANK, 最后取出排序在　前　Ｎ 个的学生即可； 变量字段　@ClassRank 和　@ CurrentClass 开始都是空，然后通过不断的赋值更新；由于学生是排好序的，因此后一个和前一个是同类，则每一个rank 就+1, 不是同一类时候就置１，然后开始下一个类的 rank 操作；</p>
+<h2 id="mysql-time">MYSQL time</h2>
+<p>unix 时间戳转换成时间</p>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">id</span><span class="p">,</span> <span class="n">from_unixtime</span><span class="p">(</span><span class="n">next_run_timestamp</span><span class="p">)</span> <span class="k">from</span> <span class="n">apscheduler_jobs_tbl</span><span class="p">;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">snapshot_type</span><span class="p">,</span> <span class="n">expired_days</span><span class="p">,</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">utc_timestamp</span><span class="p">(),</span> <span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> 
+<span class="n">expired_days</span> <span class="k">day</span><span class="p">)</span> <span class="k">as</span> <span class="n">expire</span><span class="p">,</span> <span class="n">time_to_sec</span><span class="p">(</span><span class="n">timediff</span><span class="p">(</span><span class="n">adddate</span><span class="p">(</span><span class="n">created_at</span><span class="p">,</span> <span class="nb">interval</span> <span class="n">expired_days</span> <span class="k">day</span><span class="p">),</span> <span class="n">utc_timestamp</span><span class="p">()))</span> <span class="k">as</span> <span class="n">lefted</span>  <span class="k">from</span> <span class="n">mebs_snapshots_tbl</span> <span class="k">where</span> <span class="n">expired_days</span><span class="o">!=-</span><span class="mi">1</span> <span class="k">and</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;mebs_snapshot_ready&#39;</span> <span class="k">and</span> <span class="n">deleted</span><span class="o">=</span><span class="k">false</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lefted</span><span class="p">;</span>
+</pre></div>
+
+
+<h2 id="mysql_5">MySQL 分页查询</h2>
+<h3 id="offset">offset 分页查询</h3>
+<p><code>limit offset, row_count</code>, <code>limit row_count</code> 等价于　<code>limit 0, row_count</code>; 分页是常见的场景，分页实现也有不同的版本; 简单的就是使用　<code>limit</code>. 分页一般是按照某种排序标准进行分页，例如学生的数学成绩，或者入学时间等；</p>
+<p>以下语句按照时间顺序查询 第<code>21 ~ 30</code>条记录 即第三页，每页10条记录；</p>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">Registry</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">----+--------------+-------+------+------+------+----------+---------+---------------------+</span>
+<span class="o">|</span> <span class="n">Id</span> <span class="o">|</span> <span class="n">Name</span>         <span class="o">|</span> <span class="k">Class</span> <span class="o">|</span> <span class="n">Age</span>  <span class="o">|</span> <span class="n">Sex</span>  <span class="o">|</span> <span class="n">Math</span> <span class="o">|</span> <span class="n">Computer</span> <span class="o">|</span> <span class="n">Physics</span> <span class="o">|</span> <span class="n">Registry</span>            <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+--------------+-------+------+------+------+----------+---------+---------------------+</span>
+<span class="o">|</span> <span class="mi">79</span> <span class="o">|</span> <span class="n">Frank</span> <span class="n">Miller</span> <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">39</span> <span class="o">|</span> <span class="err">女</span>   <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>       <span class="mi">24</span> <span class="o">|</span>      <span class="mi">78</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">02</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">80</span> <span class="o">|</span> <span class="n">Paul</span> <span class="n">Smith</span>   <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">22</span> <span class="o">|</span> <span class="err">女</span>   <span class="o">|</span>   <span class="mi">56</span> <span class="o">|</span>       <span class="mi">92</span> <span class="o">|</span>      <span class="mi">37</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">02</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">77</span> <span class="o">|</span> <span class="n">Simone</span> <span class="n">Baker</span> <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">24</span> <span class="o">|</span> <span class="err">男</span>   <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span>       <span class="mi">43</span> <span class="o">|</span>       <span class="mi">4</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">00</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">78</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Baker</span>   <span class="o">|</span>     <span class="mi">4</span> <span class="o">|</span>   <span class="mi">32</span> <span class="o">|</span> <span class="err">男</span>   <span class="o">|</span>   <span class="mi">86</span> <span class="o">|</span>       <span class="mi">56</span> <span class="o">|</span>      <span class="mi">50</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">00</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">75</span> <span class="o">|</span> <span class="n">Laura</span> <span class="n">Smith</span>  <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">31</span> <span class="o">|</span> <span class="err">女</span>   <span class="o">|</span>   <span class="mi">66</span> <span class="o">|</span>        <span class="mi">7</span> <span class="o">|</span>      <span class="mi">29</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">58</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">76</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">26</span> <span class="o">|</span> <span class="err">女</span>   <span class="o">|</span>   <span class="mi">59</span> <span class="o">|</span>        <span class="mi">5</span> <span class="o">|</span>      <span class="mi">81</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">58</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">73</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Baker</span>   <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>   <span class="mi">43</span> <span class="o">|</span> <span class="err">男</span>   <span class="o">|</span>   <span class="mi">54</span> <span class="o">|</span>       <span class="mi">94</span> <span class="o">|</span>       <span class="mi">7</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">56</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">74</span> <span class="o">|</span> <span class="n">John</span> <span class="n">Smith</span>   <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">36</span> <span class="o">|</span> <span class="err">男</span>   <span class="o">|</span>   <span class="mi">58</span> <span class="o">|</span>       <span class="mi">13</span> <span class="o">|</span>      <span class="mi">64</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">56</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">71</span> <span class="o">|</span> <span class="n">Eve</span> <span class="n">Smith</span>    <span class="o">|</span>     <span class="mi">5</span> <span class="o">|</span>   <span class="mi">41</span> <span class="o">|</span> <span class="err">女</span>   <span class="o">|</span>   <span class="mi">31</span> <span class="o">|</span>        <span class="mi">8</span> <span class="o">|</span>      <span class="mi">21</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">54</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">72</span> <span class="o">|</span> <span class="n">Paul</span> <span class="n">Singer</span>  <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>   <span class="mi">36</span> <span class="o">|</span> <span class="err">男</span>   <span class="o">|</span>    <span class="mi">9</span> <span class="o">|</span>       <span class="mi">11</span> <span class="o">|</span>      <span class="mi">52</span> <span class="o">|</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">22</span><span class="p">:</span><span class="mi">23</span><span class="p">:</span><span class="mi">54</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+--------------+-------+------+------+------+----------+---------+---------------------+</span>
+<span class="mi">10</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="value-based">value-based 分页查询</h3>
+<p>offset 版本的分页查询当面对大数据集合的时候，会非常低效，因为他总是先读出所有的数据，让后排序，这是非常耗时的。</p>
+<h3 id="_2">分页查询优化</h3>
+<ul>
+<li>
+<p><a href="https://blog.novatec-gmbh.de/art-pagination-offset-vs-value-based-paging/">The art of pagination – Offset vs. value based paging</a></p>
+</li>
+<li>
+<p><a href="https://www.xarg.org/2011/10/optimized-pagination-using-mysql/">Optimized Pagination using MySQL</a></p>
+</li>
+<li>
+<p><a href="https://blog.jooq.org/2016/08/10/why-most-programmers-get-pagination-wrong/">What’s wrong with pagination?</a></p>
+</li>
+<li>
+<p><a href="http://mysql.rjweb.org/doc.php/pagination">Pagination</a></p>
+</li>
+<li>
+<p><a href="http://blog.fatalmind.com/2010/09/29/finding-the-best-match-with-a-top-n-query/">Finding the Best Match With a Top-N Query</a></p>
+</li>
+<li>
+<p><a href="https://sqlperformance.com/2015/01/t-sql-queries/pagination-with-offset-fetch">Pagination with OFFSET / FETCH : A better way</a></p>
+</li>
+</ul>
+<h2 id="mysql_6">MySQL列运算操作</h2>
+<div class="hlcode"><pre><span class="k">select</span> <span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">itemAdd</span><span class="p">,</span> <span class="n">usr</span> <span class="k">from</span> <span class="n">usr_table</span>
+<span class="k">select</span> <span class="k">sum</span><span class="p">(</span><span class="k">isnull</span><span class="p">(</span><span class="n">item1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="k">isnull</span><span class="p">(</span><span class="n">item3</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="k">as</span> <span class="n">itemSum</span>  <span class="k">from</span> <span class="n">usr_table</span>
+</pre></div>
+
+
+<h2 id="mysql_7">MySQL 索引优化</h2>
+<ol>
+<li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
+<li>=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</li>
+<li>尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录</li>
+<li>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</li>
+<li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
+</ol>
+<h2 id="mysql_8">MySQL 事务和锁</h2>
+<ul>
+<li><a href="http://www.cnblogs.com/chenqionghe/p/4845693.html">MySQL中的锁（表锁、行锁）</a></li>
+<li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">how-to-do-distributed-locking</a></li>
+<li><a href="https://www.alibabacloud.com/forum/read-453">Questions about distributed locks</a></li>
+<li><a href="http://www.scs.stanford.edu/14au-cs244b/labs/projects/pu_gao_qu.pdf"> a simple distributed lock service</a></li>
+</ul>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-05-09 21:40 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'mysql',
+  title: 'mysql',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

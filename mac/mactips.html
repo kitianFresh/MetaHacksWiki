@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>MacTips - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#mac">mac</a>&nbsp;»&nbsp;MacTips</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">MacTips</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#osx">OSX 环境配置</a><ul>
+<li><a href="#mac">Mac 快捷键</a></li>
+</ul>
+</li>
+<li><a href="#mac-os-xrootpython">Mac OS X新版本系统root用户也无法安装python包</a><ul>
+<li><a href="#mac-os-mysql">在MAC OS 上安装MYSQL</a></li>
+<li><a href="#mysql-root">重置MySQL root 密码</a></li>
+<li><a href="#mac-vpn">Mac 配置科大VPN教程</a></li>
+</ul>
+</li>
+<li><a href="#iterm2-tmuxscreen">iTerm2 和 Tmux以及Screen配置</a><ul>
+<li><a href="#iterm2">iTerm2</a></li>
+<li><a href="#screen">screen 使用简介</a></li>
+<li><a href="#tmux">配置 tmux</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="osx">OSX 环境配置</h1>
+<p>OS X 下载 brew<br />
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" &lt; /dev/null 2&gt; /dev/null ; brew install caskroom/cask/brew-cask 2&gt; /dev/null</p>
+<p>brew cask install pycharm</p>
+<h2 id="mac">Mac 快捷键</h2>
+<p>Mac 下的 home 和 end<br />
+Ctrl+A：到行首（达到Home键的效果）<br />
+Ctrl+E：到行尾（达到End键的效果）<br />
+Ctrl+N：到下一行<br />
+Ctrl+P：到上一行<br />
+Ctrl+K：从光标处开始删除，知道行尾</p>
+<ul>
+<li><a href="http://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/">A Quick and Easy Guide to tmux</a></li>
+<li><a href="http://kuanghy.github.io/2016/09/29/tmux">Tmux 简介与使用</a></li>
+</ul>
+<h1 id="mac-os-xrootpython">Mac OS X新版本系统root用户也无法安装python包</h1>
+<p>新系统引入了保护机制，<code>sudo pip install xxx</code> 也无法安装， 或出现权限错误，<code>OSError: [Errno 1] Operation not permitted:'/System/Library/Frameworks/Python.framework/Versions/2.7/share'</code>由于El Capitan引入了SIP机制(System Integrity Protection)，默认下系统启用SIP系统完整性保护机制，无论是对于硬盘还是运行时的进程限制对系统目录的写操作。<br />
+现在的解决办法是取消SIP机制，具体做法是：</p>
+<p>重启电脑，按住Command+R(直到出现苹果标志)进入Recovery Mode(恢复模式)<br />
+左上角菜单里找到实用工具 -&gt; 终端<br />
+输入csrutil disable回车<br />
+重启Mac即可<br />
+如果想重新启动SIP机制重复上述步骤改用csrutil enable即可</p>
+<p>另外， 新版本的 ipython 也会出问题， 最好安装 jupyter. <code>sudo pip install jupyter</code></p>
+<h2 id="mac-os-mysql">在MAC OS 上安装MYSQL</h2>
+<p>Download MySQL for OS X<br />
+Download latest stable version of MySQL server for your OS X version and architecture. Link: http://dev.mysql.com/downloads/mysql/. Please make sure you download the .dmg file.</p>
+<p>Unpack download .dmg file<br />
+Click on the downloaded .dmg file and unpack it. Click on the mysql server package from unpacked files.</p>
+<p>Install MySQL from downloaded file<br />
+Install MySQL server by clicking on the mysql package to open up the installer. If you want to install the startup script to automatically start MySQL server at the time of system startup, you should also install the start up package of mysql now (included in the unpacked MySQL package that you just downloaded and unpacked as a separate file).</p>
+<p>Once the installer has finished successfully, all MySQL related files should be installed under /usr/local/mysql-VERSION directory. A link /usr/local/mysql (pointing to the MySQL installation directory) should also have been created for your convenience.</p>
+<p>Install and setup auto start package for MySQL on OS X<br />
+If you had installed the automatic startup package at the time of installation, you should now be able to start MySQL running the following command in OS X Terminal window or by restarting the operating system:</p>
+<p>$ sudo /Library/StartupItems/MySQLCOM/MySQLCOM start<br />
+As soon as you run the command above, your system might ask for permission to allow MySQL server to accept incoming connections. You must give the permission to listen on port 3306 (or change it later to run on a different port).</p>
+<p>In case, you did not install the startup script, you have to run mysqld_safe under /usr/local/mysql/bin/mysqld_safe script.</p>
+<p>If you want to disable automatic MySQL starts at the time of system startup, you can change the value of MYSQLCOM in /etc/hostconfig to "-NO-" (without quotes).</p>
+<p>You should also consider including /usr/local/mysql/bin/ in your system PATH variable.</p>
+<p>Connect to installed MySQL server<br />
+In order to connect to MySQL using command line client, do the following from OSX terminal:</p>
+<p>通过命令行登陆看是否安装 <code>$ /usr/local/mysql/bin/mysql -uroot</code><br />
+最后配置环境变量</p>
+<div class="hlcode"><pre><span class="c"># for mysql #</span>
+<span class="nb">export </span><span class="nv">MYSQL_HOME</span><span class="o">=</span>/usr/local/mysql
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$MYSQL_HOME</span>/bin
+<span class="c"># mysql 服务启动和停止命令</span>
+<span class="nb">alias </span><span class="nv">mysqlstart</span><span class="o">=</span><span class="s1">&#39;sudo /usr/local/mysql/support-files/mysql.server start&#39;</span>
+<span class="nb">alias </span><span class="nv">mysqlstop</span><span class="o">=</span><span class="s1">&#39;sudo /usr/local/mysql/support-files/mysql.server stop&#39;</span>
+</pre></div>
+
+
+<h2 id="mysql-root">重置MySQL root 密码</h2>
+<ol>
+<li>
+<p>停止MySQL服务 <code>sudo service mysql stop</code></p>
+</li>
+<li>
+<p>设置MySQL安全模式 <code>sudo mysqld_safe --skip-grant-tables --skip-networking &amp;</code></p>
+</li>
+<li>
+<p>无密码进入MySQL <code>mysql -u root</code></p>
+</li>
+<li>
+<p>重置密码</p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">mysql</span><span class="p">;</span>  
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">update</span> <span class="k">user</span> <span class="k">set</span> <span class="n">password</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;mynewpassword&quot;</span><span class="p">)</span> <span class="k">where</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>  
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span> 
+</pre></div>
+
+
+<p>如果 update 不成功，比如报错说没有 password 字段，看看自己的MYSQL版本，新版本 5.7 密码字段叫 <code>authentication_string</code></p>
+<div class="hlcode"><pre><span class="k">UPDATE</span> <span class="k">user</span> <span class="k">SET</span> <span class="n">authentication_string</span><span class="o">=</span><span class="n">PASSWORD</span><span class="p">(</span><span class="ss">&quot;NEWPASSWORD&quot;</span><span class="p">)</span> <span class="k">WHERE</span> <span class="k">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>重启MySQL服务 <code>sudo service mysql restart</code></p>
+</li>
+<li>
+<p>苹果上重启后可能还遇到问题<code>ERROR 1820 (HY000): You must reset your password using ALTER USER statement before executing this statement.</code></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;YourNewPass&#39;</span><span class="p">;</span>
+</pre></div>
+
+
+<h2 id="mac-vpn">Mac 配置科大VPN教程</h2>
+<p><a href="http://netfee.ustc.edu.cn/faq/index.html#howtosetupvpn">科大VPN教程</a></p>
+<h1 id="iterm2-tmuxscreen">iTerm2 和 Tmux以及Screen配置</h1>
+<h2 id="iterm2">iTerm2</h2>
+<p><a href="https://www.iterm2.com/">iTerm2</a> 直接到官网下载并安装即可. 这里说一下配置iTerm2主题颜色以及背景透明。让你的shell色彩斑斓，提高文字区分度。<br />
+<a href="https://github.com/mbadolato/iTerm2-Color-Schemes">iTerm2-Color-Schemes</a> 里面有很多款不同的主题，按照教程配置主题即可。背景色透明直接在 iTerm2--&gt;Preferences--&gt;Profiles--&gt;Window--&gt;Transparency中自行调节。<br />
+最后，还需要将下面的脚本粘贴到 <code>~/.bash_profile</code> 配置文件中，并执行 <code>source ~/.bash_profile</code> 使其生效即可。主要是配置<code>ls</code> 命令的显示。</p>
+<p>command+alt+t 即可唤出 ITerm2 终端。</p>
+<div class="hlcode"><pre><span class="nb">export </span><span class="nv">CLICOLOR</span><span class="o">=</span>1
+<span class="nb">export </span><span class="nv">LSCOLORS</span><span class="o">=</span>gxfxcxdxbxegedabagacad
+<span class="nb">export </span><span class="nv">PS1</span><span class="o">=</span><span class="s1">&#39;\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\w\[\033[00m\]\$ &#39;</span>
+<span class="nb">export </span><span class="nv">TERM</span><span class="o">=</span>xterm-color
+</pre></div>
+
+
+<h2 id="screen">screen 使用简介</h2>
+<p>screen 和 tmux有类似的服务。只是screen开启会话后不会新建窗口，还是在当前窗口。</p>
+<ol>
+<li>screen 创建一个session</li>
+</ol>
+<div class="hlcode"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">S</span> <span class="n">myNewSession</span>
+<span class="err">或者</span>
+<span class="n">screen</span> <span class="err">创建一个名字默认是</span><span class="n">ttys</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="err">的</span><span class="n">session</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>从当前 session 暂时断开退出。 <code>ctrl+a+d</code></p>
+</li>
+<li>
+<p>列出当前所有的session. <code>screen -ls</code> </p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>恢复某一个session。<code>screen -r myNewSession</code></p>
+</li>
+<li>
+<p>强制杀死一个 session. <code>kill -9 28091</code></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Dead</span> <span class="o">???</span><span class="p">)</span>
+<span class="n">Remove</span> <span class="n">dead</span> <span class="n">screens</span> <span class="n">with</span> <span class="err">&#39;</span><span class="n">screen</span> <span class="o">-</span><span class="n">wipe</span><span class="err">&#39;</span><span class="p">.</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>按照提示清理。 <code>screen -wipe</code></p>
+</li>
+<li>
+<p><code>Cannot open your terminal '/dev/pts/0' - please check.</code></p>
+</li>
+<li>Sign out and properly connect / sign in as the user you wish to use.</li>
+<li>Run <code>script /dev/null</code> to own the shell (more info over at Server Fault); then try screen again.</li>
+</ol>
+<h2 id="tmux">配置 tmux</h2>
+<p>Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意思。 </p>
+<p>场景就是，第一种是在本地电脑，你打开了好几个terminal， 每一个terminal由当前的工作环境， 然后这个时候没电了或者你电脑关机了，那么这些terminal的工作状态就没有了。如果使用tmux记录下来，那么这些terminal下次还可以继续使用，并且恢复到关闭时的状态。</p>
+<p>第二种就是 ssh 登陆到远程主机， 然后ssh 基本上很容易断开，一般使用 nohup &amp; 在后台运行命令， 但是如果使用 tmux， 就可以记录下来，关闭了也没关系，还可以再次恢复。</p>
+<p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
+<p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-07-29 18:33 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'MacTips',
+  title: 'MacTips',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

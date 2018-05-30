@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>http - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-web">python-web</a>&nbsp;»&nbsp;http</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">http</div>
+<div id="content">
+  <h1 id="the-httplib2http-objects-are-not-thread-safe">The httplib2.Http() objects are not thread-safe</h1>
+<div class="hlcode"><pre><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/shell/mebs.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">779</span><span class="p">,</span> <span class="ow">in</span> <span class="n">run</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">migrate</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/shell/mebs.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">760</span><span class="p">,</span> <span class="ow">in</span> <span class="n">migrate</span>
+    <span class="n">zone</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">zones</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mebs_template</span><span class="p">[</span><span class="s">&#39;zone_id&#39;</span><span class="p">])</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">227</span><span class="p">,</span> <span class="ow">in</span> <span class="n">get</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">98</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_get</span>
+    <span class="n">resp</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_request</span><span class="p">(</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">64</span><span class="p">,</span> <span class="ow">in</span> <span class="n">json_request</span>
+    <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_versioned_url</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/client.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">768</span><span class="p">,</span> <span class="ow">in</span> <span class="n">json_request</span>
+    <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/client.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">748</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_wrapped_request</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">get_token</span><span class="p">(),</span> <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/http.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">129</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_json_request</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">migrate</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/shell/mebs.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">760</span><span class="p">,</span> <span class="ow">in</span> <span class="n">migrate</span>
+    <span class="n">zone</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">zones</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mebs_template</span><span class="p">[</span><span class="s">&#39;zone_id&#39;</span><span class="p">])</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">227</span><span class="p">,</span> <span class="ow">in</span> <span class="n">get</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">98</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_get</span>
+    <span class="n">resp</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_request</span><span class="p">(</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/base.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">64</span><span class="p">,</span> <span class="ow">in</span> <span class="n">json_request</span>
+    <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_versioned_url</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/client.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">768</span><span class="p">,</span> <span class="ow">in</span> <span class="n">json_request</span>
+    <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/v1/client.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">748</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_wrapped_request</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">get_token</span><span class="p">(),</span> <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/http.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">129</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_json_request</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/http.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">114</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_http_request</span>
+    <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">from_response</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+<span class="n">BadRequest</span><span class="p">:</span> <span class="n">Unable</span> <span class="n">to</span> <span class="n">communicate</span> <span class="k">with</span> <span class="n">API</span> <span class="n">service</span><span class="p">:</span> <span class="s">&#39;NoneType&#39;</span> <span class="nb">object</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span> <span class="s">&#39;makefile&#39;</span><span class="o">.</span> <span class="p">(</span><span class="n">HTTP</span> <span class="mi">400</span><span class="p">):</span> <span class="bp">None</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">&quot;/opt/cloud/meituan/client/mcclient/common/http.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">114</span><span class="p">,</span> <span class="ow">in</span> <span class="n">_http_request</span>
+    <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">from_response</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+<span class="n">BadRequest</span><span class="p">:</span> <span class="n">Unable</span> <span class="n">to</span> <span class="n">communicate</span> <span class="k">with</span> <span class="n">API</span> <span class="n">service</span><span class="p">:</span> <span class="s">&#39;NoneType&#39;</span> <span class="nb">object</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span> <span class="s">&#39;settimeout&#39;</span><span class="o">.</span> <span class="p">(</span><span class="n">HTTP</span> <span class="mi">400</span><span class="p">):</span> <span class="bp">None</span>
+</pre></div>
+
+
+<ul>
+<li><a href="https://developers.google.com/api-client-library/python/guide/thread_safety"> The httplib2.Http() objects are not thread-safe</a></li>
+</ul>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-12-04 18:37 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'http',
+  title: 'http',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

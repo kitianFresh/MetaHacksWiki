@@ -1,0 +1,582 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>unix_socket_deamon - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-system-program">python-system-program</a>&nbsp;»&nbsp;unix_socket_deamon</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">unix_socket_deamon</div>
+<div id="content">
+  <h1 id="rest">本地进程之间通过实REST来进行进程通讯</h1>
+<p>unix socket 可以提供本机的不同进程间通过类似于 http 的请求来通讯；后台进程服务启动入口，<code>init_deamon_process</code></p>
+<div class="hlcode"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">tornado.options</span> <span class="kn">import</span> <span class="n">options</span>
+<span class="kn">from</span> <span class="nn">tornado.httpclient</span> <span class="kn">import</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">ClientHTTPError</span>
+<span class="kn">from</span> <span class="nn">clouds.common</span> <span class="kn">import</span> <span class="n">codeutils</span>
+<span class="kn">from</span> <span class="nn">clouds.common.tornadoutils</span> <span class="kn">import</span> <span class="n">cerror2serror</span>
+
+
+<span class="k">def</span> <span class="nf">is_service_on</span><span class="p">(</span><span class="n">unix_socket</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">unix_socket</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_UNIX</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">unix_socket</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="n">_region_mebsd</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">_workspace</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">_unix_socket</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="k">def</span> <span class="nf">register_deamon_task</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">zone</span><span class="p">,</span> <span class="n">region_task_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">clouds.common.http_uds_client</span> <span class="kn">import</span> <span class="n">get_client</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;/&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span> <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span> <span class="s">&#39;zone&#39;</span><span class="p">:</span> <span class="n">zone</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">region_task_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;region_task_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">region_task_id</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">sync_request</span><span class="p">(</span><span class="n">_unix_socket</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ClientHTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">serr</span> <span class="o">=</span> <span class="n">cerror2serror</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Register deamon long time task failed: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">serr</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="n">serr</span>
+
+
+<span class="k">def</span> <span class="nf">init_deamon_process</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_deamon_process</span><span class="p">,</span> <span class="n">_workspace</span><span class="p">,</span> <span class="n">_unix_socket</span>
+    <span class="n">_workspace</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codeutils</span><span class="o">.</span><span class="n">get_workspace_path</span><span class="p">(),</span> <span class="s">&#39;task_deamon&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_workspace</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">_workspace</span><span class="p">)</span>
+    <span class="n">_unix_socket</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_workspace</span><span class="p">,</span> <span class="s">&#39;task_deamon.socket&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_service_on</span><span class="p">(</span><span class="n">_unix_socket</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;task_deamon is running...&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;start to run region_mebsd...&#39;</span><span class="p">)</span>
+        <span class="n">_deamon_process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s">&quot;./task_deamon&quot;</span><span class="p">,</span>
+                <span class="s">&quot;--workspace=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">_workspace</span><span class="p">,</span>
+                <span class="s">&quot;--unix-socket=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">_unix_socket</span><span class="p">,</span>
+                <span class="s">&quot;--config-file=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">options</span><span class="o">.</span><span class="n">config_file</span><span class="p">,</span>
+            <span class="p">],</span> <span class="n">close_fds</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>                              <span class="c"># close_fds doesn&#39;t apply to fd 0,1,2</span>
+
+
+<span class="k">def</span> <span class="nf">stop_deamon_process</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_deamon_process</span>
+    <span class="k">if</span> <span class="n">_deamon_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">_deamon_process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>   <span class="c"># send signal TERM</span>
+</pre></div>
+
+
+<p>和后台进程通讯的 unix socket 客户端</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">clouds.common.httputils</span> <span class="kn">import</span> <span class="n">AsyncHTTPClientManager</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">httplib</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<span class="k">class</span> <span class="nc">HttpUnixDomainSocketClient</span><span class="p">(</span><span class="n">AsyncHTTPClientManager</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">sync_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_path</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">quote_path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">socket_path</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">url</span>
+        <span class="n">req_url</span> <span class="o">=</span> <span class="s">&#39;http+unix://&#39;</span> <span class="o">+</span> <span class="n">quote_path</span> <span class="o">+</span> <span class="n">url</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;sync&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">req_url</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="n">_default_client</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="k">def</span> <span class="nf">get_client</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_default_client</span>
+    <span class="k">if</span> <span class="n">_default_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Http unix domain socket client initialized&quot;</span>
+        <span class="n">_default_client</span> <span class="o">=</span> <span class="n">HttpUnixDomainSocketClient</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_default_client</span>
+
+
+<span class="k">def</span> <span class="nf">_has_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="s">&#39;_GLOBAL_DEFAULT_TIMEOUT&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">socket</span><span class="o">.</span><span class="n">_GLOBAL_DEFAULT_TIMEOUT</span>
+    <span class="k">return</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+
+<span class="k">class</span> <span class="nc">HttpUnixDomainSocketConnection</span><span class="p">(</span><span class="n">httplib</span><span class="o">.</span><span class="n">HTTPConnection</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    HTTP over UNIX Domain Sockets</span>
+<span class="sd">    URI format: http+unix://%2Fpath%2Fto%2Fsocket.sock/location</span>
+<span class="sd">    Socket path is url_quoted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">proxy_info</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">httplib</span><span class="o">.</span><span class="n">HTTPConnection</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_UNIX</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">_has_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="k">raise</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="c"># Monkey patch this module to httplib2</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;httplib2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">SCHEME_TO_CONNECTION</span><span class="p">[</span><span class="s">&#39;http+unix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HttpUnixDomainSocketConnection</span>
+</pre></div>
+
+
+<p>后台耗时任务进程, 采用的是 tornado 异步框架，相当于一个 web 后台服务；后台耗时任务完成之后，再通过 REST 风格的请求回调回去任务的注册者，告知任务注册者任务执行完毕，也就是说对于任务的注册者，任务的进行时异步的，这种异步是基于 REST 实现而不是 RPC或者消息。</p>
+<div class="hlcode"><pre><span class="c"># import time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">urlparse</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tornado</span>
+<span class="kn">import</span> <span class="nn">Queue</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">from</span> <span class="nn">tornado.httpclient</span> <span class="kn">import</span> <span class="n">AsyncHTTPClient</span><span class="p">,</span> <span class="n">HTTPRequest</span>
+<span class="kn">from</span> <span class="nn">tornado.httpserver</span> <span class="kn">import</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">tornado.httputil</span> <span class="kn">import</span> <span class="n">HTTPHeaders</span>
+<span class="kn">from</span> <span class="nn">tornado.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">tornado.netutil</span> <span class="kn">import</span> <span class="n">bind_unix_socket</span>
+<span class="kn">from</span> <span class="nn">tornado.web</span> <span class="kn">import</span> <span class="n">RequestHandler</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">HTTPError</span>
+<span class="kn">from</span> <span class="nn">tornado.gen</span> <span class="kn">import</span> <span class="n">coroutine</span>
+<span class="kn">from</span> <span class="nn">tornado.options</span> <span class="kn">import</span> <span class="n">define</span><span class="p">,</span> <span class="n">options</span>
+<span class="kn">from</span> <span class="nn">clouds.mebs</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">mebs_client</span>
+<span class="kn">from</span> <span class="nn">clouds.common</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">clouds.common</span> <span class="kn">import</span> <span class="n">auth</span>
+<span class="kn">from</span> <span class="nn">clouds.common.handler.ping</span> <span class="kn">import</span> <span class="n">PingHandler</span>
+<span class="kn">from</span> <span class="nn">clouds.common.service</span> <span class="kn">import</span> <span class="n">ServiceBase</span>
+
+<span class="kn">from</span> <span class="nn">clouds.models.disks</span> <span class="kn">import</span> <span class="n">Disks</span>
+<span class="kn">from</span> <span class="nn">clouds.models.mebs_backups</span> <span class="kn">import</span> <span class="n">MEBSBackups</span>
+
+
+<span class="n">NUM_WORKERS</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">CHECK_INTERVAL</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">12</span>
+<span class="n">PERSISTENCE_FILE</span> <span class="o">=</span> <span class="s">&#39;data.keep&#39;</span>
+
+<span class="n">queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+<span class="n">persistence</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="n">ACTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;clone_snapshot&#39;</span><span class="p">,</span> <span class="s">&#39;clone&#39;</span><span class="p">,</span> <span class="s">&#39;backup&#39;</span><span class="p">,</span> <span class="s">&#39;restore_backup&#39;</span><span class="p">,</span> <span class="s">&#39;delete_backup&#39;</span><span class="p">,</span>
+           <span class="s">&#39;create_template&#39;</span><span class="p">,</span> <span class="s">&#39;commit_template&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">zone</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Note: backup task doesn&#39;t know its size when calling the API,</span>
+<span class="sd">            needs to report here in region_mebsd</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zone</span> <span class="o">=</span> <span class="n">zone</span>    <span class="c"># zone name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_reported</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region_task_id</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;mebsd task =&gt; id=</span><span class="si">%s</span><span class="s">, action=</span><span class="si">%s</span><span class="s">, zone=</span><span class="si">%s</span><span class="s">, count=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="n">CHECK_INTERVAL</span>
+        <span class="n">finished</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_task_status</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">MainHandler</span><span class="o">.</span><span class="n">task_failed</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">finished</span><span class="p">:</span>
+            <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">MainHandler</span><span class="o">.</span><span class="n">task_finished</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">MainHandler</span><span class="o">.</span><span class="n">check_task_later</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">MainHandler</span><span class="o">.</span><span class="n">task_failed</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_task_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">clouds.mebs.client</span> <span class="kn">import</span> <span class="n">get_client</span>
+        <span class="n">mebs_cli</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;clone_snapshot&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;clone&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">qcow2</span><span class="o">.</span><span class="n">Snapshot</span><span class="o">.</span><span class="n">get_clone_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;backup&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">qcow2</span><span class="o">.</span><span class="n">Snapshot</span><span class="o">.</span><span class="n">get_backup_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">total_size_byte</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">!=</span> <span class="n">p</span><span class="o">.</span><span class="n">total_size_byte</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">total_size_byte</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">size_reported</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;restore_backup&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">qcow2</span><span class="o">.</span><span class="n">Snapshot</span><span class="o">.</span><span class="n">get_restore_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;delete_backup&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">qcow2</span><span class="o">.</span><span class="n">Snapshot</span><span class="o">.</span><span class="n">get_delbackup_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;create_template&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">get_create_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;commit_template&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">get_commit_progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;migrate_template&#39;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">mebs_cli</span><span class="o">.</span><span class="n">qcow2</span><span class="o">.</span><span class="n">query_migrate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">percent</span> <span class="o">==</span> <span class="mi">100</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">finished</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">error</span>
+
+        <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span>
+
+
+<span class="k">class</span> <span class="nc">WorkerManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NUM_WORKERS</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="p">)</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">MainHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; json body example:</span>
+<span class="sd">            {&#39;action&#39;: &#39;action&#39;, &#39;id&#39;: &#39;idstr&#39;, &#39;zone&#39;: &#39;zone&#39;...}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">&#39;Invalid body&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">body</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ACTIONS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">&#39;Invalid action&#39;</span><span class="p">)</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">],</span> <span class="n">body</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">],</span> <span class="n">body</span><span class="p">[</span><span class="s">&#39;zone&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s">&#39;region_task_id&#39;</span> <span class="ow">in</span> <span class="n">body</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="s">&#39;region_task_id&#39;</span><span class="p">]</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">task</span><span class="p">,</span> <span class="s">&#39;start&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span> <span class="nf">json_fetch</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">service_url</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">get_manager</span><span class="p">()</span><span class="o">.</span><span class="n">get_service_url</span><span class="p">(</span><span class="s">&#39;compute&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">get_manager</span><span class="p">()</span><span class="o">.</span><span class="n">get_token</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">AsyncHTTPClient</span><span class="p">()</span>
+        <span class="n">xheaders</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;X-Auth-Token&#39;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span>
+                    <span class="s">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s">&quot;application/json charset=utf-8&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">headers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">xheaders</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+        <span class="n">xheaders</span> <span class="o">=</span> <span class="n">HTTPHeaders</span><span class="p">(</span><span class="n">xheaders</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">HTTPRequest</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">xheaders</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">tornado</span><span class="o">.</span><span class="n">gen</span><span class="o">.</span><span class="n">Return</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span> <span class="nf">check_task_later</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="n">_task</span><span class="p">):</span>
+            <span class="n">persistence</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">_task</span><span class="p">)</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">_task</span><span class="p">)</span>
+
+        <span class="n">persistence</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;backup&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">size_reported</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">size_reported</span> <span class="o">=</span> <span class="bp">True</span>       <span class="c"># only report to region once</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mebs_backup&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">}}</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;/mebs_backups/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_timeout</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">CHECK_INTERVAL</span><span class="p">),</span>
+                                      <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span> <span class="nf">task_finished</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">task</span><span class="p">,</span> <span class="s">&#39;finished&#39;</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;clone_snapshot&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;disk&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">Disks</span><span class="o">.</span><span class="n">DISK_READY</span><span class="p">}}</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;/disks/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;restore_backup&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/disks/</span><span class="si">%s</span><span class="s">/notify-restore-mebs-backup-succ&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;disk&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;backup&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mebs_backup&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">MEBSBackups</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">}}</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">size_reported</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s">&#39;mebs_backup&#39;</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;/mebs_backups/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;delete_backup&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/mebs_backups/</span><span class="si">%s</span><span class="s">/notify-delete-succ&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;mebs_backup&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/tasks/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span> <span class="nf">task_failed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">task</span><span class="p">,</span> <span class="s">&#39;failed&#39;</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;clone_snapshot&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;/disks/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;disk&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">Disks</span><span class="o">.</span><span class="n">CLONE_MEBS_SNAPSHOT_FAILED</span><span class="p">}})</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;restore_backup&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/disks/</span><span class="si">%s</span><span class="s">/notify-restore-mebs-backup-fail&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;backup&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;/mebs_backups/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;mebs_backup&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">MEBSBackups</span><span class="o">.</span><span class="n">STATUS_BACKUP_FAILED</span><span class="p">}})</span>
+
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s">&#39;delete_backup&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/mebs_backups/</span><span class="si">%s</span><span class="s">/notify-delete-fail&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">json_fetch</span><span class="p">(</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;/tasks/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;__status__&#39;</span><span class="p">:</span> <span class="s">&#39;error&#39;</span><span class="p">,</span> <span class="s">&#39;__reason__&#39;</span><span class="p">:</span> <span class="s">&#39;region_mebsd task failed&#39;</span><span class="p">})</span>
+
+
+<span class="k">def</span> <span class="nf">receive_signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">persistence_then_exit</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">make_data</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;zone&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">zone</span><span class="p">,</span>
+                               <span class="s">&#39;count&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">count</span><span class="p">,</span> <span class="s">&#39;size_in_bytes&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">size_in_bytes</span><span class="p">,</span>
+                               <span class="s">&#39;size_reported&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">size_reported</span><span class="p">,</span>
+                               <span class="s">&#39;region_task_id&#39;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">region_task_id</span><span class="p">}</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">queue</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_data</span><span class="p">(</span><span class="n">task</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">persistence</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_data</span><span class="p">(</span><span class="n">task</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">workspace</span><span class="p">,</span> <span class="n">PERSISTENCE_FILE</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>     <span class="c"># exit the main thread, the other daemon worker threads exit as well</span>
+
+    <span class="k">if</span> <span class="n">signum</span> <span class="ow">in</span> <span class="n">ServiceBase</span><span class="o">.</span><span class="n">get_trap_signums</span><span class="p">():</span>
+        <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_callback_from_signal</span><span class="p">(</span><span class="n">persistence_then_exit</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">trap_signals</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">signum</span> <span class="ow">in</span> <span class="n">ServiceBase</span><span class="o">.</span><span class="n">get_trap_signums</span><span class="p">():</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">receive_signal</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">recover_persistence</span><span class="p">():</span>
+    <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">workspace</span><span class="p">,</span> <span class="n">PERSISTENCE_FILE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;zone&#39;</span><span class="p">])</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;count&#39;</span><span class="p">]</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">size_in_bytes</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;size_in_bytes&#39;</span><span class="p">]</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">size_reported</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;size_reported&#39;</span><span class="p">]</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">region_task_id</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;region_task_id&#39;</span><span class="p">]</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;workspace&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Workspace dir&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;unix_socket&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Unix Domain Socket file&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;enable_mebs&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;MEBS service trigger&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_src_dir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;MEBS API source code dir&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_bin_dir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;MEBS binary exe dir&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_log_config&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;/etc/mebs/log.conf&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Logging level control&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_log_dir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;MEBS log dir&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_manager_config&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_redis_config&#39;</span><span class="p">)</span>
+    <span class="n">define</span><span class="p">(</span><span class="s">&#39;mebs_sql_connection&#39;</span><span class="p">)</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s">&quot;etc/region.conf&quot;</span><span class="p">)</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">check_options</span><span class="p">([</span><span class="s">&#39;region&#39;</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">,</span> <span class="s">&#39;auth_uri&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;admin_user&#39;</span><span class="p">,</span> <span class="s">&#39;admin_password&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;admin_tenant_name&#39;</span><span class="p">,</span> <span class="s">&#39;workspace&#39;</span><span class="p">,</span> <span class="s">&#39;unix_socket&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;enable_mebs&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">check_options</span><span class="p">([</span><span class="s">&#39;mebs_src_dir&#39;</span><span class="p">,</span> <span class="s">&#39;mebs_redis_config&#39;</span><span class="p">])</span>
+        <span class="n">mebs_client</span><span class="o">.</span><span class="n">configure_at_region</span><span class="p">()</span>
+
+    <span class="n">wait_auth</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">add_timeout</span><span class="p">(</span><span class="n">wait_auth</span><span class="p">,</span> <span class="n">recover_persistence</span><span class="p">)</span>
+    <span class="n">trap_signals</span><span class="p">()</span>
+    <span class="n">auth</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+    <span class="n">worker_man</span> <span class="o">=</span> <span class="n">WorkerManager</span><span class="p">()</span>
+    <span class="n">worker_man</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+    <span class="n">application</span> <span class="o">=</span> <span class="n">Application</span><span class="p">([(</span><span class="s">r&quot;/ping&quot;</span><span class="p">,</span> <span class="n">PingHandler</span><span class="p">),</span>
+                               <span class="p">(</span><span class="s">r&quot;/&quot;</span><span class="p">,</span> <span class="n">MainHandler</span><span class="p">)])</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">xheaders</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">bind_unix_socket</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">unix_socket</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">add_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-09-08 10:33 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'unix_socket_deamon',
+  title: 'unix_socket_deamon',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>dlm - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;dlm</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">dlm</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">分布式锁管理器</a></li>
+<li><a href="#zookeeper">基于Zookeeper实现的分布式锁</a><ul>
+<li><a href="#zookeeper_1">Zookeeper简介</a></li>
+<li><a href="#zookeeper_2">Zookeeper的重要特性</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">分布式锁管理器</h1>
+<p>我们知道，现代多处理器环境下，计算机并发程序通讯最经典的就是基于共享内存下的同步与互斥原语，而实现互斥最经典的方式就是锁了。锁是可以保证对共享对象操作原子性的手段之一，原子性是指上层语义的一些列指令（这一系列指令是由应用程序和事务性质决定的，可以长可以短）可以在一个线程中不被打断的连续执行完成或者不执行。也就是说，锁不是必须的，真正必须的是原子性！！！只要你能提供原子性操作，就可以保证互斥。</p>
+<p>锁的机制就是，每个线程在之行互斥区代码的时候，需要先申请获得锁，只有持有锁的线程才能执行代码，其他线程只能等待，直到持有锁的线程释放锁。关于锁本身是如何实现的，真实的锁实现有很多，他们的对外接口都是一样的。各种各样的锁实现，可以参考书籍《多处理器编程的艺术》，这是一本非常难的书，但是里面讲解了各种锁的实现细节，从经典的不完善的LockOne 算法，LockTwo 算法，他们满足互斥但是却可能造成死锁，再到Perterson 算法正确解决了两个线程互斥问题而且还是deadlock-free的，最后还有FilterLock算法解决了多个线程互斥的问题，同时满足了mutual-exclusion, deadlock-free 和starvation-free。锁基本的特性需要满足互斥性mutual-exclusion和不发生死锁Deadlock-free（这里指的是锁本身的实现上，而不是我们应用程序使用锁的时候自己发生死锁），在此基础上要避免饥饿starvation-free。只要不发生死锁，程序就可以正常演进，也是就最低条件。虽然避免饥饿可以保证所有的线程都有机会拿到锁，但是还要更高级的需求就是公平性，线程拿到锁的时间和其他线程相比，不能花太多的时间，这就是公平锁Fairness。Lamport's Bakery Algorithm 用来解决了锁的公平调度算法。这些超出了本文的范畴，这里不论述。</p>
+<p>实际上，锁本身的实现思路，和我们在锁（操作系统提供给我们的，或者有些语言级别的锁）的基础上实现自己的锁的思路是一样的，这有点像递归，绕脑。也就是说，其实我们在使用 lock.lock() 和 lock.unlock() 的时候，其实这里面的实现，我们也可以自己写出来，只是用别人的，更简单一些，而且代码更易读，不容易出错。</p>
+<p>锁本身在可以看成是多线程的一个共享数据，多线程在同一个进程地址空间，大家都能看到锁，大家谁抢到，谁就获得锁进入互斥代码。</p>
+<p>在多进程的时候，由于进程地址空间是隔离的，大家互相看不到，因此他们只能借助于操作系统内核空间或者共享的内存文件系统等来实现锁的访问控制，所以对于多进程，我们见到的最多的锁就是文件锁。</p>
+<p>那么当进程不在一台主机上了，我们的锁也是一样的，必须大家都能看到，这个时候我们就需要有一个第三方的大家都能访问到的组织，去申请和释放锁了，所以我们可以用共享的网络文件系统，数据库的记录等来提供一种锁服务了。目前最流行的也就是基于数据库（可以认为是共享的文件），内存数据库Redis以及Zookeeper的。</p>
+<p>分布式锁区别于单机内的操作系统锁或文件锁的是，分布式系统的复杂性和容错。除了要满足mutual-exclusion, deadlock-free 之外，你必须考虑容错，因为需要走网络连接，很容发生断网或者机器故障，最重要的是考虑这些情况！</p>
+<h1 id="zookeeper">基于Zookeeper实现的分布式锁</h1>
+<h2 id="zookeeper_1">Zookeeper简介</h2>
+<p>Zookeeper最早起源于Yahoo 的Hadoop项目，作为分布式计算和存储平台，需要解决一致性的场景非常多，因此他们开发了Zookeeper这么一个组件，专门用来协调解决一致性问题。</p>
+<p>那什么才是一致性呢？数据一致性其实是数据库系统中的概念。我们可以简单的把一致性理解为正确性或者完整性，那么数据一致性通常指关联数据之间的逻辑关系是否正确和完整。比如你删除某个被其他表引用的表时，你是删除不了的，这个就是关系的一致性保证的。而在分布式系统中，数据一致性往往指的是由于数据的复制，不同数据节点中的数据内容是否完整并且相同。</p>
+<p>​比如在集中式系统中，有一些关键的配置信息，可以直接保存在服务器的内存中，但是在分布式系统中，如何保存这些配置信息，又如何保证所有机器上的配置信息都保持一致，又如何保证修改一个配置能够把这次修改同步到所有机器中呢？</p>
+<p>再举个数据库主从例子，比如你的服务请求太大了，一台数据库已经无法支撑这么大量的请求，你又一个办法就是把数据复制到多个数据库上，这样可以分担请求压力，实现采用负载均衡技术就可以实现请求压力的分散。但是问题来了，如何保证每一个数据库都有相同的数据呢？现在一般主流解决方案都是数据库主从模式，一个主库做写，另外多个从库做读使用，这也意味着上层业务属于读多写少的业务。那一个数据写入之后，就必须把数据复制到其他从库上。这样其他读请求才可以看到。</p>
+<p>根据读请求看到新写入数据的时机，我们又把这种一致性模型分成强一致性，弱一致性和最终一致性。<br />
+ - 强一致性：就是更新之后的数据，读请求立即可以见到。<br />
+   - 要做到这个意味着，你的数据必须更新到从库之后，写才打算执行成功，才能返回。当然也不一定是非要等到所有的从库都更新完，可以更新一半以上写操作就算成功并返回，此时读操作就不能简单只读某一个从库了，得同时读一半以上的从库，根据鸽巢原理，这样必定能读到一个最新的数据，我们可以给数据更新加版本号，读出来的所有数据看那个版本最新，就取哪一个。<br />
+- 弱一致性：就是更新之后的数据，读请求不能立即看到。<br />
+  - 系统并不保证续进程或者线程的访问都会返回最新的更新过的值。系统在数据写入成功之后，不承诺立即可以读到最新写入的值，也不会具体的承诺多久之后可以读到。但会尽可能保证在某个时间级别（比如秒级别）之后，可以让数据达到一致性状态。<br />
+- 最终一致性：更新数据之后走，不保证更新数据立即课件，也不会保证多久可见，但一定在某个时间会可见。<br />
+  - 弱一致性的特定形式。系统保证在没有后续更新的前提下，系统最终返回上一次更新操作的值。在没有故障发生的前提下，不一致窗口的时间主要受通信延迟，系统负载和复制副本的个数影响</p>
+<p>实际上一致性模型并不是这么简单的三大类，他有很多应用场景和细分类别。都是根据不同需求和应用场景来划分的。<a href="https://cloud.tencent.com/developer/article/1015442">分布式系统一致性分类，你知道几种？</a>. 本文不再赘述这些一致性模型，超出了范围。</p>
+<h2 id="zookeeper_2">Zookeeper的重要特性</h2>
+<ul>
+<li><a href="http://www.hollischuang.com/archives/1716">分布式锁的几种实现方式</a></li>
+<li><a href="http://www.importnew.com/27019.html">基于 ZooKeeper 的分布式锁和队列</a></li>
+<li><a href="https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/zookeeper/DistributedLockImpl.java">twitter-DistributedLockImpl.java</a></li>
+<li><a href="https://distributedalgorithm.wordpress.com/2015/06/20/architecture-of-zab-zookeeper-atomic-broadcast-protocol/">Architecture of ZAB – ZooKeeper Atomic Broadcast protocol</a></li>
+<li><a href="https://segmentfault.com/a/1190000014479433">zookeeper面试题</a></li>
+</ul>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-09-12 10:42 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'dlm',
+  title: 'dlm',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

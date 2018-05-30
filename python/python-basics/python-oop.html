@@ -1,0 +1,600 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>python-oop - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#python">python</a>&nbsp;»&nbsp;<a href="/#python-python-basics">python-basics</a>&nbsp;»&nbsp;python-oop</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python-oop</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#python-oop">Python OOP</a></li>
+<li><a href="#python-oop-selfxxx-xxx">Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性</a></li>
+<li><a href="#python-staticmethod-classmethod">Python @staticmethod 和 @classmethod</a><ul>
+<li><a href="#static-methods">Static Methods</a></li>
+<li><a href="#class-methods">Class Methods</a></li>
+<li><a href="#abstract-methods">Abstract Methods</a></li>
+<li><a href="#_1">参考</a></li>
+</ul>
+</li>
+<li><a href="#python">Python 继承类数据的传递性</a></li>
+</ul>
+</div>
+<h1 id="python-oop">Python OOP</h1>
+<p>OOP 编程的三大法宝：多态、封装、和继承。 Python 也自然离不开这些概念。但作为一个动态类型的语言， Python 的 OOP 非常灵活，最强大的就是属性的动态绑定。 另外，Python 中的三大法宝在行为上和其他OOP语言（JAVA）有些差别，注意这些有毒的细节，避免踩坑。</p>
+<h1 id="python-oop-selfxxx-xxx">Python OOP 中不要用 self.XXX 修改属于类的 XXX 属性</h1>
+<p>之前一直有一个误解，以为 Python 中的 func body 里面的 self.member_vars 对应的就是Java中的对象属性属于每一个对象，而在 class body 里面的成员就是 java 中的 静态成员变量属于类；在Python非类方法是无法修改静态成员的，这点在Java(this.XXX)是可行的，但是Python不能, 这个时候 Python 会在 对象的 <code>object.__dict__</code> 中产生一个新的 XXX，初始值来自 类的XXX， 而且此时不再和类的XXX 产生联系。正确的做法是使用 ClassName.XXX 来访问。</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="k">def</span> <span class="nf">execute2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">Task</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">print</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">count</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">count</span>
+</pre></div>
+
+
+<p>以下是查看对象和类的词典的变化，很明显，对象通过复制一份类变量XXX的形式将其复制给了 self.XXX</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">do</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+
+<span class="n">t1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+<span class="n">Task</span><span class="o">.</span><span class="n">do</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+
+<span class="n">t1</span><span class="o">.</span><span class="n">execute2</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Task</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">() {} 6</span>
+<span class="sd">{&#39;id&#39;: 1}</span>
+<span class="sd">() {} 5</span>
+<span class="sd">6</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;id&#39;: 1}</span>
+<span class="sd">{&#39;count&#39;: 6, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">() {} 5</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">() {} 4</span>
+<span class="sd">4</span>
+<span class="sd">{&#39;count&#39;: 5, &#39;id&#39;: 1}</span>
+<span class="sd">{&#39;count&#39;: 4, &#39;do&#39;: &lt;classmethod object at 0x10b6200c0&gt;, &#39;__module__&#39;: &#39;tasks&#39;, &#39;execute2&#39;: &lt;function execute2 at 0x10b60d500&gt;, &#39;__dict__&#39;: &lt;attribute &#39;__dict__&#39; of &#39;Task&#39; objects&gt;, &#39;__weakref__&#39;: &lt;attribute &#39;__weakref__&#39; of &#39;Task&#39; objects&gt;, &#39;execute&#39;: &lt;function execute at 0x10b60d398&gt;, &#39;__init__&#39;: &lt;function __init__ at 0x10b60d410&gt;, &#39;__doc__&#39;: None}</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">t1</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s">&#39;do&#39;</span>
+    <span class="n">invoke_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">invoke_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">invoke_func</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">invoke_func</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s">&quot;count&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">id</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="n">task1</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">)</span>
+    <span class="n">task1</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">t2</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tasks</span> <span class="kn">import</span> <span class="n">Task</span>
+    <span class="n">task2</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s">&#39;2&#39;</span><span class="p">)</span>
+    <span class="n">task2</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s">&#39;execute&#39;</span>
+    <span class="n">func_name</span> <span class="o">=</span> <span class="s">&#39;execute2&#39;</span>
+    <span class="n">invoke_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">invoke_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="s">&#39;123123&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">invoke_func</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s">&quot;count&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">id</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+<span class="n">t2</span><span class="p">()</span>
+<span class="n">t1</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="python-staticmethod-classmethod">Python @staticmethod 和 @classmethod</h1>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+
+    <span class="k">def</span> <span class="nf">get_age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">age</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Person</span><span class="o">.</span><span class="n">get_age</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">unbound</span> <span class="n">method</span> <span class="n">Person</span><span class="p">.</span><span class="n">get_age</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>显示的是未绑定的方法, 为什么? 因为 Python 对象方法需要绑定到某一个实例才可以使用</p>
+<div class="hlcode"><pre><span class="n">Person</span><span class="o">.</span><span class="n">get_age</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">---------------------------------------------------------------------------</span>
+
+<span class="nx">TypeError</span>                                 <span class="nx">Traceback</span> <span class="p">(</span><span class="nx">most</span> <span class="nx">recent</span> <span class="nb">call</span> <span class="nb">last</span><span class="p">)</span>
+
+<span class="o">&lt;</span><span class="nx">ipython</span><span class="na">-input</span><span class="o">-</span><span class="mi">46</span><span class="o">-</span><span class="mi">2</span><span class="nx">e11244cec48</span><span class="o">&gt;</span> <span class="k">in</span> <span class="o">&lt;</span><span class="nx">module</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="o">----&gt;</span> <span class="mi">1</span> <span class="nx">Person.get_age</span><span class="p">()</span>
+
+
+<span class="nx">TypeError</span><span class="p">:</span> <span class="nx">unbound</span> <span class="nb">method</span> <span class="nx">get_age</span><span class="p">()</span> <span class="nx">must</span> <span class="nx">be</span> <span class="nx">called</span> <span class="k">with</span> <span class="nx">Person</span> <span class="nx">instance</span> <span class="nx">as</span> <span class="nb">first</span> <span class="nx">argument</span> <span class="p">(</span><span class="nx">got</span> <span class="nx">nothing</span> <span class="nx">instead</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Person</span><span class="o">.</span><span class="n">get_age</span><span class="p">(</span><span class="n">Person</span><span class="p">(</span><span class="mi">23</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="mi">23</span>
+</pre></div>
+
+
+<p>这里其实就相当于 <code>Person(23)</code>　这个对象和我们的　<code>Person.get_age</code>　方法绑定了．这也是为什么实例方法都需要 <code>self</code> 做参数的原因了；</p>
+<p>但是，　如果我们不记得类名字了，　就无法这样调用方法了．　因此　Python 提供了　Syntax Sugar, 直接通过和　Java 一样的方式调用绑定的实例方法即可！</p>
+<div class="hlcode"><pre><span class="n">Person</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span><span class="o">.</span><span class="n">get_age</span><span class="p">()</span><span class="c"># &lt;==&gt; Person.get_age(Person(23))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="mi">23</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Person</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span><span class="o">.</span><span class="n">get_age</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="n">Person</span><span class="p">.</span><span class="n">get_age</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Person</span> <span class="n">object</span> <span class="n">at</span> <span class="mh">0x7f5b24107e10</span><span class="o">&gt;&gt;</span>
+</pre></div>
+
+
+<p>每一个绑定的方法，都可以获取他所绑定到的对象，　使用　方法　的　<code>__self__</code> 属性即可；</p>
+<div class="hlcode"><pre><span class="n">m</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span><span class="o">.</span><span class="n">get_age</span>
+<span class="n">m</span><span class="o">.</span><span class="n">__self__</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Person</span> <span class="n">at</span> <span class="mh">0x7f5b24107d50</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">m</span> <span class="o">==</span> <span class="n">m</span><span class="o">.</span><span class="n">__self__</span><span class="o">.</span><span class="n">get_age</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">True</span>
+</pre></div>
+
+
+<p>In Python 3, the functions attached to a class are <em>not</em> considered as <em>unbound method</em> anymore, but as simple functions, that are bound to an object if required. So the principle stays the same, the model is just simplified.</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+<span class="o">...</span>         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+<span class="o">...</span>     <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="o">...</span>         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+<span class="o">...</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Pizza</span><span class="o">.</span><span class="n">get_size</span>
+<span class="o">&lt;</span><span class="n">function</span> <span class="n">Pizza</span><span class="o">.</span><span class="n">get_size</span> <span class="n">at</span> <span class="mh">0x7f307f984dd0</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h2 id="static-methods">Static Methods</h2>
+<p>对于属于一个类，但是却从不使用该类实例变量的方法来说，　使用静态方法就够了．<strong>他既不和类的实例(self)绑定，也不和类本身(cls)绑定．只是意义上属于类的一个普通方法而已．</strong></p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mix_ingredients</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">cook</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mix_ingredients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cheese</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vegetables</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p><strong>Python 会将每一个实例方法和一个实例化对象绑定起来，而且绑定过的实例方法在Python 中也是对象，即使是同一个方法，每一个新对象都要生成一个新的绑定方法对象，非常耗费空间和时间，而使用　staticmethod 不会进行对象绑定；</strong></p>
+</li>
+<li>
+<p><strong>@staticmethod 支持子类重写，即多态．如果你使用一个模块内的顶层函数　mix_ingredients, 继承自　Pizza　的子类并不能改变行为如果你不重写cook方法．</strong></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="k">print</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">cook</span> <span class="ow">is</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">cook</span>
+<span class="k">print</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">mix_ingredients</span> <span class="ow">is</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">mix_ingredients</span>
+<span class="k">print</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">mix_ingredients</span> <span class="ow">is</span> <span class="n">Pizza</span><span class="o">.</span><span class="n">mix_ingredients</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">False</span>
+<span class="n">True</span>
+<span class="n">True</span>
+</pre></div>
+
+
+<h2 id="class-methods">Class Methods</h2>
+<p><strong>并不和对象绑定，但是和类绑定的方法, 需要加上　<code>cls</code> 参数</strong></p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="mi">23</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_radius</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">radius</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Pizza</span><span class="o">.</span><span class="n">get_radius</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="n">type</span><span class="p">.</span><span class="n">get_radius</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">class</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Pizza</span><span class="err">&#39;</span><span class="o">&gt;&gt;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">get_radius</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="n">type</span><span class="p">.</span><span class="n">get_radius</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">class</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Pizza</span><span class="err">&#39;</span><span class="o">&gt;&gt;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Pizza</span><span class="o">.</span><span class="n">get_radius</span><span class="o">.</span><span class="n">__self__</span> <span class="ow">is</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">get_radius</span><span class="o">.</span><span class="n">__self__</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">True</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Pizza</span><span class="o">.</span><span class="n">get_radius</span> <span class="o">==</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">get_radius</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">True</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Pizza</span><span class="o">.</span><span class="n">get_radius</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="mi">23</span>
+</pre></div>
+
+
+<p>classmethod 的用法</p>
+<ol>
+<li><strong>FactoryMethods. 如果我们需要使用一些预处理来创建实例，　使用 @staticmethod 必须硬编码类名　Pizza 在我们的函数中，　这样任何集成　Pizza 的子类就不能够使用工厂方法为自己所用了．</strong></li>
+</ol>
+<div class="hlcode"><pre><span class="n">class</span> <span class="n">Pizza</span><span class="p">(</span><span class="n">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ingredients</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">ingredients</span> <span class="o">=</span> <span class="n">ingredients</span>
+
+    <span class="err">@</span><span class="n">classmethod</span>
+    <span class="n">def</span> <span class="n">from_fridge</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fridge</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">fridge</span><span class="p">.</span><span class="n">get_cheese</span><span class="p">()</span> <span class="o">+</span> <span class="n">fridge</span><span class="p">.</span><span class="n">get_vegetables</span><span class="p">())</span>
+</pre></div>
+
+
+<ol>
+<li><strong>需要调用静态方法的静态方法直接使用　classmethod. 原因还是因为在静态方法中又必须硬编码类名，　子类就无法；</strong></li>
+</ol>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">compute_area</span><span class="p">(</span><span class="n">radius</span><span class="p">):</span>
+         <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">compute_volume</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+         <span class="k">return</span> <span class="n">height</span> <span class="o">*</span> <span class="n">cls</span><span class="o">.</span><span class="n">compute_area</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_volume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="abstract-methods">Abstract Methods</h2>
+<p>定义在基类中还未被实现的方法．</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</pre></div>
+
+
+<p>任何继承自　Pizza 的子类都必须覆盖　get_radius 方法，　否则就会在调用的时候抛出　异常．</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">Pizza</span><span class="p">()</span>
+<span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">Pizza</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fb747353d90</span><span class="o">&gt;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Pizza</span><span class="p">()</span><span class="o">.</span><span class="n">get_radius</span><span class="p">()</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+  <span class="n">File</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3</span><span class="p">,</span> <span class="ow">in</span> <span class="n">get_radius</span>
+<span class="ne">NotImplementedError</span>
+</pre></div>
+
+
+<p>但是以上实现方式会使得异常在调用该方法的时候才会发生，　要想提前知道方法未实现，　可以使用　<code>abc</code>　模块．</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="k">class</span> <span class="nc">BasePizza</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">__metaclass__</span>  <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+
+    <span class="nd">@abc.abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+         <span class="sd">&quot;&quot;&quot;Method that should do something.&quot;&quot;&quot;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Methods</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">i_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">s_method</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">c_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+
+  <span class="n">s_method</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">s_method</span><span class="p">)</span>
+  <span class="n">c_method</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">c_method</span><span class="p">)</span>
+
+<span class="n">obj</span> <span class="o">=</span> <span class="n">Methods</span><span class="p">()</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">i_method</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">i_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">s_method</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">s_method</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">c_method</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">c_method</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="p">(</span><span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x7f5b240c8e60</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x7f5b240c8e60</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="mi">3</span>
+<span class="mi">4</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">class</span> <span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">at</span> <span class="mh">0x7f5b24067db8</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">class</span> <span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">at</span> <span class="mh">0x7f5b24067db8</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+
+<p>以上实现和一下实现等价：</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Methods</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">i_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+
+  <span class="nd">@staticmethod</span>
+  <span class="k">def</span> <span class="nf">s_method</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+  <span class="nd">@classmethod</span>
+  <span class="k">def</span> <span class="nf">c_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">obj</span> <span class="o">=</span> <span class="n">Methods</span><span class="p">()</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">i_method</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">i_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">s_method</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">s_method</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="n">obj</span><span class="o">.</span><span class="n">c_method</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">Methods</span><span class="o">.</span><span class="n">c_method</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="p">(</span><span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x7f5b24039200</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x7f5b24039200</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="mi">3</span>
+<span class="mi">4</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">class</span> <span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">at</span> <span class="mh">0x7f5b24067e88</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">class</span> <span class="n">__main__</span><span class="p">.</span><span class="n">Methods</span> <span class="n">at</span> <span class="mh">0x7f5b24067e88</span><span class="o">&gt;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">S</span><span class="p">:</span>
+   <span class="n">nInstances</span> <span class="o">=</span> <span class="mi">0</span>
+   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">S</span><span class="o">.</span><span class="n">nInstances</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">nInstances</span> <span class="o">+</span> <span class="mi">1</span>
+
+   <span class="nd">@staticmethod</span>
+   <span class="k">def</span> <span class="nf">howManyInstances</span><span class="p">():</span>
+      <span class="k">print</span><span class="p">(</span><span class="s">&#39;Number of instances created: &#39;</span><span class="p">,</span> <span class="n">S</span><span class="o">.</span><span class="n">nInstances</span><span class="p">)</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
+<span class="n">S</span><span class="o">.</span><span class="n">howManyInstances</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="p">(</span><span class="err">&#39;</span><span class="n">Number</span> <span class="n">of</span> <span class="n">instances</span> <span class="n">created</span><span class="o">:</span> <span class="err">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="_1">参考</h2>
+<p>- <a href="https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods">guide-python-static-class-abstract-methods</a></p>
+<h1 id="python">Python 继承类数据的传递性</h1>
+<p>Python 子类如果不覆盖父类的类属性的话，默认所有的子类是共享该属性的！！因此，我们最好覆盖掉父类的类属性，防止多个子类混用的时候出错！</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">BaseClient</span><span class="p">:</span>
+    <span class="n">_default_clients</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_client</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">cls</span>
+        <span class="k">print</span> <span class="nb">dir</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">_default_clients</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_default_clients</span><span class="p">[</span><span class="n">region</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_default_clients</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+<span class="c">#     _default_clients = {}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+
+<span class="k">class</span> <span class="nc">B</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+<span class="c">#     _default_clients = {}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">get_client</span><span class="p">(</span><span class="s">&#39;yf&#39;</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">_default_clients</span><span class="p">[</span><span class="s">&#39;xh&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sd&#39;</span>
+<span class="k">print</span> <span class="n">a</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">get_client</span><span class="p">(</span><span class="s">&#39;yf&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">b</span><span class="o">.</span><span class="n">_default_clients</span><span class="p">[</span><span class="s">&#39;xh&#39;</span><span class="p">]</span>
+<span class="k">print</span> <span class="n">b</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">__main__.A</span>
+<span class="sd">[&#39;__doc__&#39;, &#39;__init__&#39;, &#39;__module__&#39;, &#39;_default_clients&#39;, &#39;get_client&#39;]</span>
+<span class="sd">&lt;__main__.A instance at 0x10b04b200&gt;</span>
+<span class="sd">__main__.B</span>
+<span class="sd">[&#39;__doc__&#39;, &#39;__init__&#39;, &#39;__module__&#39;, &#39;_default_clients&#39;, &#39;get_client&#39;]</span>
+<span class="sd">sd</span>
+<span class="sd">&lt;__main__.A instance at 0x10b04b200&gt;</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-05-18 22:06 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'python-oop',
+  title: 'python-oop',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

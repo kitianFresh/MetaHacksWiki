@@ -1,0 +1,187 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>rabbitmq - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;rabbitmq</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">rabbitmq</div>
+<div id="content">
+  <h1 id="install-on-centos">install on centos</h1>
+<div class="hlcode"><pre><span class="c"># Add and enable relevant application repositories:</span>
+<span class="c"># Note: We are also enabling third party remi package repositories.</span>
+wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
+<span class="c"># Finally, download and install Erlang:</span>
+sudo yum install -y erlang
+Once we have Erlang, we can <span class="k">continue </span>with installing RabbitMQ:
+<span class="c"># Download the latest RabbitMQ package using wget:</span>
+wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
+<span class="c"># Add the necessary keys for verification:</span>
+sudo rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+<span class="c"># Install the .RPM package using YUM:</span>
+sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
+</pre></div>
+
+
+<h1 id="manage-on-centos">manage on centos</h1>
+<p>配置开机启动</p>
+<div class="hlcode"><pre><span class="n">chkconfig</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">on</span>
+</pre></div>
+
+
+<p>开启/关闭/重启/状态 操作</p>
+<div class="hlcode"><pre>/sbin/service rabbitmq-server start
+/sbin/service rabbitmq-server stop
+/sbin/service rabbitmq-server restart
+/sbin/service rabbitmq-server status
+</pre></div>
+
+
+<h1 id="install-on-ubuntu">install on ubuntu</h1>
+<div class="hlcode"><pre><span class="n">apt</span><span class="o">-</span><span class="n">get</span>    <span class="n">update</span> 
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">upgrade</span>
+
+<span class="n">echo</span> <span class="s">&quot;deb http://www.rabbitmq.com/debian/ testing main&quot;</span> <span class="o">&gt;&gt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="p">.</span><span class="n">list</span>
+<span class="n">curl</span> <span class="n">http</span><span class="o">:</span><span class="c1">//www.rabbitmq.com/rabbitmq-signing-key-public.asc | sudo apt-key add -</span>
+
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+<span class="n">sudo</span> <span class="n">nano</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="k">default</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+
+
+<h1 id="manage-on-ubuntu">manage on ubuntu</h1>
+<div class="hlcode"><pre>service rabbitmq-server start
+service rabbitmq-server stop
+service rabbitmq-server restart
+service rabbitmq-server status
+rabbitmqctl status
+</pre></div>
+
+
+<h1 id="install-rabbitmq-on-mac">install rabbitmq on mac</h1>
+<p>使用 brew 安装</p>
+<div class="hlcode"><pre><span class="n">brew</span> <span class="n">install</span> <span class="n">rabbitmq</span>
+</pre></div>
+
+
+<p>环境变量, brew 安装的 rabbitmq 可执行文件在 /usr/local/sbin 里，实际上都是软连接，真实目录一般在 <code>/usr/local/Cellar/rabbitmq/3.6.11/sbin</code></p>
+<div class="hlcode"><pre><span class="n">export</span> <span class="n">PATH</span><span class="o">=</span><span class="err">$</span><span class="n">PATH</span><span class="o">:/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">sbin</span>
+</pre></div>
+
+
+<p>rabbitmqctl status</p>
+<h1 id="config">config</h1>
+<p>目录情况, 一般 rabbitmq.config 和 rabbitmq-env.conf都在</p>
+<div class="hlcode"><pre>Generic UNIX - <span class="nv">$RABBITMQ_HOME</span>/etc/rabbitmq/
+Debian - /etc/rabbitmq/
+RPM - /etc/rabbitmq/
+Mac OS X (Homebrew) - <span class="cp">${</span><span class="n">install_prefix</span><span class="cp">}</span>/etc/rabbitmq/, the Homebrew prefix is usually /usr/local
+Windows - %APPDATA%\RabbitMQ\
+</pre></div>
+
+
+<h1 id="_1">多语言客户端</h1>
+<h2 id="python">python</h2>
+<p>sudo pip install pika</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-09-06 20:12 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'rabbitmq',
+  title: 'rabbitmq',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

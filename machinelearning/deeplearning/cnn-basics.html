@@ -1,0 +1,1178 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>cnn-basics - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;cnn-basics</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">cnn-basics</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#convolutional-neural-networks-step-by-step">Convolutional Neural Networks: Step by Step</a><ul>
+<li><a href="#1-packages">1 - Packages</a></li>
+<li><a href="#2-outline-of-the-assignment">2 - Outline of the Assignment</a></li>
+<li><a href="#3-convolutional-neural-networks">3 - Convolutional Neural Networks</a><ul>
+<li><a href="#31-zero-padding">3.1 - Zero-Padding</a></li>
+<li><a href="#32-single-step-of-convolution">3.2 - Single step of convolution</a></li>
+<li><a href="#33-convolutional-neural-networks-forward-pass">3.3 - Convolutional Neural Networks - Forward pass</a></li>
+</ul>
+</li>
+<li><a href="#4-pooling-layer">4 - Pooling layer</a><ul>
+<li><a href="#41-forward-pooling">4.1 - Forward Pooling</a></li>
+</ul>
+</li>
+<li><a href="#5-backpropagation-in-convolutional-neural-networks-optional-ungraded">5 - Backpropagation in convolutional neural networks (OPTIONAL / UNGRADED)</a><ul>
+<li><a href="#51-convolutional-layer-backward-pass">5.1 - Convolutional layer backward pass</a><ul>
+<li><a href="#511-computing-da">5.1.1 - Computing dA:</a></li>
+<li><a href="#512-computing-dw">5.1.2 - Computing dW:</a></li>
+<li><a href="#513-computing-db">5.1.3 - Computing db:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#52-pooling-layer-backward-pass">5.2 Pooling layer - backward pass</a><ul>
+<li><a href="#521-max-pooling-backward-pass">5.2.1 Max pooling - backward pass</a></li>
+<li><a href="#522-average-pooling-backward-pass">5.2.2 - Average pooling - backward pass</a></li>
+<li><a href="#523-putting-it-together-pooling-backward">5.2.3 Putting it together: Pooling backward</a></li>
+<li><a href="#congratulations">Congratulations !</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="convolutional-neural-networks-step-by-step">Convolutional Neural Networks: Step by Step</h1>
+<p>Welcome to Course 4's first assignment! In this assignment, you will implement convolutional (CONV) and pooling (POOL) layers in numpy, including both forward propagation and (optionally) backward propagation. </p>
+<p><strong>Notation</strong>:<br />
+- Superscript $[l]$ denotes an object of the $l^{th}$ layer. <br />
+    - Example: $a^{[4]}$ is the $4^{th}$ layer activation. $W^{[5]}$ and $b^{[5]}$ are the $5^{th}$ layer parameters.</p>
+<ul>
+<li>
+<p>Superscript $(i)$ denotes an object from the $i^{th}$ example. </p>
+<ul>
+<li>Example: $x^{(i)}$ is the $i^{th}$ training example input.</li>
+</ul>
+</li>
+<li>
+<p>Lowerscript $i$ denotes the $i^{th}$ entry of a vector.</p>
+<ul>
+<li>Example: $a^{[l]}_i$ denotes the $i^{th}$ entry of the activations in layer $l$, assuming this is a fully connected (FC) layer.</li>
+</ul>
+</li>
+<li>
+<p>$n_H$, $n_W$ and $n_C$ denote respectively the height, width and number of channels of a given layer. If you want to reference a specific layer $l$, you can also write $n_H^{[l]}$, $n_W^{[l]}$, $n_C^{[l]}$. </p>
+</li>
+<li>$n_{H_{prev}}$, $n_{W_{prev}}$ and $n_{C_{prev}}$ denote respectively the height, width and number of channels of the previous layer. If referencing a specific layer $l$, this could also be denoted $n_H^{[l-1]}$, $n_W^{[l-1]}$, $n_C^{[l-1]}$. </li>
+</ul>
+<p>We assume that you are already familiar with <code>numpy</code> and/or have completed the previous courses of the specialization. Let's get started!</p>
+<h2 id="1-packages">1 - Packages</h2>
+<p>Let's first import all the packages that you will need during this assignment. <br />
+- <a href="www.numpy.org">numpy</a> is the fundamental package for scientific computing with Python.<br />
+- <a href="http://matplotlib.org">matplotlib</a> is a library to plot graphs in Python.<br />
+- np.random.seed(1) is used to keep all the random function calls consistent. It will help us grade your work.</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">)</span> <span class="c"># set default size of plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;image.interpolation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;nearest&#39;</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;image.cmap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;gray&#39;</span>
+
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">The</span> <span class="n">autoreload</span> <span class="n">extension</span> <span class="n">is</span> <span class="n">already</span> <span class="n">loaded</span><span class="p">.</span> <span class="n">To</span> <span class="n">reload</span> <span class="n">it</span><span class="p">,</span> <span class="n">use</span><span class="o">:</span>
+  <span class="o">%</span><span class="n">reload_ext</span> <span class="n">autoreload</span>
+</pre></div>
+
+
+<h2 id="2-outline-of-the-assignment">2 - Outline of the Assignment</h2>
+<p>You will be implementing the building blocks of a convolutional neural network! Each function you will implement will have detailed instructions that will walk you through the steps needed:</p>
+<ul>
+<li>Convolution functions, including:<ul>
+<li>Zero Padding</li>
+<li>Convolve window </li>
+<li>Convolution forward</li>
+<li>Convolution backward (optional)</li>
+</ul>
+</li>
+<li>Pooling functions, including:<ul>
+<li>Pooling forward</li>
+<li>Create mask </li>
+<li>Distribute value</li>
+<li>Pooling backward (optional)</li>
+</ul>
+</li>
+</ul>
+<p>This notebook will ask you to implement these functions from scratch in <code>numpy</code>. In the next notebook, you will use the TensorFlow equivalents of these functions to build the following model:</p>
+<p><img src="/static/images/ML/DL/cnn/model.png" style="width:800px;height:300px;"></p>
+<p><strong>Note</strong> that for every forward function, there is its corresponding backward equivalent. Hence, at every step of your forward module you will store some parameters in a cache. These parameters are used to compute gradients during backpropagation. </p>
+<h2 id="3-convolutional-neural-networks">3 - Convolutional Neural Networks</h2>
+<p>Although programming frameworks make convolutions easy to use, they remain one of the hardest concepts to understand in Deep Learning. A convolution layer transforms an input volume into an output volume of different size, as shown below. </p>
+<p><img src="/static/images/ML/DL/cnn/conv_nn.png" style="width:350px;height:200px;"></p>
+<p>In this part, you will build every step of the convolution layer. You will first implement two helper functions: one for zero padding and the other for computing the convolution function itself. </p>
+<h3 id="31-zero-padding">3.1 - Zero-Padding</h3>
+<p>Zero-padding adds zeros around the border of an image:</p>
+<p><img src="/static/images/ML/DL/cnn/PAD.png" style="width:600px;height:400px;"><br />
+<caption><center> <u> <font color='purple'> <strong>Figure 1</strong> </u><font color='purple'>  : <strong>Zero-Padding</strong><br> Image (3 channels, RGB) with a padding of 2. </center></caption></p>
+<p>The main benefits of padding are the following:</p>
+<ul>
+<li>
+<p>It allows you to use a CONV layer without necessarily shrinking the height and width of the volumes. This is important for building deeper networks, since otherwise the height/width would shrink as you go to deeper layers. An important special case is the "same" convolution, in which the height/width is exactly preserved after one layer. </p>
+</li>
+<li>
+<p>It helps us keep more of the information at the border of an image. Without padding, very few values at the next layer would be affected by pixels as the edges of an image.</p>
+</li>
+</ul>
+<p><strong>Exercise</strong>: Implement the following function, which pads all the images of a batch of examples X with zeros. <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.pad.html">Use np.pad</a>. Note if you want to pad the array "a" of shape $(5,5,5,5,5)$ with <code>pad = 1</code> for the 2nd dimension, <code>pad = 3</code> for the 4th dimension and <code>pad = 0</code> for the rest, you would do:</p>
+<div class="hlcode"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="s">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span> <span class="o">=</span> <span class="p">(</span><span class="o">..</span><span class="p">,</span><span class="o">..</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: zero_pad</span>
+
+<span class="k">def</span> <span class="nf">zero_pad</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pad</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad with zeros all images of the dataset X. The padding is applied to the height and width of an image, </span>
+<span class="sd">    as illustrated in Figure 1.</span>
+
+<span class="sd">    Argument:</span>
+<span class="sd">    X -- python numpy array of shape (m, n_H, n_W, n_C) representing a batch of m images</span>
+<span class="sd">    pad -- integer, amount of padding around each image on vertical and horizontal dimensions</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    X_pad -- padded image of shape (m, n_H + 2*pad, n_W + 2*pad, n_C)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ### (≈ 1 line)</span>
+    <span class="n">X_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">pad</span><span class="p">,</span><span class="n">pad</span><span class="p">),</span> <span class="p">(</span><span class="n">pad</span><span class="p">,</span><span class="n">pad</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="s">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">X_pad</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x_pad</span> <span class="o">=</span> <span class="n">zero_pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;x.shape =&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;x_pad.shape =&quot;</span><span class="p">,</span> <span class="n">x_pad</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;x[1,1] =&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;x_pad[1,1] =&quot;</span><span class="p">,</span> <span class="n">x_pad</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axarr</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;x_pad&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">x_pad</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">x</span><span class="p">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x_pad</span><span class="p">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span> <span class="mf">0.90085595</span> <span class="o">-</span><span class="mf">0.68372786</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.12289023</span> <span class="o">-</span><span class="mf">0.93576943</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.26788808</span>  <span class="mf">0.53035547</span><span class="p">]]</span>
+<span class="n">x_pad</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]]</span>
+
+
+
+
+
+<span class="o">&lt;</span><span class="n">matplotlib</span><span class="p">.</span><span class="n">image</span><span class="p">.</span><span class="n">AxesImage</span> <span class="n">at</span> <span class="mh">0x7f8d4c2fe7f0</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_7_2.png" /></p>
+<p><strong>Expected Output</strong>:</p>
+<table>
+    <tr>
+        <td>
+            **x.shape**:
+        </td>
+        <td>
+           (4, 3, 3, 2)
+        </td>
+    </tr>
+        <tr>
+        <td>
+            **x_pad.shape**:
+        </td>
+        <td>
+           (4, 7, 7, 2)
+        </td>
+    </tr>
+        <tr>
+        <td>
+            **x[1,1]**:
+        </td>
+        <td>
+           [[ 0.90085595 -0.68372786]
+ [-0.12289023 -0.93576943]
+ [-0.26788808  0.53035547]]
+        </td>
+    </tr>
+        <tr>
+        <td>
+            **x_pad[1,1]**:
+        </td>
+        <td>
+           [[ 0.  0.]
+ [ 0.  0.]
+ [ 0.  0.]
+ [ 0.  0.]
+ [ 0.  0.]
+ [ 0.  0.]
+ [ 0.  0.]]
+        </td>
+    </tr>
+
+</table>
+
+<h3 id="32-single-step-of-convolution">3.2 - Single step of convolution</h3>
+<p>In this part, implement a single step of convolution, in which you apply the filter to a single position of the input. This will be used to build a convolutional unit, which: </p>
+<ul>
+<li>Takes an input volume </li>
+<li>Applies a filter at every position of the input</li>
+<li>Outputs another volume (usually of different size)</li>
+</ul>
+<p><img src="/static/images/ML/DL/cnn/Convolution_schematic.gif" style="width:500px;height:300px;"><br />
+<caption><center> <u> <font color='purple'> <strong>Figure 2</strong> </u><font color='purple'>  : <strong>Convolution operation</strong><br> with a filter of 2x2 and a stride of 1 (stride = amount you move the window each time you slide) </center></caption></p>
+<p>In a computer vision application, each value in the matrix on the left corresponds to a single pixel value, and we convolve a 3x3 filter with the image by multiplying its values element-wise with the original matrix, then summing them up and adding a bias. In this first step of the exercise, you will implement a single step of convolution, corresponding to applying a filter to just one of the positions to get a single real-valued output. </p>
+<p>Later in this notebook, you'll apply this function to multiple positions of the input to implement the full convolutional operation. </p>
+<p><strong>Exercise</strong>: Implement conv_single_step(). <a href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.sum.html">Hint</a>.</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: conv_single_step</span>
+
+<span class="k">def</span> <span class="nf">conv_single_step</span><span class="p">(</span><span class="n">a_slice_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply one filter defined by parameters W on a single slice (a_slice_prev) of the output activation </span>
+<span class="sd">    of the previous layer.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    a_slice_prev -- slice of input data of shape (f, f, n_C_prev)</span>
+<span class="sd">    W -- Weight parameters contained in a window - matrix of shape (f, f, n_C_prev)</span>
+<span class="sd">    b -- Bias parameters contained in a window - matrix of shape (1, 1, 1)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    Z -- a scalar value, result of convolving the sliding window (W, b) on a slice x of the input data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+    <span class="c"># Element-wise product between a_slice and W. Do not add the bias yet.</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">W</span><span class="p">,</span><span class="n">a_slice_prev</span><span class="p">)</span>
+    <span class="c"># Sum over all entries of the volume s.</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="c"># Add bias b to Z. Cast b to a float() so that Z results in a scalar value.</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">Z</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">Z</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">a_slice_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">Z</span> <span class="o">=</span> <span class="n">conv_single_step</span><span class="p">(</span><span class="n">a_slice_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Z =&quot;</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Z</span> <span class="o">=</span> <span class="o">-</span><span class="mf">6.99908945068</span>
+</pre></div>
+
+
+<p><strong>Expected Output</strong>:<br />
+<table><br />
+    <tr><br />
+        <td><br />
+<strong>Z</strong><br />
+        </td><br />
+        <td><br />
+            -6.99908945068<br />
+        </td><br />
+    </tr></p>
+</table>
+
+<h3 id="33-convolutional-neural-networks-forward-pass">3.3 - Convolutional Neural Networks - Forward pass</h3>
+<p>In the forward pass, you will take many filters and convolve them on the input. Each 'convolution' gives you a 2D matrix output. You will then stack these outputs to get a 3D volume: </p>
+<p><center><br />
+<video width="620" height="440" src="/static/images/ML/DL/cnn/conv_kiank.mp4" type="video/mp4" controls><br />
+</video><br />
+</center></p>
+<p><strong>Exercise</strong>: Implement the function below to convolve the filters W on an input activation A_prev. This function takes as input A_prev, the activations output by the previous layer (for a batch of m inputs), F filters/weights denoted by W, and a bias vector denoted by b, where each filter has its own (single) bias. Finally you also have access to the hyperparameters dictionary which contains the stride and the padding. </p>
+<p><strong>Hint</strong>: <br />
+1. To select a 2x2 slice at the upper left corner of a matrix "a_prev" (shape (5,5,3)), you would do:</p>
+<div class="hlcode"><pre><span class="n">a_slice_prev</span> <span class="o">=</span> <span class="n">a_prev</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,:]</span>
+</pre></div>
+
+
+<p>This will be useful when you will define <code>a_slice_prev</code> below, using the <code>start/end</code> indexes you will define.<br />
+2. To define a_slice you will need to first define its corners <code>vert_start</code>, <code>vert_end</code>, <code>horiz_start</code> and <code>horiz_end</code>. This figure may be helpful for you to find how each of the corner can be defined using h, w, f and s in the code below.</p>
+<p><img src="/static/images/ML/DL/cnn/vert_horiz_kiank.png" style="width:400px;height:300px;"><br />
+<caption><center> <u> <font color='purple'> <strong>Figure 3</strong> </u><font color='purple'>  : <strong>Definition of a slice using vertical and horizontal start/end (with a 2x2 filter)</strong> <br> This figure shows only a single channel.  </center></caption></p>
+<p><strong>Reminder</strong>:<br />
+The formulas relating the output shape of the convolution to the input shape is:<br />
+$$ n_H = \lfloor \frac{n_{H_{prev}} - f + 2 \times pad}{stride} \rfloor +1 $$<br />
+$$ n_W = \lfloor \frac{n_{W_{prev}} - f + 2 \times pad}{stride} \rfloor +1 $$<br />
+$$ n_C = \text{number of filters used in the convolution}$$</p>
+<p>For this exercise, we won't worry about vectorization, and will just implement everything with for-loops.</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: conv_forward</span>
+
+<span class="k">def</span> <span class="nf">conv_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements the forward propagation for a convolution function</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    A_prev -- output activations of the previous layer, numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)</span>
+<span class="sd">    W -- Weights, numpy array of shape (f, f, n_C_prev, n_C)</span>
+<span class="sd">    b -- Biases, numpy array of shape (1, 1, 1, n_C)</span>
+<span class="sd">    hparameters -- python dictionary containing &quot;stride&quot; and &quot;pad&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    Z -- conv output, numpy array of shape (m, n_H, n_W, n_C)</span>
+<span class="sd">    cache -- cache of values needed for the conv_backward() function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Retrieve dimensions from A_prev&#39;s shape (≈1 line)  </span>
+    <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">)</span> <span class="o">=</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Retrieve dimensions from W&#39;s shape (≈1 line)</span>
+    <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">,</span> <span class="n">n_C</span><span class="p">)</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Retrieve information from &quot;hparameters&quot; (≈2 lines)</span>
+    <span class="n">stride</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;stride&quot;</span><span class="p">]</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;pad&quot;</span><span class="p">]</span>
+
+    <span class="c"># Compute the dimensions of the CONV output volume using the formula given above. Hint: use int() to floor. (≈2 lines)</span>
+    <span class="n">n_H</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">n_H_prev</span> <span class="o">-</span> <span class="n">f</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">n_W</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">n_W_prev</span> <span class="o">-</span> <span class="n">f</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c"># Initialize the output volume Z with zeros. (≈1 line)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>
+
+    <span class="c"># Create A_prev_pad by padding A_prev</span>
+    <span class="n">A_prev_pad</span> <span class="o">=</span> <span class="n">zero_pad</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">pad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>                               <span class="c"># loop over the batch of training examples</span>
+        <span class="n">a_prev_pad</span> <span class="o">=</span> <span class="n">A_prev_pad</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:,:]</span>                               <span class="c"># Select ith training example&#39;s padded activation</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_H</span><span class="p">):</span>                           <span class="c"># loop over vertical axis of the output volume</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_W</span><span class="p">):</span>                       <span class="c"># loop over horizontal axis of the output volume</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_C</span><span class="p">):</span>                   <span class="c"># loop over channels (= #filters) of the output volume</span>
+
+                    <span class="c"># Find the corners of the current &quot;slice&quot; (≈4 lines)</span>
+                    <span class="n">vert_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span>
+                    <span class="n">vert_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">f</span>
+                    <span class="n">horiz_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span>
+                    <span class="n">horiz_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">f</span>
+
+                    <span class="c"># Use the corners to define the (3D) slice of a_prev_pad (See Hint above the cell). (≈1 line)</span>
+                    <span class="n">a_slice_prev</span> <span class="o">=</span> <span class="n">a_prev_pad</span><span class="p">[</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span> <span class="p">:]</span>
+
+                    <span class="c"># Convolve the (3D) slice with the correct filter W and bias b, to get back one output neuron. (≈1 line)</span>
+                    <span class="n">Z</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">conv_single_step</span><span class="p">(</span><span class="n">a_slice_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">[:,:,:,</span> <span class="n">c</span><span class="p">],</span> <span class="n">b</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">])</span>
+
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="c"># Making sure your output shape is correct</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>
+
+    <span class="c"># Save information in &quot;cache&quot; for the backprop</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Z</span><span class="p">,</span> <span class="n">cache</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">A_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">hparameters</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;pad&quot;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="s">&quot;stride&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+<span class="n">Z</span><span class="p">,</span> <span class="n">cache_conv</span> <span class="o">=</span> <span class="n">conv_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Z&#39;s mean =&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Z</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Z[3,2,1] =&quot;</span><span class="p">,</span> <span class="n">Z</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;cache_conv[0][1][2][3] =&quot;</span><span class="p">,</span> <span class="n">cache_conv</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">Z</span><span class="err">&#39;</span><span class="n">s</span> <span class="n">mean</span> <span class="o">=</span> <span class="mf">0.0489952035289</span>
+<span class="n">Z</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.61490741</span> <span class="o">-</span><span class="mf">6.7439236</span>  <span class="o">-</span><span class="mf">2.55153897</span>  <span class="mf">1.75698377</span>  <span class="mf">3.56208902</span>  <span class="mf">0.53036437</span>
+  <span class="mf">5.18531798</span>  <span class="mf">8.75898442</span><span class="p">]</span>
+<span class="n">cache_conv</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.20075807</span>  <span class="mf">0.18656139</span>  <span class="mf">0.41005165</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>Expected Output</strong>:</p>
+<table>
+    <tr>
+        <td>
+            **Z's mean**
+        </td>
+        <td>
+            0.0489952035289
+        </td>
+    </tr>
+    <tr>
+        <td>
+            **Z[3,2,1]**
+        </td>
+        <td>
+            [-0.61490741 -6.7439236  -2.55153897  1.75698377  3.56208902  0.53036437
+  5.18531798  8.75898442]
+        </td>
+    </tr>
+    <tr>
+        <td>
+            **cache_conv[0][1][2][3]**
+        </td>
+        <td>
+            [-0.20075807  0.18656139  0.41005165]
+        </td>
+    </tr>
+
+</table>
+
+<p>Finally, CONV layer should also contain an activation, in which case we would add the following line of code:</p>
+<div class="hlcode"><pre><span class="c"># Convolve the window to get back one output neuron</span>
+<span class="n">Z</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+<span class="c"># Apply activation</span>
+<span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">activation</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span>
+</pre></div>
+
+
+<p>You don't need to do it here. </p>
+<h2 id="4-pooling-layer">4 - Pooling layer</h2>
+<p>The pooling (POOL) layer reduces the height and width of the input. It helps reduce computation, as well as helps make feature detectors more invariant to its position in the input. The two types of pooling layers are: </p>
+<ul>
+<li>
+<p>Max-pooling layer: slides an ($f, f$) window over the input and stores the max value of the window in the output.</p>
+</li>
+<li>
+<p>Average-pooling layer: slides an ($f, f$) window over the input and stores the average value of the window in the output.</p>
+</li>
+</ul>
+<table>
+<td>
+<img src="/static/images/ML/DL/cnn/max_pool1.png" style="width:500px;height:300px;">
+<td>
+
+<td>
+<img src="/static/images/ML/DL/cnn/a_pool.png" style="width:500px;height:300px;">
+<td>
+</table>
+
+<p>These pooling layers have no parameters for backpropagation to train. However, they have hyperparameters such as the window size $f$. This specifies the height and width of the fxf window you would compute a max or average over. </p>
+<h3 id="41-forward-pooling">4.1 - Forward Pooling</h3>
+<p>Now, you are going to implement MAX-POOL and AVG-POOL, in the same function. </p>
+<p><strong>Exercise</strong>: Implement the forward pass of the pooling layer. Follow the hints in the comments below.</p>
+<p><strong>Reminder</strong>:<br />
+As there's no padding, the formulas binding the output shape of the pooling to the input shape is:<br />
+$$ n_H = \lfloor \frac{n_{H_{prev}} - f}{stride} \rfloor +1 $$<br />
+$$ n_W = \lfloor \frac{n_{W_{prev}} - f}{stride} \rfloor +1 $$<br />
+$$ n_C = n_{C_{prev}}$$</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: pool_forward</span>
+
+<span class="k">def</span> <span class="nf">pool_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;max&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements the forward pass of the pooling layer</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    A_prev -- Input data, numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)</span>
+<span class="sd">    hparameters -- python dictionary containing &quot;f&quot; and &quot;stride&quot;</span>
+<span class="sd">    mode -- the pooling mode you would like to use, defined as a string (&quot;max&quot; or &quot;average&quot;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    A -- output of the pool layer, a numpy array of shape (m, n_H, n_W, n_C)</span>
+<span class="sd">    cache -- cache used in the backward pass of the pooling layer, contains the input and hparameters </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Retrieve dimensions from the input shape</span>
+    <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">)</span> <span class="o">=</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Retrieve hyperparameters from &quot;hparameters&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">]</span>
+    <span class="n">stride</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;stride&quot;</span><span class="p">]</span>
+
+    <span class="c"># Define the dimensions of the output</span>
+    <span class="n">n_H</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_H_prev</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="n">n_W</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_W_prev</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="n">n_C</span> <span class="o">=</span> <span class="n">n_C_prev</span>
+
+    <span class="c"># Initialize output matrix A</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>              
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>                         <span class="c"># loop over the training examples</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_H</span><span class="p">):</span>                     <span class="c"># loop on the vertical axis of the output volume</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_W</span><span class="p">):</span>                 <span class="c"># loop on the horizontal axis of the output volume</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">n_C</span><span class="p">):</span>            <span class="c"># loop over the channels of the output volume</span>
+
+                    <span class="c"># Find the corners of the current &quot;slice&quot; (≈4 lines)</span>
+                    <span class="n">vert_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span>
+                    <span class="n">vert_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">f</span>
+                    <span class="n">horiz_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span>
+                    <span class="n">horiz_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">f</span>
+
+                    <span class="c"># Use the corners to define the current slice on the ith training example of A_prev, channel c. (≈1 line)</span>
+                    <span class="n">a_prev_slice</span> <span class="o">=</span> <span class="n">A_prev</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span><span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span><span class="n">c</span><span class="p">]</span>
+
+                    <span class="c"># Compute the pooling operation on the slice. Use an if statment to differentiate the modes. Use np.max/np.mean.</span>
+                    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&quot;max&quot;</span><span class="p">:</span>
+                        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a_prev_slice</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&quot;average&quot;</span><span class="p">:</span>
+                        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a_prev_slice</span><span class="p">)</span>
+
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="c"># Store the input and hparameters in &quot;cache&quot; for pool_backward()</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span>
+
+    <span class="c"># Making sure your output shape is correct</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">cache</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">A_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">hparameters</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;stride&quot;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;f&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+
+<span class="n">A</span><span class="p">,</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">pool_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;mode = max&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;A =&quot;</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<span class="k">print</span><span class="p">()</span>
+<span class="n">A</span><span class="p">,</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">pool_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;average&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;mode = average&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;A =&quot;</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">mode</span> <span class="o">=</span> <span class="n">max</span>
+<span class="n">A</span> <span class="o">=</span> <span class="p">[[[[</span> <span class="mf">1.74481176</span>  <span class="mf">0.86540763</span>  <span class="mf">1.13376944</span><span class="p">]]]</span>
+
+
+ <span class="p">[[[</span> <span class="mf">1.13162939</span>  <span class="mf">1.51981682</span>  <span class="mf">2.18557541</span><span class="p">]]]]</span>
+
+<span class="n">mode</span> <span class="o">=</span> <span class="n">average</span>
+<span class="n">A</span> <span class="o">=</span> <span class="p">[[[[</span> <span class="mf">0.02105773</span> <span class="o">-</span><span class="mf">0.20328806</span> <span class="o">-</span><span class="mf">0.40389855</span><span class="p">]]]</span>
+
+
+ <span class="p">[[[</span><span class="o">-</span><span class="mf">0.22154621</span>  <span class="mf">0.51716526</span>  <span class="mf">0.48155844</span><span class="p">]]]]</span>
+</pre></div>
+
+
+<p><strong>Expected Output:</strong><br />
+<table></p>
+<div class="hlcode"><pre><span class="nt">&lt;tr&gt;</span>
+<span class="nt">&lt;td&gt;</span>
+A  =
+<span class="nt">&lt;/td&gt;</span>
+    <span class="nt">&lt;td&gt;</span>
+     <span class="cp">[</span><span class="err">[[[</span> <span class="mf">1.74481176</span>  <span class="mf">0.86540763</span>  <span class="mf">1.13376944</span><span class="cp">]</span>]]
+</pre></div>
+
+
+<p>[[[ 1.13162939  1.51981682  2.18557541]]]]</p>
+<div class="hlcode"><pre>    <span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+<span class="nt">&lt;tr&gt;</span>
+<span class="nt">&lt;td&gt;</span>
+A  =
+<span class="nt">&lt;/td&gt;</span>
+    <span class="nt">&lt;td&gt;</span>
+     <span class="cp">[</span><span class="err">[[[</span> <span class="mf">0.02105773</span> <span class="o">-</span><span class="mf">0.20328806</span> <span class="o">-</span><span class="mf">0.40389855</span><span class="cp">]</span>]]
+</pre></div>
+
+
+<p>[[[-0.22154621  0.51716526  0.48155844]]]]</p>
+<div class="hlcode"><pre>    <span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+</pre></div>
+
+
+</table>
+
+<p>Congratulations! You have now implemented the forward passes of all the layers of a convolutional network. </p>
+<p>The remainer of this notebook is optional, and will not be graded.</p>
+<h2 id="5-backpropagation-in-convolutional-neural-networks-optional-ungraded">5 - Backpropagation in convolutional neural networks (OPTIONAL / UNGRADED)</h2>
+<p>In modern deep learning frameworks, you only have to implement the forward pass, and the framework takes care of the backward pass, so most deep learning engineers don't need to bother with the details of the backward pass. The backward pass for convolutional networks is complicated. If you wish however, you can work through this optional portion of the notebook to get a sense of what backprop in a convolutional network looks like. </p>
+<p>When in an earlier course you implemented a simple (fully connected) neural network, you used backpropagation to compute the derivatives with respect to the cost to update the parameters. Similarly, in convolutional neural networks you can to calculate the derivatives with respect to the cost in order to update the parameters. The backprop equations are not trivial and we did not derive them in lecture, but we briefly presented them below.</p>
+<h3 id="51-convolutional-layer-backward-pass">5.1 - Convolutional layer backward pass</h3>
+<p>Let's start by implementing the backward pass for a CONV layer. </p>
+<h4 id="511-computing-da">5.1.1 - Computing dA:</h4>
+<p>This is the formula for computing $dA$ with respect to the cost for a certain filter $W_c$ and a given training example:</p>
+<p>$$ dA += \sum <em w="0">{h=0} ^{n_H} \sum</em> ^{n_W} W_c \times dZ_{hw} \tag{1}$$</p>
+<p>Where $W_c$ is a filter and $dZ_{hw}$ is a scalar corresponding to the gradient of the cost with respect to the output of the conv layer Z at the hth row and wth column (corresponding to the dot product taken at the ith stride left and jth stride down). Note that at each time, we multiply the the same filter $W_c$ by a different dZ when updating dA. We do so mainly because when computing the forward propagation, each filter is dotted and summed by a different a_slice. Therefore when computing the backprop for dA, we are just adding the gradients of all the a_slices. </p>
+<p>In code, inside the appropriate for-loops, this formula translates into:</p>
+<div class="hlcode"><pre><span class="n">da_prev_pad</span><span class="p">[</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">W</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+</pre></div>
+
+
+<h4 id="512-computing-dw">5.1.2 - Computing dW:</h4>
+<p>This is the formula for computing $dW_c$ ($dW_c$ is the derivative of one filter) with respect to the loss:</p>
+<p>$$ dW_c  += \sum <em w="0">{h=0} ^{n_H} \sum</em> ^ {n_W} a_{slice} \times dZ_{hw}  \tag{2}$$</p>
+<p>Where $a_{slice}$ corresponds to the slice which was used to generate the acitivation $Z_{ij}$. Hence, this ends up giving us the gradient for $W$ with respect to that slice. Since it is the same $W$, we will just add up all such gradients to get $dW$. </p>
+<p>In code, inside the appropriate for-loops, this formula translates into:</p>
+<div class="hlcode"><pre><span class="n">dW</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">a_slice</span> <span class="o">*</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+</pre></div>
+
+
+<h4 id="513-computing-db">5.1.3 - Computing db:</h4>
+<p>This is the formula for computing $db$ with respect to the cost for a certain filter $W_c$:</p>
+<p>$$ db = \sum_h \sum_w dZ_{hw} \tag{3}$$</p>
+<p>As you have previously seen in basic neural networks, db is computed by summing $dZ$. In this case, you are just summing over all the gradients of the conv output (Z) with respect to the cost. </p>
+<p>In code, inside the appropriate for-loops, this formula translates into:</p>
+<div class="hlcode"><pre><span class="n">db</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>Exercise</strong>: Implement the <code>conv_backward</code> function below. You should sum over all the training examples, filters, heights, and widths. You should then compute the derivatives using formulas 1, 2 and 3 above. </p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">conv_backward</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the backward propagation for a convolution function</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    dZ -- gradient of the cost with respect to the output of the conv layer (Z), numpy array of shape (m, n_H, n_W, n_C)</span>
+<span class="sd">    cache -- cache of values needed for the conv_backward(), output of conv_forward()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    dA_prev -- gradient of the cost with respect to the input of the conv layer (A_prev),</span>
+<span class="sd">               numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)</span>
+<span class="sd">    dW -- gradient of the cost with respect to the weights of the conv layer (W)</span>
+<span class="sd">          numpy array of shape (f, f, n_C_prev, n_C)</span>
+<span class="sd">    db -- gradient of the cost with respect to the biases of the conv layer (b)</span>
+<span class="sd">          numpy array of shape (1, 1, 1, n_C)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Retrieve information from &quot;cache&quot;</span>
+    <span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span> <span class="o">=</span> <span class="n">cache</span>
+
+    <span class="c"># Retrieve dimensions from A_prev&#39;s shape</span>
+    <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">)</span> <span class="o">=</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Retrieve dimensions from W&#39;s shape</span>
+    <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">,</span> <span class="n">n_C</span><span class="p">)</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Retrieve information from &quot;hparameters&quot;</span>
+    <span class="n">stride</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;stride&quot;</span><span class="p">]</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;pad&quot;</span><span class="p">]</span>
+
+    <span class="c"># Retrieve dimensions from dZ&#39;s shape</span>
+    <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span><span class="p">)</span> <span class="o">=</span> <span class="n">dZ</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Initialize dA_prev, dW, db with the correct shapes</span>
+    <span class="n">dA_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">))</span>                           
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">f</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_C</span><span class="p">))</span>
+
+    <span class="c"># Pad A_prev and dA_prev</span>
+    <span class="n">A_prev_pad</span> <span class="o">=</span> <span class="n">zero_pad</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">pad</span><span class="p">)</span>
+    <span class="n">dA_prev_pad</span> <span class="o">=</span> <span class="n">zero_pad</span><span class="p">(</span><span class="n">dA_prev</span><span class="p">,</span> <span class="n">pad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>                       <span class="c"># loop over the training examples</span>
+
+        <span class="c"># select ith training example from A_prev_pad and dA_prev_pad</span>
+        <span class="n">a_prev_pad</span> <span class="o">=</span> <span class="n">A_prev_pad</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:,:]</span>
+        <span class="n">da_prev_pad</span> <span class="o">=</span> <span class="n">dA_prev_pad</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:,:]</span>
+
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_H</span><span class="p">):</span>                   <span class="c"># loop over vertical axis of the output volume</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_W</span><span class="p">):</span>               <span class="c"># loop over horizontal axis of the output volume</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_C</span><span class="p">):</span>           <span class="c"># loop over the channels of the output volume</span>
+
+                    <span class="c"># Find the corners of the current &quot;slice&quot;</span>
+                    <span class="n">vert_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span>
+                    <span class="n">vert_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">f</span>
+                    <span class="n">horiz_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span>
+                    <span class="n">horiz_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">f</span>
+
+                    <span class="c"># Use the corners to define the slice from a_prev_pad</span>
+                    <span class="n">a_slice</span> <span class="o">=</span> <span class="n">a_prev_pad</span><span class="p">[</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span> <span class="p">:]</span>
+
+                    <span class="c"># Update gradients for the window and the filter&#39;s parameters using the code formulas given above</span>
+                    <span class="n">da_prev_pad</span><span class="p">[</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">W</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+                    <span class="n">dW</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">a_slice</span> <span class="o">*</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+                    <span class="n">db</span><span class="p">[:,:,:,</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dZ</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+
+        <span class="c"># Set the ith training example&#39;s dA_prev to the unpaded da_prev_pad (Hint: use X[pad:-pad, pad:-pad, :])</span>
+        <span class="n">dA_prev</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">da_prev_pad</span><span class="p">[</span><span class="n">pad</span><span class="p">:</span><span class="o">-</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span><span class="o">-</span><span class="n">pad</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="c"># Making sure your output shape is correct</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">dA_prev</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">dA_prev</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dA</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">conv_backward</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">cache_conv</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;dA_mean =&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;dW_mean =&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dW</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;db_mean =&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">db</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">dA_mean</span> <span class="o">=</span> <span class="mf">1.45243777754</span>
+<span class="n">dW_mean</span> <span class="o">=</span> <span class="mf">1.72699145831</span>
+<span class="n">db_mean</span> <span class="o">=</span> <span class="mf">7.83923256462</span>
+</pre></div>
+
+
+<p><strong> Expected Output: </strong><br />
+<table><br />
+    <tr><br />
+        <td><br />
+<strong>dA_mean</strong><br />
+        </td><br />
+        <td><br />
+            1.45243777754<br />
+        </td><br />
+    </tr><br />
+    <tr><br />
+        <td><br />
+<strong>dW_mean</strong><br />
+        </td><br />
+        <td><br />
+            1.72699145831<br />
+        </td><br />
+    </tr><br />
+    <tr><br />
+        <td><br />
+<strong>db_mean</strong><br />
+        </td><br />
+        <td><br />
+            7.83923256462<br />
+        </td><br />
+    </tr></p>
+</table>
+
+<h2 id="52-pooling-layer-backward-pass">5.2 Pooling layer - backward pass</h2>
+<p>Next, let's implement the backward pass for the pooling layer, starting with the MAX-POOL layer. Even though a pooling layer has no parameters for backprop to update, you still need to backpropagation the gradient through the pooling layer in order to compute gradients for layers that came before the pooling layer. </p>
+<h3 id="521-max-pooling-backward-pass">5.2.1 Max pooling - backward pass</h3>
+<p>Before jumping into the backpropagation of the pooling layer, you are going to build a helper function called <code>create_mask_from_window()</code> which does the following: </p>
+<p>$$ X = \begin{bmatrix}<br />
+1 &amp;&amp; 3 \<br />
+4 &amp;&amp; 2<br />
+\end{bmatrix} \quad \rightarrow  \quad M =\begin{bmatrix}<br />
+0 &amp;&amp; 0 \<br />
+1 &amp;&amp; 0<br />
+\end{bmatrix}\tag{4}$$</p>
+<p>As you can see, this function creates a "mask" matrix which keeps track of where the maximum of the matrix is. True (1) indicates the position of the maximum in X, the other entries are False (0). You'll see later that the backward pass for average pooling will be similar to this but using a different mask.  </p>
+<p><strong>Exercise</strong>: Implement <code>create_mask_from_window()</code>. This function will be helpful for pooling backward. <br />
+Hints:<br />
+- <a href="">np.max()</a> may be helpful. It computes the maximum of an array.<br />
+- If you have a matrix X and a scalar x: <code>A = (X == x)</code> will return a matrix A of the same size as X such that:</p>
+<div class="hlcode"><pre><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">True</span> <span class="k">if</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+<span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">False</span> <span class="k">if</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span>
+</pre></div>
+
+
+<ul>
+<li>Here, you don't need to consider cases where there are several maxima in a matrix.</li>
+</ul>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">create_mask_from_window</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a mask from an input matrix x, to identify the max entry of x.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    x -- Array of shape (f, f)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    mask -- Array of the same shape as window, contains a True at the position corresponding to the max entry of x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ### (≈1 line)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">mask</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask_from_window</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;x = &#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;mask = &quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">x</span> <span class="o">=</span>  <span class="p">[[</span> <span class="mf">1.62434536</span> <span class="o">-</span><span class="mf">0.61175641</span> <span class="o">-</span><span class="mf">0.52817175</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">1.07296862</span>  <span class="mf">0.86540763</span> <span class="o">-</span><span class="mf">2.3015387</span> <span class="p">]]</span>
+<span class="n">mask</span> <span class="o">=</span>  <span class="p">[[</span> <span class="n">True</span> <span class="n">False</span> <span class="n">False</span><span class="p">]</span>
+ <span class="p">[</span><span class="n">False</span> <span class="n">False</span> <span class="n">False</span><span class="p">]]</span>
+</pre></div>
+
+
+<p><strong>Expected Output:</strong> </p>
+<table> 
+<tr> 
+<td>
+
+**x =**
+</td>
+
+<td>
+
+[[ 1.62434536 -0.61175641 -0.52817175] <br>
+ [-1.07296862  0.86540763 -2.3015387 ]]
+
+  </td>
+</tr>
+
+<tr> 
+<td>
+**mask =**
+</td>
+<td>
+[[ True False False] <br>
+ [False False False]]
+</td>
+</tr>
+
+
+</table>
+
+<p>Why do we keep track of the position of the max? It's because this is the input value that ultimately influenced the output, and therefore the cost. Backprop is computing gradients with respect to the cost, so anything that influences the ultimate cost should have a non-zero gradient. So, backprop will "propagate" the gradient back to this particular input value that had influenced the cost. </p>
+<h3 id="522-average-pooling-backward-pass">5.2.2 - Average pooling - backward pass</h3>
+<p>In max pooling, for each input window, all the "influence" on the output came from a single input value--the max. In average pooling, every element of the input window has equal influence on the output. So to implement backprop, you will now implement a helper function that reflects this.</p>
+<p>For example if we did average pooling in the forward pass using a 2x2 filter, then the mask you'll use for the backward pass will look like: <br />
+$$ dZ = 1 \quad \rightarrow  \quad dZ =\begin{bmatrix}<br />
+1/4 &amp;&amp; 1/4 \<br />
+1/4 &amp;&amp; 1/4<br />
+\end{bmatrix}\tag{5}$$</p>
+<p>This implies that each position in the $dZ$ matrix contributes equally to output because in the forward pass, we took an average. </p>
+<p><strong>Exercise</strong>: Implement the function below to equally distribute a value dz through a matrix of dimension shape. <a href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ones.html">Hint</a></p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">distribute_value</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Distributes the input value in the matrix of dimension shape</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    dz -- input scalar</span>
+<span class="sd">    shape -- the shape (n_H, n_W) of the output matrix for which we want to distribute the value of dz</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    a -- Array of size (n_H, n_W) for which we distributed the value of dz</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ###</span>
+    <span class="c"># Retrieve dimensions from shape (≈1 line)</span>
+    <span class="p">(</span><span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">)</span> <span class="o">=</span> <span class="n">shape</span>
+
+    <span class="c"># Compute the value to distribute on the matrix (≈1 line)</span>
+    <span class="n">average</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_H</span> <span class="o">*</span> <span class="n">n_W</span><span class="p">)</span>
+
+    <span class="c"># Create a matrix where every entry is the &quot;average&quot; value (≈1 line)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">))</span> <span class="o">*</span> <span class="n">average</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">a</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">distribute_value</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;distributed value =&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">distributed</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[[</span> <span class="mf">0.5</span>  <span class="mf">0.5</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.5</span>  <span class="mf">0.5</span><span class="p">]]</span>
+</pre></div>
+
+
+<p><strong>Expected Output</strong>: </p>
+<table> 
+<tr> 
+<td>
+distributed_value =
+</td>
+<td>
+[[ 0.5  0.5]
+<br\> 
+[ 0.5  0.5]]
+</td>
+</tr>
+</table>
+
+<h3 id="523-putting-it-together-pooling-backward">5.2.3 Putting it together: Pooling backward</h3>
+<p>You now have everything you need to compute backward propagation on a pooling layer.</p>
+<p><strong>Exercise</strong>: Implement the <code>pool_backward</code> function in both modes (<code>"max"</code> and <code>"average"</code>). You will once again use 4 for-loops (iterating over training examples, height, width, and channels). You should use an <code>if/elif</code> statement to see if the mode is equal to <code>'max'</code> or <code>'average'</code>. If it is equal to 'average' you should use the <code>distribute_value()</code> function you implemented above to create a matrix of the same shape as <code>a_slice</code>. Otherwise, the mode is equal to '<code>max</code>', and you will create a mask with <code>create_mask_from_window()</code> and multiply it by the corresponding value of dZ.</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">pool_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;max&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements the backward pass of the pooling layer</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    dA -- gradient of cost with respect to the output of the pooling layer, same shape as A</span>
+<span class="sd">    cache -- cache output from the forward pass of the pooling layer, contains the layer&#39;s input and hparameters </span>
+<span class="sd">    mode -- the pooling mode you would like to use, defined as a string (&quot;max&quot; or &quot;average&quot;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    dA_prev -- gradient of cost with respect to the input of the pooling layer, same shape as A_prev</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ###</span>
+
+    <span class="c"># Retrieve information from cache (≈1 line)</span>
+    <span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span> <span class="o">=</span> <span class="n">cache</span>
+
+    <span class="c"># Retrieve hyperparameters from &quot;hparameters&quot; (≈2 lines)</span>
+    <span class="n">stride</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;stride&quot;</span><span class="p">]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">hparameters</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">]</span>
+
+    <span class="c"># Retrieve dimensions from A_prev&#39;s shape and dA&#39;s shape (≈2 lines)</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n_H_prev</span><span class="p">,</span> <span class="n">n_W_prev</span><span class="p">,</span> <span class="n">n_C_prev</span> <span class="o">=</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n_H</span><span class="p">,</span> <span class="n">n_W</span><span class="p">,</span> <span class="n">n_C</span> <span class="o">=</span> <span class="n">dA</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># Initialize dA_prev with zeros (≈1 line)</span>
+    <span class="n">dA_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>                       <span class="c"># loop over the training examples</span>
+
+        <span class="c"># select training example from A_prev (≈1 line)</span>
+        <span class="n">a_prev</span> <span class="o">=</span> <span class="n">A_prev</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_H</span><span class="p">):</span>                   <span class="c"># loop on the vertical axis</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_W</span><span class="p">):</span>               <span class="c"># loop on the horizontal axis</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_C</span><span class="p">):</span>           <span class="c"># loop over the channels (depth)</span>
+
+                    <span class="c"># Find the corners of the current &quot;slice&quot; (≈4 lines)</span>
+                    <span class="n">vert_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span>
+                    <span class="n">vert_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">f</span>
+                    <span class="n">horiz_start</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span>
+                    <span class="n">horiz_end</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">f</span>
+
+                    <span class="c"># Compute the backward propagation in both modes.</span>
+                    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&quot;max&quot;</span><span class="p">:</span>
+
+                        <span class="c"># Use the corners and &quot;c&quot; to define the current slice from a_prev (≈1 line)</span>
+                        <span class="n">a_prev_slice</span> <span class="o">=</span> <span class="n">a_prev</span><span class="p">[</span><span class="n">vert_start</span><span class="p">:</span><span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span><span class="n">horiz_end</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+                        <span class="c"># Create the mask from a_prev_slice (≈1 line)</span>
+                        <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask_from_window</span><span class="p">(</span><span class="n">a_prev_slice</span><span class="p">)</span>
+                        <span class="c"># Set dA_prev to be dA_prev + (the mask multiplied by the correct entry of dA) (≈1 line)</span>
+                        <span class="n">dA_prev</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">vert_start</span><span class="p">:</span> <span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span> <span class="n">horiz_end</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">mask</span> <span class="o">*</span> <span class="n">dA</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+
+                    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&quot;average&quot;</span><span class="p">:</span>
+
+                        <span class="c"># Get the value a from dA (≈1 line)</span>
+                        <span class="n">da</span> <span class="o">=</span> <span class="n">dA</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+                        <span class="c"># Define the shape of the filter as fxf (≈1 line)</span>
+                        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                        <span class="c"># Distribute it to get the correct slice of dA_prev. i.e. Add the distributed value of da. (≈1 line)</span>
+                        <span class="n">dA_prev</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">vert_start</span><span class="p">:</span> <span class="n">vert_end</span><span class="p">,</span> <span class="n">horiz_start</span><span class="p">:</span> <span class="n">horiz_end</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">distribute_value</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+
+    <span class="c">### END CODE ###</span>
+
+    <span class="c"># Making sure your output shape is correct</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">dA_prev</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dA_prev</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">A_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">hparameters</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;stride&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;f&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">A</span><span class="p">,</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">pool_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">hparameters</span><span class="p">)</span>
+<span class="n">dA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">dA_prev</span> <span class="o">=</span> <span class="n">pool_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;max&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;mode = max&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;mean of dA = &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;dA_prev[1,1] = &#39;</span><span class="p">,</span> <span class="n">dA_prev</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>  
+<span class="k">print</span><span class="p">()</span>
+<span class="n">dA_prev</span> <span class="o">=</span> <span class="n">pool_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;average&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;mode = average&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;mean of dA = &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;dA_prev[1,1] = &#39;</span><span class="p">,</span> <span class="n">dA_prev</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> 
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">mode</span> <span class="o">=</span> <span class="n">max</span>
+<span class="n">mean</span> <span class="n">of</span> <span class="n">dA</span> <span class="o">=</span>  <span class="mf">0.145713902729</span>
+<span class="n">dA_prev</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="p">[[</span> <span class="mf">0.</span>          <span class="mf">0.</span>        <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">5.05844394</span> <span class="o">-</span><span class="mf">1.68282702</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.</span>          <span class="mf">0.</span>        <span class="p">]]</span>
+
+<span class="n">mode</span> <span class="o">=</span> <span class="n">average</span>
+<span class="n">mean</span> <span class="n">of</span> <span class="n">dA</span> <span class="o">=</span>  <span class="mf">0.145713902729</span>
+<span class="n">dA_prev</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="p">[[</span> <span class="mf">0.08485462</span>  <span class="mf">0.2787552</span> <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">1.26461098</span> <span class="o">-</span><span class="mf">0.25749373</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">1.17975636</span> <span class="o">-</span><span class="mf">0.53624893</span><span class="p">]]</span>
+</pre></div>
+
+
+<p><strong>Expected Output</strong>: </p>
+<p>mode = max:<br />
+<table> <br />
+<tr> <br />
+<td></p>
+<p><strong>mean of dA =</strong><br />
+</td></p>
+<td>
+
+0.145713902729
+
+  </td>
+
+</tr>
+
+<tr> 
+<td>
+**dA_prev[1,1] =** 
+</td>
+<td>
+[[ 0.          0.        ] <br>
+ [ 5.05844394 -1.68282702] <br>
+ [ 0.          0.        ]]
+</td>
+</tr>
+
+</table>
+
+<p>mode = average<br />
+<table> <br />
+<tr> <br />
+<td></p>
+<p><strong>mean of dA =</strong><br />
+</td></p>
+<td>
+
+0.145713902729
+
+  </td>
+
+</tr>
+
+<tr> 
+<td>
+**dA_prev[1,1] =** 
+</td>
+<td>
+[[ 0.08485462  0.2787552 ] <br>
+ [ 1.26461098 -0.25749373] <br>
+ [ 1.17975636 -0.53624893]]
+</td>
+</tr>
+
+</table>
+
+<h3 id="congratulations">Congratulations !</h3>
+<p>Congratulation on completing this assignment. You now understand how convolutional neural networks work. You have implemented all the building blocks of a neural network. In the next assignment you will implement a ConvNet using TensorFlow.</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-03-04 18:51 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'cnn-basics',
+  title: 'cnn-basics',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>linux-ops - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#linux">linux</a>&nbsp;»&nbsp;linux-ops</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">linux-ops</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#linux">Linux 软件源更新</a></li>
+<li><a href="#openstack">OpenStack 安装问题</a></li>
+<li><a href="#sudo">配置 sudo 用户.</a></li>
+<li><a href="#screen">screen 使用简介</a></li>
+<li><a href="#iterm2-tmux">配置 iTerm2 和 tmux</a><ul>
+<li><a href="#_1">局域网下互传大文件</a></li>
+<li><a href="#ifconfig-vs-ip">ifconfig VS ip</a></li>
+<li><a href="#_2">删除某个目录下的大量的文件</a></li>
+</ul>
+</li>
+<li><a href="#check-dev-file-system">check dev file system</a></li>
+<li><a href="#_3">检查占用空间大的文件</a></li>
+<li><a href="#md5">大文件分块计算md5 的命令</a></li>
+<li><a href="#linux_1">Linux分区和增大交换区</a></li>
+</ul>
+</div>
+<h1 id="linux">Linux 软件源更新</h1>
+<p>更改之前注意备份: <code>sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup</code></p>
+<div class="hlcode"><pre><span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-updates</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-backports</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c">##测试版源</span>
+<span class="k">deb</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-proposed</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c"># 源码</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-security</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-updates</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-backports</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+<span class="c">##测试版源</span>
+<span class="k">deb-src</span> <span class="s">http://cn.archive.ubuntu.com/ubuntu/</span> <span class="kp">willy-proposed</span> <span class="kp">main</span> <span class="kp">restricted</span> <span class="kp">universe</span> <span class="kp">multiverse</span>
+</pre></div>
+
+
+<p>更改的话, 第一个是更改地址, 如阿里云的,  第二个是更改代号即版本, 如 willy(15.10) 修改成 xenial(16.04); </p>
+<p><a href="http://wiki.ubuntu.org.cn/%E6%BA%90%E5%88%97%E8%A1%A8">参考</a></p>
+<h1 id="openstack">OpenStack 安装问题</h1>
+<ol>
+<li><code>generate-subunit: command not found</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">os</span><span class="o">-</span><span class="n">testr</span>
+</pre></div>
+
+
+<ol>
+<li><code>/bin/sh: 1: brctl: not found</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">bridge</span><span class="o">-</span><span class="n">utils</span>
+</pre></div>
+
+
+<ol>
+<li></li>
+</ol>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">url</span><span class="p">.</span><span class="s">&quot;https://&quot;</span><span class="p">.</span><span class="n">insteadOf</span> <span class="n">git</span><span class="o">:</span><span class="c1">//</span>
+</pre></div>
+
+
+<ul>
+<li><a href="http://docs.python-guide.org/en/latest/">The Hitchhiker’s Guide to Python!</a></li>
+<li><a href="https://www.ustack.com/blog/openstack_hacker/#i">OpenStack Hacker养成指南</a></li>
+<li><a href="http://www.ganecheng.tech/blog/53538203.html">用DevStack安装OpenStack(单机)</a></li>
+<li><a href="http://chbrian.github.io/cloud/2014/02/22/devstack-/">devstack 安装教程</a></li>
+<li><a href="https://docs.openstack.org/mitaka/zh_CN/install-guide-ubuntu/environment.html">openstack</a></li>
+</ul>
+<h1 id="sudo">配置 sudo 用户.</h1>
+<p>首先使用 <code>useradd username</code> 添加新用户，然后设置用户密码 <code>passwd usernmae</code>.<br />
+然后 使用 <code>visudo</code> 自动打开 <code>/etc/sudoers</code> 配置文件，在文件加入sudo权限，配置如下：</p>
+<div class="hlcode"><pre><span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">ALL</span>
+<span class="err">‘不要密码</span>
+<span class="n">tianqi05</span>    <span class="n">ALL</span><span class="o">=</span><span class="p">(</span><span class="n">ALL</span><span class="p">)</span>    <span class="n">NOPASSWD</span><span class="o">:</span><span class="n">ALL</span>
+</pre></div>
+
+
+<p>最后切换用户<br />
+sudo -iu tianqi05</p>
+<h1 id="screen">screen 使用简介</h1>
+<p>screen 和 tmux有类似的服务。只是screen开启会话后不会新建窗口，还是在当前窗口。</p>
+<ol>
+<li>screen 创建一个session</li>
+</ol>
+<div class="hlcode"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">S</span> <span class="n">myNewSession</span>
+<span class="err">或者</span>
+<span class="n">screen</span> <span class="err">创建一个名字默认是</span><span class="n">ttys</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="err">的</span><span class="n">session</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>从当前 session 暂时断开退出。 <code>ctrl+a+d</code></p>
+</li>
+<li>
+<p>列出当前所有的session. <code>screen -ls</code> </p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>恢复某一个session。<code>screen -r myNewSession</code></p>
+</li>
+<li>
+<p>强制杀死一个 session. <code>kill -9 28091</code></p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">There</span> <span class="n">are</span> <span class="n">screens</span> <span class="n">on</span><span class="o">:</span>
+    <span class="mf">28007.</span><span class="n">ttys005</span><span class="p">.</span><span class="n">tianqideMacBook</span><span class="o">-</span><span class="n">Pro</span>   <span class="p">(</span><span class="n">Detached</span><span class="p">)</span>
+    <span class="mf">28091.</span><span class="n">myNewSession</span>  <span class="p">(</span><span class="n">Dead</span> <span class="o">???</span><span class="p">)</span>
+<span class="n">Remove</span> <span class="n">dead</span> <span class="n">screens</span> <span class="n">with</span> <span class="err">&#39;</span><span class="n">screen</span> <span class="o">-</span><span class="n">wipe</span><span class="err">&#39;</span><span class="p">.</span>
+<span class="mi">2</span> <span class="n">Sockets</span> <span class="n">in</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">folders</span><span class="o">/</span><span class="n">bb</span><span class="o">/</span><span class="n">ywfc1vbs5lx_blqpl5ssrvv40000gp</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="p">.</span><span class="n">screen</span><span class="p">.</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>按照提示清理。 <code>screen -wipe</code></p>
+</li>
+<li>
+<p><code>Cannot open your terminal '/dev/pts/0' - please check.</code></p>
+</li>
+<li>Sign out and properly connect / sign in as the user you wish to use.</li>
+<li>Run <code>script /dev/null</code> to own the shell (more info over at Server Fault); then try screen again.</li>
+</ol>
+<h1 id="iterm2-tmux">配置 iTerm2 和 tmux</h1>
+<p>Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意思。 </p>
+<p>场景就是，第一种是在本地电脑，你打开了好几个terminal， 每一个terminal由当前的工作环境， 然后这个时候没电了或者你电脑关机了，那么这些terminal的工作状态就没有了。如果使用tmux记录下来，那么这些terminal下次还可以继续使用，并且恢复到关闭时的状态。</p>
+<p>第二种就是 ssh 登陆到远程主机， 然后ssh 基本上很容易断开，一般使用 nohup &amp; 在后台运行命令， 但是如果使用 tmux， 就可以记录下来，关闭了也没关系，还可以再次恢复。</p>
+<p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
+<p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
+<h2 id="_1">局域网下互传大文件</h2>
+<p>解决方案很多，第一种不通过中间服务器， 直接两台PC之间互传，如果在同一个局域网之下， 确保可以相互ping通或者Telnet。一台机器充当服务器，另一台客户机， 采用 Python 自带的SimpleHTTPServer即可。客户端 <code>wget http://[IP]:[port]/[path\_to\_file]</code>; 另外，下载某个目录下的所有文件，<code>wget -r -np -nH -R index.html http://url/including/files/you/want/to/download/</code>. <code>-r</code> 递归， <code>-R index.html</code> 不带 <code>index.html</code> 文件。</p>
+<h2 id="ifconfig-vs-ip">ifconfig VS ip</h2>
+<ul>
+<li><a href="https://www.tecmint.com/ifconfig-vs-ip-command-comparing-network-configuration/">ifconfig vs ip: What’s Difference and Comparing Network Configuration</a></li>
+</ul>
+<p>## 查看进程所暂用的资源<br />
+ 首先找到进程 <code>ps aux|grep XXX</code>, 然后使用 <code>sudo lsof -p [pid]</code> 查看该进程占用的所有资源；也可以查看某个资源被哪些进程占用， <code>lsof [filename]</code> 可以看到进程pid， 拿到pid 之后可以使用<code>ps aux|grep [pid]</code> 查看是什么进程；</p>
+<h2 id="_2">删除某个目录下的大量的文件</h2>
+<div class="hlcode"><pre>find /tmp -name core -type f -print0 | xargs -0 /bin/rm -f
+</pre></div>
+
+
+<p>Find files named core in or below the directory /tmp and delete them, processing filenames in such a  way<br />
+that file or directory names containing spaces or newlines are correctly handled.</p>
+<div class="hlcode"><pre><span class="n">find</span> <span class="o">/</span><span class="n">tmp</span> <span class="o">-</span><span class="n">depth</span> <span class="o">-</span><span class="n">name</span> <span class="n">core</span> <span class="o">-</span><span class="n">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">delete</span>
+</pre></div>
+
+
+<p>Find  files  named  core in or below the directory /tmp and delete them, but more efficiently than in the<br />
+previous example (because we avoid the need to use fork(2) and exec(2) to launch rm and we don't need the<br />
+extra xargs process).</p>
+<div class="hlcode"><pre><span class="n">cut</span> <span class="o">-</span><span class="n">d</span><span class="o">:</span> <span class="o">-</span><span class="n">f1</span> <span class="o">&lt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">passwd</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">|</span> <span class="n">xargs</span> <span class="n">echo</span>
+</pre></div>
+
+
+<p>/bin/rm: Argument list too long.<br />
+The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.<br />
+To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:<br />
+find . -type f -exec rm -v {} \;<br />
+My problem is that I needed to delete 500,000 files and it was taking way too long.<br />
+I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:<br />
+find . -type f -delete<br />
+Using this method, I was deleting files at a rate of about 2000 files/second – much faster!<br />
+You can also show the filenames as you’re deleting them:<br />
+find . -type f -print -delete<br />
+…or even show how many files will be deleted, then time how long it takes to delete them:</p>
+<p>ls -1 汇报内存不足如果目录下有上百万个小文件<br />
+ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
+<h1 id="check-dev-file-system">check dev file system</h1>
+<ol>
+<li><code>lsblk -f</code> 可以看到所有附着设备的文件系统类型，如果有的话；无论是否mount</li>
+<li><code>df -Th</code> 可以看到所有已经mount的设备的文件系统类型</li>
+<li><code>fsck -N /dev/vdc1</code> 设备修复工具，可以对某个分区进行修复，并可以查看到该分区的文件系统</li>
+<li><code>mount | grep "^/dev"</code></li>
+<li><code>blkid /dev/sda1</code></li>
+<li><code>file -sL /dev/sda1</code></li>
+<li><code>cat /etc/fstab</code> 在主机启动的时候回挂载改文件内容中的设备，里面描述了该挂载的设备的id，tag，label，mount point， fs等，但是这个是手动设置的</li>
+</ol>
+<h1 id="_3">检查占用空间大的文件</h1>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">find</span> <span class="p">.</span> <span class="o">-</span><span class="n">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">size</span> <span class="o">+</span><span class="mi">1000</span><span class="n">M</span>  <span class="o">-</span><span class="n">print0</span> <span class="o">|</span> <span class="n">xargs</span> <span class="o">-</span><span class="mi">0</span> <span class="n">du</span> <span class="o">-</span><span class="n">h</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">nr</span>
+</pre></div>
+
+
+<h1 id="md5">大文件分块计算md5 的命令</h1>
+<p>例如 5M 一块，可以设置块大小1M, 一次读入5个就是可以当成读一大块5M了，然后skip可以设置偏移量。比如 14M 可以如下操作，分三块读。</p>
+<div class="hlcode"><pre><span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">0</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">5</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="n">dd</span> <span class="n">bs</span><span class="o">=</span><span class="mi">1</span><span class="n">m</span> <span class="n">count</span><span class="o">=</span><span class="mi">5</span> <span class="n">skip</span><span class="o">=</span><span class="mi">10</span> <span class="k">if</span><span class="o">=</span><span class="n">someFile</span> <span class="o">|</span> <span class="n">md5</span> <span class="o">&gt;&gt;</span><span class="n">checksums</span><span class="o">.</span><span class="n">txt</span>
+<span class="c"># 最后计算连接的md5</span>
+<span class="n">cat</span> <span class="n">checksums</span><span class="o">.</span><span class="n">txt</span> <span class="o">|</span> <span class="n">md5</span>
+</pre></div>
+
+
+<h1 id="linux_1">Linux分区和增大交换区</h1>
+<ul>
+<li>
+<p><a href="https://askubuntu.com/questions/178712/how-to-increase-swap-space/389067#389067">How to increase swap space?</a></p>
+</li>
+<li>
+<p><a href="https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-16-04"> How To Add Swap Space on Ubuntu 16.04</a></p>
+</li>
+</ul>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2017-07-02 22:39 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'linux-ops',
+  title: 'linux-ops',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

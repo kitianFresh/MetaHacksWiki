@@ -1,0 +1,968 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>neural-networks-basics - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#machinelearning">machinelearning</a>&nbsp;»&nbsp;<a href="/#machinelearning-deeplearning">deeplearning</a>&nbsp;»&nbsp;neural-networks-basics</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">neural-networks-basics</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#case-study">逻辑斯特回归 (Case Study)</a><ul>
+<li><a href="#1-model">1 - 模型(Model)</a></li>
+<li><a href="#2-cost">2 - 损失/策略(Cost)</a></li>
+<li><a href="#3-algorithm">3 - 优化/学习 算法(Algorithm)</a><ul>
+<li><a href="#31-forward-and-backward-propagation">3.1 - Forward and Backward propagation</a></li>
+<li><a href="#32">3.2 优化算法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#shallow-neural-net">浅层神经网络(Shallow Neural Net)</a><ul>
+<li><a href="#1-neural-network-model">1 - 模型 Neural Network model</a></li>
+<li><a href="#2-">2 - 损失/策略</a></li>
+<li><a href="#3-">3 - 学习/优化 算法</a><ul>
+<li><a href="#31-forward-and-backward-propagation_1">3.1 Forward and Backward Propagation</a></li>
+<li><a href="#32_1">3.2 参数更新公式</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#softmax">SoftMax 多分类</a><ul>
+<li><a href="#1-softmax-activation">1- softmax activation</a></li>
+<li><a href="#2-softmax-cross-entropy-loss">2 - softmax cross entropy loss</a></li>
+<li><a href="#3-softmax-derivative">3 - softmax derivative</a><ul>
+<li><a href="#_1">参考</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#deep-neural-net">深度神经网络(Deep Neural Net)</a><ul>
+<li><a href="#initialization-parameters">initialization parameters</a><ul>
+<li><a href="#11-l-layer-neural-network">1.1 - L-layer Neural Network</a></li>
+</ul>
+</li>
+<li><a href="#4-forward-propagation-module">4 - Forward propagation module</a><ul>
+<li><a href="#41-linear-forward">4.1 - Linear Forward</a></li>
+<li><a href="#42-linear-activation-forward">4.2 - Linear-Activation Forward</a></li>
+<li><a href="#d-l-layer-model">d) L-Layer Model</a></li>
+</ul>
+</li>
+<li><a href="#5-cost-function">5 - Cost function</a></li>
+<li><a href="#6-backward-propagation-module">6 - Backward propagation module</a><ul>
+<li><a href="#61-linear-backward">6.1 - Linear backward</a></li>
+<li><a href="#62-linear-activation-backward">6.2 - Linear-Activation backward</a></li>
+<li><a href="#63-l-model-backward">6.3 - L-Model Backward</a></li>
+<li><a href="#64-update-parameters">6.4 - Update Parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="case-study">逻辑斯特回归 (Case Study)</h1>
+<p>task: 训练一个识别猫的LR</p>
+<p><strong>输入数据的预处理:</strong><br />
+ - <font color='blue'>Shape and Dimension 明确训练集/测试集 数据的形状和维度，比如数量和样本特征维度 (m_train, m_test, num_px, ...)</font><br />
+ - <font color='blue'>Reshape 输入数据shape 使其成为一个合理输入 (num_px * num_px * 3, 1)</font><br />
+ - <font color="blue">"Standardize" 数据归一化处理</font></p>
+<h2 id="1-model">1 - 模型(Model)</h2>
+<p>训练一个识别图片是否是猫的LR。一个简单的二分类器，直接使用 sigmoid 做输出层。<strong>Logistic Regression 就是一个简单的 Neural Network!</strong></p>
+<p><img src="/static/images/ML/LR/LogReg_kiank.png" style="width:650px;height:400px;"></p>
+<p><strong>模型的数学公式</strong>:</p>
+<p>对某个输入数据 $x^{(i)}$, 下面是公式</p>
+<p>$$z^{(i)} = w^T x^{(i)} + b \tag{1}$$<br />
+$$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{2}$$ </p>
+<h2 id="2-cost">2 - 损失/策略(Cost)</h2>
+<p>二分类器可以直接使用 cross-entropy 交叉熵来定义损失函数:<br />
+$$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{3}$$<br />
+$$ J = \frac{1}{m} \sum_{i=1}^m \mathcal{L}(a^{(i)}, y^{(i)})\tag{6}$$</p>
+<h2 id="3-algorithm">3 - 优化/学习 算法(Algorithm)</h2>
+<p>构建神经网络的基本步骤:<br />
+1. 定义模型架构<br />
+2. 初始化模型参数<br />
+3. Loop:<br />
+    - 前向传播计算损失 (forward propagation)<br />
+    - 反向传播计算梯度 (backward propagation)<br />
+    - 使用梯度更新参数 (gradient descent)基本上全部是梯度下降法，还有牛顿法</p>
+<h3 id="31-forward-and-backward-propagation">3.1 - Forward and Backward propagation</h3>
+<p>Forward Propagation:<br />
+- 输入X<br />
+- 计算激活 $A = \sigma(w^T X + b) = (a^{(0)}, a^{(1)}, ..., a^{(m-1)}, a^{(m)})$<br />
+- 计算损失: $J = -\frac{1}{m}\sum_{i=1}^{m}y^{(i)}\log(a^{(i)})+(1-y^{(i)})\log(1-a^{(i)})$</p>
+<p>简单的求导公式即 Backward Propagation: </p>
+<p>$$ \frac{\partial J}{\partial w} = \frac{1}{m}X(A-Y)^T\tag{7}$$<br />
+$$ \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (a^{(i)}-y^{(i)})\tag{8}$$</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">propagate</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c"># FORWARD PROPAGATION (FROM X TO COST)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>              <span class="c"># compute activation</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Y</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">A</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>     <span class="c"># compute cost</span>
+
+    <span class="c"># BACKWARD PROPAGATION (TO FIND GRAD)</span>
+    <span class="n">dw</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">m</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,((</span><span class="n">A</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">m</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">A</span><span class="o">-</span><span class="n">Y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">assert</span><span class="p">(</span><span class="n">dw</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">float</span><span class="p">)</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">cost</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">())</span>
+
+    <span class="n">grads</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;dw&quot;</span><span class="p">:</span> <span class="n">dw</span><span class="p">,</span>
+             <span class="s">&quot;db&quot;</span><span class="p">:</span> <span class="n">db</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">grads</span><span class="p">,</span> <span class="n">cost</span>
+</pre></div>
+
+
+<h3 id="32">3.2 优化算法</h3>
+<p>优化过程就是通过最小化损失函数 $J$ 来学习参数 $w$ and $b$. 对参数 $\theta$, 优化规则是 $ \theta = \theta - \alpha \text{ } d\theta$, $\alpha$ 为学习速率 learning_rate.</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">num_iterations</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">print_cost</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+
+    <span class="n">costs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">):</span>
+
+
+        <span class="c"># Cost and gradient calculation</span>
+        <span class="n">grads</span><span class="p">,</span> <span class="n">cost</span> <span class="o">=</span> <span class="n">propagate</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="c"># Retrieve derivatives from grads</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;dw&quot;</span><span class="p">]</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;db&quot;</span><span class="p">]</span>
+
+        <span class="c"># update rule</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">-</span> <span class="n">learning_rate</span><span class="o">*</span><span class="n">dw</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span>  <span class="n">learning_rate</span><span class="o">*</span><span class="n">db</span>
+
+        <span class="c"># Record the costs</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">costs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+
+        <span class="c"># Print the cost every 100 training examples</span>
+        <span class="k">if</span> <span class="n">print_cost</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Cost after iteration </span><span class="si">%i</span><span class="s">: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cost</span><span class="p">))</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;w&quot;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
+              <span class="s">&quot;b&quot;</span><span class="p">:</span> <span class="n">b</span><span class="p">}</span>
+
+    <span class="n">grads</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;dw&quot;</span><span class="p">:</span> <span class="n">dw</span><span class="p">,</span>
+             <span class="s">&quot;db&quot;</span><span class="p">:</span> <span class="n">db</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">costs</span>
+</pre></div>
+
+
+<h1 id="shallow-neural-net">浅层神经网络(Shallow Neural Net)</h1>
+<h2 id="1-neural-network-model">1 - 模型 Neural Network model</h2>
+<p>神经网络中的一个隐藏层节点其实是一个逻辑斯特回归分类器。</p>
+<p><strong>model</strong>:</p>
+<p><img src="/static/images/ML/DL/nn-basics/classification_kiank.png" style="width:600px;height:300px;"></p>
+<p>单隐藏层的神经网络可以看成是以逻辑斯特回归为基础神经节点, 再多加一层再次向前传播而已. 隐藏层的每一个单元就可以看成是一个逻辑斯特回归,<br />
+<img src="/static/images/ML/DL/nn-basics/nn1.png" style="width:600px;height:300px;"><br />
+你可以把每个隐藏层节点都是一个逻辑斯特回归.<br />
+<img src="/static/images/ML/DL/nn-basics/nn2.png" style="width:600px;height:300px;"><br />
+下面用公式来表示一个前向传播的过程:<br />
+<img src="/static/images/ML/DL/nn-basics/nn3.png" style="width:600px;height:300px;"><br />
+<img src="/static/images/ML/DL/nn-basics/nn4.png" style="width:600px;height:300px;"><br />
+整体架构：<br />
+<img src="/static/images/ML/DL/nn-basics/nn-overview.png" style="width:600px;height:300px;"></p>
+<p><strong>Mathematically</strong>:</p>
+<p>$$z^{[1] (i)} =  W^{[1]} x^{(i)} + b^{[1] (i)}\tag{1}$$ <br />
+$$a^{[1] (i)} = \tanh(z^{[1] (i)})\tag{2}$$<br />
+$$z^{[2] (i)} = W^{[2]} a^{[1] (i)} + b^{[2] (i)}\tag{3}$$<br />
+$$\hat{y}^{(i)} = a^{[2] (i)} = \sigma(z^{ [2] (i)})\tag{4}$$</p>
+<p>$$<br />
+\begin{align}<br />
+y^{(i)}_{prediction} = <br />
+\begin{cases} <br />
+1 &amp; \mbox{if } a^{[2] (i)} &gt; 0.5 \\<br />
+0 &amp; \mbox{otherwise } <br />
+\end{cases}<br />
+\end{align}\tag{5}<br />
+$$</p>
+<h2 id="2-">2 - 损失/策略</h2>
+<p>$$<br />
+J = - \frac{1}{m} \sum\limits_{i = 0}^{m} \large\left(\small y^{(i)}\log\left(a^{[2] (i)}\right) + (1-y^{(i)})\log\left(1- a^{[2] (i)}\right)  \large  \right) \small \tag{6}<br />
+$$</p>
+<h2 id="3-">3 - 学习/优化 算法</h2>
+<h3 id="31-forward-and-backward-propagation_1">3.1 Forward and Backward Propagation</h3>
+<p>反向传播，使用链式法则和微分进行求导得到。这里关于向量求导和标量相比，最难的部分是 shape 和 导数形式问题。求导规则和标量一样，但是需要注意点乘和转置，以及求和形式。 这里有一个Trick是根据 dW 的shape 和 dimension 来推断出导数公式。</p>
+<p><img src="/static/images/ML/DL/nn-basics/grad_summary.png" style="width:600px;height:300px;"></p>
+<p>举个列子, 以下是 sigmoid 作为输出层构成的二分类器的交叉熵损失函数的向量形式, 改公式是 (6) 的向量形式：<br />
+$$<br />
+L = -\frac{1}{m}{Y\log(A)+ (1-Y)\log(1-A)} \qquad (7)<br />
+$$</p>
+<p>$$<br />
+A<br />
+=<br />
+\begin{bmatrix}<br />
+   a_1 \\<br />
+   a_2 \\<br />
+   \vdots \\<br />
+   a_t \\<br />
+   \vdots \<br />
+   a_m<br />
+\end{bmatrix} \quad<br />
+Y<br />
+=<br />
+\begin{bmatrix}<br />
+   y_1 &amp; y_2 &amp; \cdots &amp; y_t &amp; \cdots y_m<br />
+\end{bmatrix}<br />
+$$<br />
+对 A 向量中的每个元素求导</p>
+<p>$$<br />
+d_a<br />
+=<br />
+\begin{bmatrix}<br />
+   d_{a_1} \\<br />
+   d_{a_2} \\<br />
+   \vdots \\<br />
+   d_{a_t} \\<br />
+   \vdots \\<br />
+   d_{a_m}<br />
+\end{bmatrix}<br />
+=<br />
+\begin{bmatrix}<br />
+   -\frac{1}{m}(\frac{y_1}{a_1}-\frac{1-y_1}{1-a_1}) \\<br />
+   -\frac{1}{m}(\frac{y_2}{a_2}-\frac{1-y_2}{1-a_2}) \\<br />
+   \vdots \\<br />
+   -\frac{1}{m}(\frac{y_t}{a_t}-\frac{1-y_t}{1-a_t}) \\<br />
+   \vdots \\<br />
+   -\frac{1}{m}(\frac{y_m}{a_m}-\frac{1-y_m}{1-a_m})<br />
+\end{bmatrix}<br />
+$$</p>
+<p>以上的标量形式累积成一个向量写法之后，就是以下公式：</p>
+<p>$$<br />
+\begin{align}<br />
+d_{a^{L}} &amp;= \frac{\partial L}{\partial A} &amp; \\<br />
+&amp;= -\frac{1}{m}(\frac{Y^T}{A}-\frac{1-Y^T}{1-A}) &amp; \\<br />
+&amp;= \frac{1}{m}{\frac{A-Y^T}{A*(1-A)}} \qquad (3)<br />
+\end{align}<br />
+$$</p>
+<p>其中的 $A * (1-A)$ 以及 $(A-Y^T) / A * (1-A)$ 中的 * /都是element-wise 的矩阵运算;</p>
+<p>$$<br />
+\begin{align}<br />
+d_{z^{L}} &amp;= \frac{\partial L}{\partial A}\frac{\partial A}{\partial Z} &amp; \\<br />
+&amp;= d_{a}A*(1-A) &amp; \\<br />
+&amp;= \frac{1}{m}(A-Y^T) \qquad (4)<br />
+\end{align}<br />
+$$</p>
+<p>消除后可以化简, 这里的 A 是最后一层的激活输出;</p>
+<p>$$<br />
+\begin{align}<br />
+d_{w^{L}} &amp;= \frac{\partial L}{\partial Z}\frac{\partial Z}{\partial W} &amp; \\<br />
+&amp;= d_{z^{L}}(A^{L-1})^T \qquad (5)<br />
+\end{align}<br />
+$$</p>
+<p>为了保持得到的导数矩阵的维度和$W$ 保持一致,我们必须对链式法则求导的结果运算进行转置和交换,来保证维度的一致性; 上式中 $\frac{\partial Z}{\partial W}$ 得到 $A^{L-1}$, $\frac{\partial L}{\partial Z}$ 得到 $d_z$, 由于 $d_w$ 的维度应该是 $(n_{L}, n_{L-1})$, 而 $d_z$ 的维度是 $(n_{L}, m)$, $A^{L-1}$ 的维度是 $(n_{L-1}, m)$, 因此我们推断出 $d_w = d_{z^{L}}(A^{L-1})^T$ 才合理。</p>
+<p>最后，偏移量的导数形式很奇怪，会多出一个求和。原因是 b（如果是scalar） 的系数可以看成是全一的矩阵[[1,1,1,...1]],其系数在累计 m 个例子的误差的时候，被求和了，因此会出现 求和公式。比如 $b^{L}$ 的系数shape 是 $(n_{L}, 1)$, 而在求Z的时候，b会被广播成 $(n_L, m)$, 然后计算损失的时候会在m维度上累加m次，因此出现了 累加 m次。如果无法理解，可以直接记住这个公式。反向传播都一样。</p>
+<p>$$<br />
+\begin{align}<br />
+d_{b^{L}} &amp;= \frac{\partial L}{\partial Z}\frac{\partial Z}{\partial b} &amp; \\<br />
+&amp;= \sum\limits_{i = 0}^{m}{d_{z^{L}}} \qquad (5)<br />
+\end{align}<br />
+$$</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">backward_propagation</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c"># First, retrieve W1 and W2 from the dictionary &quot;parameters&quot;.</span>
+    <span class="n">W1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W1&quot;</span><span class="p">]</span>
+    <span class="n">W2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W2&quot;</span><span class="p">]</span>
+
+    <span class="c"># Retrieve also A1 and A2 from dictionary &quot;cache&quot;.</span>
+    <span class="n">A1</span> <span class="o">=</span> <span class="n">cache</span><span class="p">[</span><span class="s">&quot;A1&quot;</span><span class="p">]</span>
+    <span class="n">A2</span> <span class="o">=</span> <span class="n">cache</span><span class="p">[</span><span class="s">&quot;A2&quot;</span><span class="p">]</span>
+
+    <span class="c"># Backward propagation: calculate dW1, db1, dW2, db2. </span>
+    <span class="n">dZ2</span><span class="o">=</span> <span class="n">A2</span> <span class="o">-</span> <span class="n">Y</span>
+    <span class="n">dW2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dZ2</span><span class="p">,</span> <span class="n">A1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">db2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dZ2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">dZ1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W2</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dZ2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">dW1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dZ1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">db1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dZ1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">grads</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;dW1&quot;</span><span class="p">:</span> <span class="n">dW1</span><span class="p">,</span>
+             <span class="s">&quot;db1&quot;</span><span class="p">:</span> <span class="n">db1</span><span class="p">,</span>
+             <span class="s">&quot;dW2&quot;</span><span class="p">:</span> <span class="n">dW2</span><span class="p">,</span>
+             <span class="s">&quot;db2&quot;</span><span class="p">:</span> <span class="n">db2</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">grads</span>
+</pre></div>
+
+
+<h3 id="32_1">3.2 参数更新公式</h3>
+<p>$\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } = \frac{1}{m}(a^{[2] (i)} - y^{(i)}) $</p>
+<p>$\frac{\partial \mathcal{J} }{ \partial W_2 } = \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } a^{[1] (i) T} $</p>
+<p>$\frac{\partial \mathcal{J} }{ \partial b_2 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)}}} $</p>
+<p>$\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} } =  W_2^T \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } * ( 1 - a^{[1] (i) 2})$</p>
+<p>$\frac{\partial \mathcal{J} }{ \partial W_1 } = \frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} }  X^T $</p>
+<p>$\frac{\partial \mathcal{J} }{ \partial b_1 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)}}} $</p>
+<ul>
+<li>符号 $*$ 表示 elementwise 乘积.</li>
+<li>偏导和微分等价:<ul>
+<li>$dW1 = \frac{\partial \mathcal{J} }{ \partial W_1 }$</li>
+<li>$db1 = \frac{\partial \mathcal{J} }{ \partial b_1 }$</li>
+<li>$dW2 = \frac{\partial \mathcal{J} }{ \partial W_2 }$</li>
+<li>$db2 = \frac{\partial \mathcal{J} }{ \partial b_2 }$</li>
+</ul>
+</li>
+</ul>
+<p>参数更新，mini-BGD<br />
+  - $W2 = W2 - \lambda * dW2$<br />
+  - $b2 = b2 - \lambda * db2$<br />
+  - $W1 = W1 - \lambda * dW1$<br />
+  - $b1 = b1 - \lambda * db1$</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">update_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">):</span>
+    <span class="c"># Retrieve each parameter from the dictionary &quot;parameters&quot;</span>
+    <span class="n">W1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W1&quot;</span><span class="p">]</span>
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;b1&quot;</span><span class="p">]</span>
+    <span class="n">W2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W2&quot;</span><span class="p">]</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;b2&quot;</span><span class="p">]</span>
+
+    <span class="c"># Retrieve each gradient from the dictionary &quot;grads&quot;</span>
+    <span class="n">dW1</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;dW1&quot;</span><span class="p">]</span>
+    <span class="n">db1</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;db1&quot;</span><span class="p">]</span>
+    <span class="n">dW2</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;dW2&quot;</span><span class="p">]</span>
+    <span class="n">db2</span> <span class="o">=</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;db2&quot;</span><span class="p">]</span>
+
+    <span class="c"># Update rule for each parameter</span>
+    <span class="n">W1</span> <span class="o">=</span> <span class="n">W1</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">dW1</span>
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">db1</span>
+    <span class="n">W2</span> <span class="o">=</span> <span class="n">W2</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">dW2</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">b2</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">db2</span>
+
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;W1&quot;</span><span class="p">:</span> <span class="n">W1</span><span class="p">,</span>
+                  <span class="s">&quot;b1&quot;</span><span class="p">:</span> <span class="n">b1</span><span class="p">,</span>
+                  <span class="s">&quot;W2&quot;</span><span class="p">:</span> <span class="n">W2</span><span class="p">,</span>
+                  <span class="s">&quot;b2&quot;</span><span class="p">:</span> <span class="n">b2</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">parameters</span>
+</pre></div>
+
+
+<h1 id="softmax">SoftMax 多分类</h1>
+<h2 id="1-softmax-activation">1- softmax activation</h2>
+<p>softmax函数是机器学习中多分类问题最常用的函数之一，他是一种概率估计，可以用概率来解释多分类的数值。对于神经网络中的最后一层输出层，激活函数可以采用softmax。</p>
+<p><img src="/static/images/ML/DL/nn-basics/softmax-layer-generic.png" style="width:600px;height:300px;"></p>
+<p>$$<br />
+a^{L}_{j} = \frac{e^{z^{L}_j}}{\sum_k e^{z^{L}_k}}<br />
+$$</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">exps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">exps</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">stable_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">exps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">exps</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="2-softmax-cross-entropy-loss">2 - softmax cross entropy loss</h2>
+<p>softmax 的损失函数采用交叉熵，信息论中也称之为KL散度。<br />
+$$<br />
+H(p,q) = - \sum_x p(x) \log q(x)<br />
+$$</p>
+<p>单个样例的损失<br />
+$$<br />
+L_i = -\sum_j y^{(i)}_j \log a^{(i)}_j \hspace{0.5in}<br />
+$$</p>
+<p>$$<br />
+L = \sum\limits_{i = 0}^{m} L_i<br />
+$$</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">cross_entropy</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Z is the output from fully connected layer (num_classes x num_examples)</span>
+<span class="sd">    y is labels (1 x num_examples)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">log_likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)])</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span>
+    <span class="k">return</span> <span class="n">loss</span>
+
+<span class="k">def</span> <span class="nf">cross_entropy_one_hot</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">Y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Z is the output from fully connected layer (num_classes x num_examples)</span>
+<span class="sd">    Y is labels (nums_classes x num_examples)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">log_likelihood</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">Y</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span>
+    <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+
+
+<h2 id="3-softmax-derivative">3 - softmax derivative</h2>
+<p>softmax 的求导过程:<br />
+<img src="/static/images/ML/DL/nn-basics/softmax-grad-1.jpeg" style="width:600px;height:300px;"><br />
+<caption><center> <strong> softmax 函数对 z 的导数推导 </strong></center></caption><br></p>
+<p>softmax cross entropy loss 对 z 的求导过程:<br />
+<img src="/static/images/ML/DL/nn-basics/softmax-grad-2.jpeg" style="width:600px;height:300px;"><br />
+<caption><center> <strong>softmax cross entropy loss 对 z 的求导过程 </strong></center></caption><br></p>
+<p>下面是softmax导数的矩阵形式:<br />
+<img src="/static/images/ML/DL/nn-basics/softmax-grad-3.jpeg" style="width:600px;height:300px;"><br />
+<caption><center> <strong>softmax cross-entropy loss derivative matrix </strong></center></caption><br></p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">delta_cross_entropy</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Z is the output from fully connected layer (num_classes x num_examples)</span>
+<span class="sd">    y is labels (1 x num_examples)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">grad</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">grad</span><span class="o">/</span><span class="n">m</span>
+    <span class="k">return</span> <span class="n">grad</span>
+
+<span class="k">def</span> <span class="nf">delta_cross_entropy_one_hot</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">Y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Z is the output from fully connected layer (num_classes x num_examples)</span>
+<span class="sd">    y is labels (num_classes x num_examples)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">grad</span> <span class="o">-=</span> <span class="n">Y</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">grad</span><span class="o">/</span><span class="n">m</span>
+    <span class="k">return</span> <span class="n">grad</span>
+</pre></div>
+
+
+<h3 id="_1">参考</h3>
+<ul>
+<li><a href="https://deepnotes.io/softmax-crossentropy">Classification and Loss Evaluation - Softmax and Cross Entropy Loss</a></li>
+<li><a href="http://cs231n.github.io/neural-networks-case-study/">neural-networks-case-study</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25723112">详解softmax函数以及相关求导过程</a></li>
+<li><a href="http://cs231n.stanford.edu/vecDerivs.pdf">Vector, Matrix, and Tensor Derivatives</a></li>
+</ul>
+<h1 id="deep-neural-net">深度神经网络(Deep Neural Net)</h1>
+<h2 id="initialization-parameters">initialization parameters</h2>
+<h3 id="11-l-layer-neural-network">1.1 - L-layer Neural Network</h3>
+<p>The initialization for a deeper L-layer neural network is more complicated because there are many more weight matrices and bias vectors. When completing the <code>initialize_parameters_deep</code>, you should make sure that your dimensions match between each layer. Recall that $n^{[l]}$ is the number of units in layer $l$. Thus for example if the size of our input $X$ is $(12288, 209)$ (with $m=209$ examples) then:</p>
+<table style="width:100%">
+
+    <tr>
+        <td>  </td> 
+        <td> **Shape of W** </td> 
+        <td> **Shape of b**  </td> 
+        <td> **Activation** </td>
+        <td> **Shape of Activation** </td> 
+    <tr>
+
+    <tr>
+        <td> **Layer 1** </td> 
+        <td> $(n^{[1]},12288)$ </td> 
+        <td> $(n^{[1]},1)$ </td> 
+        <td> $Z^{[1]} = W^{[1]}  X + b^{[1]} $ </td> 
+
+        <td> $(n^{[1]},209)$ </td> 
+    <tr>
+
+    <tr>
+        <td> **Layer 2** </td> 
+        <td> $(n^{[2]}, n^{[1]})$  </td> 
+        <td> $(n^{[2]},1)$ </td> 
+        <td>$Z^{[2]} = W^{[2]} A^{[1]} + b^{[2]}$ </td> 
+        <td> $(n^{[2]}, 209)$ </td> 
+    <tr>
+
+       <tr>
+        <td> $\vdots$ </td> 
+        <td> $\vdots$  </td> 
+        <td> $\vdots$  </td> 
+        <td> $\vdots$</td> 
+        <td> $\vdots$  </td> 
+    <tr>
+
+
+
+
+<tr>
+        <td> **Layer L-1** </td> 
+        <td> $(n^{[L-1]}, n^{[L-2]})$ </td> 
+        <td> $(n^{[L-1]}, 1)$  </td> 
+        <td>$Z^{[L-1]} =  W^{[L-1]} A^{[L-2]} + b^{[L-1]}$ </td> 
+        <td> $(n^{[L-1]}, 209)$ </td> 
+    <tr>
+
+
+
+   <tr>
+        <td> **Layer L** </td> 
+        <td> $(n^{[L]}, n^{[L-1]})$ </td> 
+        <td> $(n^{[L]}, 1)$ </td>
+        <td> $Z^{[L]} =  W^{[L]} A^{[L-1]} + b^{[L]}$</td>
+        <td> $(n^{[L]}, 209)$  </td> 
+    <tr>
+
+
+
+
+</table>
+
+<p>Remember that when we compute $W X + b$ in python, it carries out broadcasting. For example, if: </p>
+<p>$$ W = \begin{bmatrix}<br />
+    j  &amp; k  &amp; l\\<br />
+    m  &amp; n &amp; o \\<br />
+    p  &amp; q &amp; r <br />
+\end{bmatrix}\;\;\; X = \begin{bmatrix}<br />
+    a  &amp; b  &amp; c\\<br />
+    d  &amp; e &amp; f \\<br />
+    g  &amp; h &amp; i <br />
+\end{bmatrix} \;\;\; b =\begin{bmatrix}<br />
+    s  \\<br />
+    t  \\<br />
+    u<br />
+\end{bmatrix}\tag{2}$$</p>
+<p>Then $WX + b$ will be:</p>
+<p>$$ WX + b = \begin{bmatrix}<br />
+    (ja + kd + lg) + s  &amp; (jb + ke + lh) + s  &amp; (jc + kf + li)+ s\\<br />
+    (ma + nd + og) + t &amp; (mb + ne + oh) + t &amp; (mc + nf + oi) + t\\<br />
+    (pa + qd + rg) + u &amp; (pb + qe + rh) + u &amp; (pc + qf + ri)+ u<br />
+\end{bmatrix}\tag{3}  $$</p>
+<p><strong>Exercise</strong>: Implement initialization for an L-layer Neural Network. </p>
+<p><strong>Instructions</strong>:<br />
+- The model's structure is <em>[LINEAR -&gt; RELU] $ \times$ (L-1) -&gt; LINEAR -&gt; SIGMOID</em>. I.e., it has $L-1$ layers using a ReLU activation function followed by an output layer with a sigmoid activation function.<br />
+- Use random initialization for the weight matrices. Use <code>np.random.rand(shape) * 0.01</code>.<br />
+- Use zeros initialization for the biases. Use <code>np.zeros(shape)</code>.<br />
+- We will store $n^{[l]}$, the number of units in different layers, in a variable <code>layer_dims</code>. For example, the <code>layer_dims</code> for the "Planar Data classification model" from last week would have been [2,4,1]: There were two inputs, one hidden layer with 4 hidden units, and an output layer with 1 output unit. Thus means <code>W1</code>'s shape was (4,2), <code>b1</code> was (4,1), <code>W2</code> was (1,4) and <code>b2</code> was (1,1). Now you will generalize this to $L$ layers! <br />
+- Here is the implementation for $L=1$ (one layer neural network). It should inspire you to implement the general case (L-layer neural network).</p>
+<div class="hlcode"><pre>    <span class="k">if</span> <span class="n">L</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">L</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">layer_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layer_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.01</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;b&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">L</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">layer_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: initialize_parameters_deep</span>
+
+<span class="k">def</span> <span class="nf">initialize_parameters_deep</span><span class="p">(</span><span class="n">layer_dims</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">    layer_dims -- python array (list) containing the dimensions of each layer in our network</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    parameters -- python dictionary containing your parameters &quot;W1&quot;, &quot;b1&quot;, ..., &quot;WL&quot;, &quot;bL&quot;:</span>
+<span class="sd">                    Wl -- weight matrix of shape (layer_dims[l], layer_dims[l-1])</span>
+<span class="sd">                    bl -- bias vector of shape (layer_dims[l], 1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer_dims</span><span class="p">)</span>            <span class="c"># number of layers in the network</span>
+
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">L</span><span class="p">):</span>
+        <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&#39;W&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.01</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&#39;b&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c">### END CODE HERE ###</span>
+
+        <span class="k">assert</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;W&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;b&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">layer_dims</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+
+
+    <span class="k">return</span> <span class="n">parameters</span>
+</pre></div>
+
+
+<h2 id="4-forward-propagation-module">4 - Forward propagation module</h2>
+<h3 id="41-linear-forward">4.1 - Linear Forward</h3>
+<p>Now that you have initialized your parameters, you will do the forward propagation module. You will start by implementing some basic functions that you will use later when implementing the model. You will complete three functions in this order:</p>
+<ul>
+<li>LINEAR</li>
+<li>LINEAR -&gt; ACTIVATION where ACTIVATION will be either ReLU or Sigmoid. </li>
+<li>[LINEAR -&gt; RELU] $\times$ (L-1) -&gt; LINEAR -&gt; SIGMOID (whole model)</li>
+</ul>
+<p>The linear forward module (vectorized over all the examples) computes the following equations:</p>
+<p>$$Z^{[l]} = W^{[l]}A^{[l-1]} +b^{[l]}\tag{4}$$</p>
+<p>where $A^{[0]} = X$. </p>
+<p><strong>Exercise</strong>: Build the linear part of forward propagation.</p>
+<p><strong>Reminder</strong>:<br />
+The mathematical representation of this unit is $Z^{[l]} = W^{[l]}A^{[l-1]} +b^{[l]}$. You may also find <code>np.dot()</code> useful. If your dimensions don't match, printing <code>W.shape</code> may help.</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: linear_forward</span>
+
+<span class="k">def</span> <span class="nf">linear_forward</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the linear part of a layer&#39;s forward propagation.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    A -- activations from previous layer (or input data): (size of previous layer, number of examples)</span>
+<span class="sd">    W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)</span>
+<span class="sd">    b -- bias vector, numpy array of shape (size of the current layer, 1)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    Z -- the input of the activation function, also called pre-activation parameter </span>
+<span class="sd">    cache -- a python dictionary containing &quot;A&quot;, &quot;W&quot; and &quot;b&quot; ; stored for computing the backward pass efficiently</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">### START CODE HERE ### (≈ 1 line of code)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">A</span><span class="p">),</span> <span class="n">b</span><span class="p">)</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">assert</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Z</span><span class="p">,</span> <span class="n">cache</span>
+</pre></div>
+
+
+<h3 id="42-linear-activation-forward">4.2 - Linear-Activation Forward</h3>
+<p>In this notebook, you will use two activation functions:</p>
+<ul>
+<li><strong>Sigmoid</strong>: $\sigma(Z) = \sigma(W A + b) = \frac{1}{ 1 + e^{-(W A + b)}}$. We have provided you with the <code>sigmoid</code> function. This function returns <strong>two</strong> items: the activation value "<code>a</code>" and a "<code>cache</code>" that contains "<code>Z</code>" (it's what we will feed in to the corresponding backward function). To use it you could just call:</li>
+</ul>
+<div class="hlcode"><pre><span class="n">A</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li><strong>ReLU</strong>: The mathematical formula for ReLu is $A = RELU(Z) = max(0, Z)$. We have provided you with the <code>relu</code> function. This function returns <strong>two</strong> items: the activation value "<code>A</code>" and a "<code>cache</code>" that contains "<code>Z</code>" (it's what we will feed in to the corresponding backward function). To use it you could just call:</li>
+</ul>
+<div class="hlcode"><pre><span class="n">A</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: linear_activation_forward</span>
+
+<span class="k">def</span> <span class="nf">linear_activation_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">activation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the forward propagation for the LINEAR-&gt;ACTIVATION layer</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    A_prev -- activations from previous layer (or input data): (size of previous layer, number of examples)</span>
+<span class="sd">    W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)</span>
+<span class="sd">    b -- bias vector, numpy array of shape (size of the current layer, 1)</span>
+<span class="sd">    activation -- the activation to be used in this layer, stored as a text string: &quot;sigmoid&quot; or &quot;relu&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    A -- the output of the activation function, also called the post-activation value </span>
+<span class="sd">    cache -- a python dictionary containing &quot;linear_cache&quot; and &quot;activation_cache&quot;;</span>
+<span class="sd">             stored for computing the backward pass efficiently</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">activation</span> <span class="o">==</span> <span class="s">&quot;sigmoid&quot;</span><span class="p">:</span>
+        <span class="c"># Inputs: &quot;A_prev, W, b&quot;. Outputs: &quot;A, activation_cache&quot;.</span>
+        <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+        <span class="n">Z</span><span class="p">,</span> <span class="n">linear_cache</span> <span class="o">=</span> <span class="n">linear_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+        <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">elif</span> <span class="n">activation</span> <span class="o">==</span> <span class="s">&quot;relu&quot;</span><span class="p">:</span>
+        <span class="c"># Inputs: &quot;A_prev, W, b&quot;. Outputs: &quot;A, activation_cache&quot;.</span>
+        <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+        <span class="n">Z</span><span class="p">,</span> <span class="n">linear_cache</span> <span class="o">=</span> <span class="n">linear_forward</span><span class="p">(</span><span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+        <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">assert</span> <span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">linear_cache</span><span class="p">,</span> <span class="n">activation_cache</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">cache</span>
+</pre></div>
+
+
+<h3 id="d-l-layer-model">d) L-Layer Model</h3>
+<p>For even more convenience when implementing the $L$-layer Neural Net, you will need a function that replicates the previous one (<code>linear_activation_forward</code> with RELU) $L-1$ times, then follows that with one <code>linear_activation_forward</code> with SIGMOID.</p>
+<p><img src="/static/images/ML/DL/nn-basics/model_architecture_kiank.png" style="width:600px;height:300px;"><br />
+<caption><center> <strong>Figure 2</strong> : <em>[LINEAR -&gt; RELU] $\times$ (L-1) -&gt; LINEAR -&gt; SIGMOID</em> model</center></caption><br></p>
+<p><strong>Exercise</strong>: Implement the forward propagation of the above model.</p>
+<p><strong>Instruction</strong>: In the code below, the variable <code>AL</code> will denote $A^{[L]} = \sigma(Z^{[L]}) = \sigma(W^{[L]} A^{[L-1]} + b^{[L]})$. (This is sometimes also called <code>Yhat</code>, i.e., this is $\hat{Y}$.) </p>
+<p><strong>Tips</strong>:<br />
+- Use the functions you had previously written <br />
+- Use a for loop to replicate [LINEAR-&gt;RELU] (L-1) times<br />
+- Don't forget to keep track of the caches in the "caches" list. To add a new value <code>c</code> to a <code>list</code>, you can use <code>list.append(c)</code>.</p>
+<h2 id="5-cost-function">5 - Cost function</h2>
+<p>Now you will implement forward and backward propagation. You need to compute the cost, because you want to check if your model is actually learning.</p>
+<p><strong>Exercise</strong>: Compute the cross-entropy cost $J$, using the following formula: $$-\frac{1}{m} \sum\limits_{i = 1}^{m} (y^{(i)}\log\left(a^{[L] (i)}\right) + (1-y^{(i)})\log\left(1- a^{[L] (i)}\right)) \tag{7}$$</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: compute_cost</span>
+
+<span class="k">def</span> <span class="nf">compute_cost</span><span class="p">(</span><span class="n">AL</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the cost function defined by equation (7).</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    AL -- probability vector corresponding to your label predictions, shape (1, number of examples)</span>
+<span class="sd">    Y -- true &quot;label&quot; vector (for example: containing 0 if non-cat, 1 if cat), shape (1, number of examples)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    cost -- cross-entropy cost</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c"># Compute loss from aL and y.</span>
+    <span class="c">### START CODE HERE ### (≈ 1 lines of code)</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="o">-</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">m</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">AL</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">AL</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>      <span class="c"># To make sure your cost&#39;s shape is what we expect (e.g. this turns [[17]] into 17).</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">cost</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">cost</span>
+</pre></div>
+
+
+<h2 id="6-backward-propagation-module">6 - Backward propagation module</h2>
+<p>Just like with forward propagation, you will implement helper functions for backpropagation. Remember that back propagation is used to calculate the gradient of the loss function with respect to the parameters. </p>
+<p><strong>Reminder</strong>: <br />
+<img src="/static/images/ML/DL/nn-basics/backprop_kiank.png" style="width:650px;height:250px;"><br />
+<caption><center> <strong>Figure 3</strong> : Forward and Backward propagation for <em>LINEAR-&gt;RELU-&gt;LINEAR-&gt;SIGMOID</em> <br> <em>The purple blocks represent the forward propagation, and the red blocks represent the backward propagation.</em>  </center></caption></p>
+<!-- 
+For those of you who are expert in calculus (you don't need to be to do this assignment), the chain rule of calculus can be used to derive the derivative of the loss $\mathcal{L}$ with respect to $z^{[1]}$ in a 2-layer network as follows:
+
+$$\frac{d \mathcal{L}(a^{[2]},y)}{{dz^{[1]}}} = \frac{d\mathcal{L}(a^{[2]},y)}{{da^{[2]}}}\frac{{da^{[2]}}}{{dz^{[2]}}}\frac{{dz^{[2]}}}{{da^{[1]}}}\frac{{da^{[1]}}}{{dz^{[1]}}} \tag{8} $$
+
+In order to calculate the gradient $dW^{[1]} = \frac{\partial L}{\partial W^{[1]}}$, you use the previous chain rule and you do $dW^{[1]} = dz^{[1]} \times \frac{\partial z^{[1]} }{\partial W^{[1]}}$. During the backpropagation, at each step you multiply your current gradient by the gradient corresponding to the specific layer to get the gradient you wanted.
+
+Equivalently, in order to calculate the gradient $db^{[1]} = \frac{\partial L}{\partial b^{[1]}}$, you use the previous chain rule and you do $db^{[1]} = dz^{[1]} \times \frac{\partial z^{[1]} }{\partial b^{[1]}}$.
+
+This is why we talk about **backpropagation**.
+!-->
+
+<p>Now, similar to forward propagation, you are going to build the backward propagation in three steps:<br />
+- LINEAR backward<br />
+- LINEAR -&gt; ACTIVATION backward where ACTIVATION computes the derivative of either the ReLU or sigmoid activation<br />
+- [LINEAR -&gt; RELU] $\times$ (L-1) -&gt; LINEAR -&gt; SIGMOID backward (whole model)</p>
+<h3 id="61-linear-backward">6.1 - Linear backward</h3>
+<p>For layer $l$, the linear part is: $Z^{[l]} = W^{[l]} A^{[l-1]} + b^{[l]}$ (followed by an activation).</p>
+<p>Suppose you have already calculated the derivative $dZ^{[l]} = \frac{\partial \mathcal{L} }{\partial Z^{[l]}}$. You want to get $(dW^{[l]}, db^{[l]} dA^{[l-1]})$.</p>
+<p><img src="/static/images/ML/DL/nn-basics/linearback_kiank.png" style="width:250px;height:300px;"><br />
+<caption><center> <strong>Figure 4</strong> </center></caption></p>
+<p>The three outputs $(dW^{[l]}, db^{[l]}, dA^{[l]})$ are computed using the input $dZ^{[l]}$.Here are the formulas you need:<br />
+$$ dW^{[l]} = \frac{\partial \mathcal{L} }{\partial W^{[l]}} = \frac{1}{m} dZ^{[l]} A^{[l-1] T} \tag{8}$$<br />
+$$ db^{[l]} = \frac{\partial \mathcal{L} }{\partial b^{[l]}} = \frac{1}{m} \sum_{i = 1}^{m} dZ^{[l] (i)}\tag{9}$$<br />
+$$ dA^{[l-1]} = \frac{\partial \mathcal{L} }{\partial A^{[l-1]}} = W^{[l] T} dZ^{[l]} \tag{10}$$</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: linear_backward</span>
+
+<span class="k">def</span> <span class="nf">linear_backward</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the linear portion of backward propagation for a single layer (layer l)</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    dZ -- Gradient of the cost with respect to the linear output (of current layer l)</span>
+<span class="sd">    cache -- tuple of values (A_prev, W, b) coming from the forward propagation in the current layer</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    dA_prev -- Gradient of the cost with respect to the activation (of the previous layer l-1), same shape as A_prev</span>
+<span class="sd">    dW -- Gradient of the cost with respect to W (current layer l), same shape as W</span>
+<span class="sd">    db -- Gradient of the cost with respect to b (current layer l), same shape as b</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">A_prev</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cache</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c">### START CODE HERE ### (≈ 3 lines of code)</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">m</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">m</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">dA_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dZ</span><span class="p">)</span>
+    <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">assert</span> <span class="p">(</span><span class="n">dA_prev</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">A_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">dW</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dA_prev</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span>
+</pre></div>
+
+
+<h3 id="62-linear-activation-backward">6.2 - Linear-Activation backward</h3>
+<p>Next, you will create a function that merges the two helper functions: <strong><code>linear_backward</code></strong> and the backward step for the activation <strong><code>linear_activation_backward</code></strong>. </p>
+<p>To help you implement <code>linear_activation_backward</code>, we provided two backward functions:<br />
+- <strong><code>sigmoid_backward</code></strong>: Implements the backward propagation for SIGMOID unit. You can call it as follows:</p>
+<div class="hlcode"><pre><span class="n">dZ</span> <span class="o">=</span> <span class="n">sigmoid_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">activation_cache</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li><strong><code>relu_backward</code></strong>: Implements the backward propagation for RELU unit. You can call it as follows:</li>
+</ul>
+<div class="hlcode"><pre><span class="n">dZ</span> <span class="o">=</span> <span class="n">relu_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">activation_cache</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If $g(.)$ is the activation function, <br />
+<code>sigmoid_backward</code> and <code>relu_backward</code> compute $$dZ^{[l]} = dA^{[l]} * g'(Z^{[l]}) \tag{11}$$.  </p>
+<p><strong>Exercise</strong>: Implement the backpropagation for the <em>LINEAR-&gt;ACTIVATION</em> layer.</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: linear_activation_backward</span>
+
+<span class="k">def</span> <span class="nf">linear_activation_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">activation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implement the backward propagation for the LINEAR-&gt;ACTIVATION layer.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    dA -- post-activation gradient for current layer l </span>
+<span class="sd">    cache -- tuple of values (linear_cache, activation_cache) we store for computing backward propagation efficiently</span>
+<span class="sd">    activation -- the activation to be used in this layer, stored as a text string: &quot;sigmoid&quot; or &quot;relu&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    dA_prev -- Gradient of the cost with respect to the activation (of the previous layer l-1), same shape as A_prev</span>
+<span class="sd">    dW -- Gradient of the cost with respect to W (current layer l), same shape as W</span>
+<span class="sd">    db -- Gradient of the cost with respect to b (current layer l), same shape as b</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">linear_cache</span><span class="p">,</span> <span class="n">activation_cache</span> <span class="o">=</span> <span class="n">cache</span>
+
+    <span class="k">if</span> <span class="n">activation</span> <span class="o">==</span> <span class="s">&quot;relu&quot;</span><span class="p">:</span>
+        <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+        <span class="n">dZ</span> <span class="o">=</span> <span class="n">relu_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">activation_cache</span><span class="p">)</span>
+        <span class="n">dA_prev</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">linear_backward</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">linear_cache</span><span class="p">)</span>
+        <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">elif</span> <span class="n">activation</span> <span class="o">==</span> <span class="s">&quot;sigmoid&quot;</span><span class="p">:</span>
+        <span class="c">### START CODE HERE ### (≈ 2 lines of code)</span>
+        <span class="n">dZ</span> <span class="o">=</span> <span class="n">sigmoid_backward</span><span class="p">(</span><span class="n">dA</span><span class="p">,</span> <span class="n">activation_cache</span><span class="p">)</span>
+        <span class="n">dA_prev</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">linear_backward</span><span class="p">(</span><span class="n">dZ</span><span class="p">,</span> <span class="n">linear_cache</span><span class="p">)</span>
+        <span class="c">### END CODE HERE ###</span>
+
+    <span class="k">return</span> <span class="n">dA_prev</span><span class="p">,</span> <span class="n">dW</span><span class="p">,</span> <span class="n">db</span>
+</pre></div>
+
+
+<h3 id="63-l-model-backward">6.3 - L-Model Backward</h3>
+<p>Now you will implement the backward function for the whole network. Recall that when you implemented the <code>L_model_forward</code> function, at each iteration, you stored a cache which contains (X,W,b, and z). In the back propagation module, you will use those variables to compute the gradients. Therefore, in the <code>L_model_backward</code> function, you will iterate through all the hidden layers backward, starting from layer $L$. On each step, you will use the cached values for layer $l$ to backpropagate through layer $l$. Figure 5 below shows the backward pass. </p>
+<p><img src="/static/images/ML/DL/nn-basics/mn_backward.png" style="width:450px;height:300px;"><br />
+<caption><center>  <strong>Figure 5</strong> : Backward pass  </center></caption></p>
+<p><strong> Initializing backpropagation</strong>:<br />
+To backpropagate through this network, we know that the output is, <br />
+$A^{[L]} = \sigma(Z^{[L]})$. Your code thus needs to compute <code>dAL</code> $= \frac{\partial \mathcal{L}}{\partial A^{[L]}}$.<br />
+To do so, use this formula (derived using calculus which you don't need in-depth knowledge of):</p>
+<div class="hlcode"><pre><span class="n">dAL</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">AL</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Y</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">AL</span><span class="p">))</span> <span class="c"># derivative of cost with respect to AL</span>
+</pre></div>
+
+
+<p>You can then use this post-activation gradient <code>dAL</code> to keep going backward. As seen in Figure 5, you can now feed in <code>dAL</code> into the LINEAR-&gt;SIGMOID backward function you implemented (which will use the cached values stored by the L_model_forward function). After that, you will have to use a <code>for</code> loop to iterate through all the other layers using the LINEAR-&gt;RELU backward function. You should store each dA, dW, and db in the grads dictionary. To do so, use this formula : </p>
+<p>$$grads["dW" + str(l)] = dW^{[l]}\tag{15} $$</p>
+<p>For example, for $l=3$ this would store $dW^{[l]}$ in <code>grads["dW3"]</code>.</p>
+<p><strong>Exercise</strong>: Implement backpropagation for the <em>[LINEAR-&gt;RELU] $\times$ (L-1) -&gt; LINEAR -&gt; SIGMOID</em> model.</p>
+<h3 id="64-update-parameters">6.4 - Update Parameters</h3>
+<p>In this section you will update the parameters of the model, using gradient descent: </p>
+<p>$$ W^{[l]} = W^{[l]} - \alpha \text{ } dW^{[l]} \tag{16}$$<br />
+$$ b^{[l]} = b^{[l]} - \alpha \text{ } db^{[l]} \tag{17}$$</p>
+<p>where $\alpha$ is the learning rate. After computing the updated parameters, store them in the parameters dictionary.</p>
+<p><strong>Exercise</strong>: Implement <code>update_parameters()</code> to update your parameters using gradient descent.</p>
+<p><strong>Instructions</strong>:<br />
+Update parameters using gradient descent on every $W^{[l]}$ and $b^{[l]}$ for $l = 1, 2, ..., L$.</p>
+<div class="hlcode"><pre><span class="c"># GRADED FUNCTION: update_parameters</span>
+
+<span class="k">def</span> <span class="nf">update_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update parameters using gradient descent</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    parameters -- python dictionary containing your parameters </span>
+<span class="sd">    grads -- python dictionary containing your gradients, output of L_model_backward</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    parameters -- python dictionary containing your updated parameters </span>
+<span class="sd">                  parameters[&quot;W&quot; + str(l)] = ... </span>
+<span class="sd">                  parameters[&quot;b&quot; + str(l)] = ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="c"># number of layers in the neural network</span>
+
+    <span class="c"># Update rule for each parameter. Use a for loop.</span>
+    <span class="c">### START CODE HERE ### (≈ 3 lines of code)</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">L</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;W&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;dW&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;b&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;b&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grads</span><span class="p">[</span><span class="s">&quot;db&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span>
+    <span class="c">### END CODE HERE ###</span>
+    <span class="k">return</span> <span class="n">parameters</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-02-07 21:59 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'neural-networks-basics',
+  title: 'neural-networks-basics',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
