@@ -162,3 +162,16 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。
 
 另外， tmux new -s session\_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session\_name 恢复某个会话。
+
+
+## MAC 安装 lightgbm 出现问题
+可能是mac gcc 的原因，最好在编译的时候指定编译器, `-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/g++-8`
+
+```sh
+brew install cmake  
+brew install gcc --without-multilib  
+git clone --recursive https://github.com/Microsoft/LightGBM ; cd LightGBM  
+mkdir build ; cd build  
+cmake -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/g++-8 ..
+make -j  
+```
