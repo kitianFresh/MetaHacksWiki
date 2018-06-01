@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>false-sharing - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#java">java</a>&nbsp;»&nbsp;false-sharing</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">false-sharing</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#false-sharing-memory-visibility">伪共享和内存可见性(False Sharing 和 Memory Visibility)</a><ul>
+<li><a href="#_1">伪共享</a></li>
+</ul>
+</li>
+<li><a href="#cpu-volatile">多核CPU Volatile解决数据可见性 和 分布式数据一致性</a></li>
+</ul>
+</div>
+<h1 id="false-sharing-memory-visibility">伪共享和内存可见性(False Sharing 和 Memory Visibility)</h1>
+<h2 id="_1">伪共享</h2>
+<p>现在CPU的多核和多级缓存cache的特性，缓存系统往往是一行(cache line) 为基本单位（而不是单个字节或者变量）进行缓存的，当多线程修改相互独立的变量时，如果变量共享了同一个缓存行，就会无意的影响彼此的性能。</p>
+<p>现代CPU为了cache数据的一致性，通过MESI协议来协调CPU核心的数据同步。<br />
+<div align="center"><img src="/static/images/Java/cache-false-sharing.png" style="width:700px;height:500px;"><br />
+<caption><center> False Sharing </center></caption></div></p>
+<p>数据X、Y、Z被加载到同一Cache Line中，线程A在Core1修改X，线程B在Core2上修改Y。根据MESI，假设是Core1是第一个发起操作的CPU核，Core1上的L1 Cache Line由S（共享）状态变成M（修改，脏数据）状态，然后告知其他的CPU核，图例则是Core2，引用同一地址的Cache Line已经无效了；当Core2发起写操作时，首先导致Core1将X写回主存，Cache Line状态由M变为I（无效），而后才是Core2从主存重新读取该地址内容，Cache Line状态由I变成E（独占），最后进行修改Y操作， Cache Line从E变成M。</p>
+<p>可见多个线程操作在同一Cache Line上的不同数据，相互竞争同一Cache Line，导致线程彼此牵制影响，变成了串行程序，降低了并发性。</p>
+<p>Cache Line 现在X86-64 一般是64个字节一行。我们可以对变量进行补齐操作，以此来避免伪共享。</p>
+<div class="hlcode"><pre>    <span class="k">static</span> <span class="n">class</span> <span class="n">BadPopularObject</span> <span class="p">{</span>
+        <span class="n">public</span> <span class="k">volatile</span> <span class="kt">long</span> <span class="n">usefulVal</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="k">static</span> <span class="n">class</span> <span class="n">GoodPopularObject</span> <span class="p">{</span>
+        <span class="n">public</span> <span class="k">volatile</span> <span class="kt">long</span> <span class="n">usefulVal</span><span class="p">;</span>
+        <span class="n">public</span> <span class="k">volatile</span> <span class="kt">long</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">,</span> <span class="n">t5</span><span class="p">,</span> <span class="n">t6</span><span class="p">,</span> <span class="n">t7</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>但是 Java 编译器优化的时候，会删除无效变量（就是那些只声明但是没有使用过的变量）。为了防止删除，我们可以在代码中多加一些函数，使用这些填充变量。</p>
+<div class="hlcode"><pre>    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">GoodPopularObject</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">usefulVal</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">t1</span><span class="o">,</span> <span class="n">t2</span><span class="o">,</span> <span class="n">t3</span><span class="o">,</span> <span class="n">t4</span><span class="o">,</span> <span class="n">t5</span><span class="o">,</span> <span class="n">t6</span><span class="o">,</span> <span class="n">t7</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="kt">long</span> <span class="nf">preventOptimization</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">t1</span> <span class="o">+</span> <span class="n">t2</span> <span class="o">+</span> <span class="n">t3</span> <span class="o">+</span> <span class="n">t4</span> <span class="o">+</span> <span class="n">t5</span> <span class="o">+</span> <span class="n">t6</span> <span class="o">+</span> <span class="n">t7</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></div>
+
+
+<p>上述的解决方法非常naive, 非常不方便。于是 Java 8 在 <a href="http://openjdk.java.net/jeps/142">JEP 142: Reduce Cache Contention on Specified Fields</a>引入了一种注解 <code>@Contended</code> 来防止伪共享。这个注解其实也是填充需要防止伪共享的变量。JVM会分配 128 bytes 即两个cache line而不是一个，原因是 CPU 体系结构中的指令数据预取操作(<a href="https://en.wikipedia.org/wiki/Cache_prefetching">instruction prefetcher</a>)。</p>
+<div class="hlcode"><pre>    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">SomePopularObject</span> <span class="o">{</span>
+        <span class="nd">@sun.misc.Contended</span>
+        <span class="kd">public</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">usefulVal</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">anotherVal</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></div>
+
+
+<p>下面测试一下伪共享的在多线程中的性能损失。</p>
+<div class="hlcode"><pre><span class="kd">static</span> <span class="kd">class</span> <span class="nc">PaddingAtomicLong</span> <span class="kd">extends</span> <span class="n">AtomicLong</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">t1</span><span class="o">,</span> <span class="n">t2</span><span class="o">,</span> <span class="n">t3</span><span class="o">,</span> <span class="n">t4</span><span class="o">,</span> <span class="n">t5</span><span class="o">,</span> <span class="n">t6</span><span class="o">,</span> <span class="n">t7</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="kt">long</span> <span class="nf">preventOptimization</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">t1</span> <span class="o">+</span> <span class="n">t2</span> <span class="o">+</span> <span class="n">t3</span> <span class="o">+</span> <span class="n">t4</span> <span class="o">+</span> <span class="n">t5</span> <span class="o">+</span> <span class="n">t6</span> <span class="o">+</span> <span class="n">t7</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">FSTest</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">NUM_THREADS</span> <span class="o">=</span> <span class="mi">4</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="kt">long</span> <span class="n">ITERATIONS</span> <span class="o">=</span> <span class="mi">100L</span> <span class="o">*</span> <span class="mi">1000L</span> <span class="o">*</span> <span class="mi">1000L</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="n">AtomicLong</span><span class="o">[]</span> <span class="n">longs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicLong</span><span class="o">[</span><span class="n">NUM_THREADS</span><span class="o">];</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">index</span><span class="o">;</span>
+        <span class="kd">static</span> <span class="o">{</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NUM_THREADS</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="n">longs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicLong</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="nf">FSTest</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">index</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kt">long</span> <span class="n">i</span> <span class="o">=</span> <span class="n">ITERATIONS</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">i</span><span class="o">--</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">longs</span><span class="o">[</span><span class="n">index</span><span class="o">].</span><span class="na">set</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">runTest</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">Thread</span><span class="o">[]</span> <span class="n">ts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">[</span><span class="n">FSTest</span><span class="o">.</span><span class="na">NUM_THREADS</span><span class="o">];</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">FSTest</span><span class="o">.</span><span class="na">NUM_THREADS</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="n">FSTest</span> <span class="n">fs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FSTest</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="n">fs</span><span class="o">);</span>
+                <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">start</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="k">for</span> <span class="o">(</span><span class="n">Thread</span> <span class="n">t</span> <span class="o">:</span> <span class="n">ts</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">t</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">// TODO Auto-generated catch block</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">NFSTest</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">NUM_THREADS</span> <span class="o">=</span> <span class="mi">4</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="kt">long</span> <span class="n">ITERATIONS</span> <span class="o">=</span> <span class="mi">100L</span> <span class="o">*</span> <span class="mi">1000L</span> <span class="o">*</span> <span class="mi">1000L</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="n">PaddingAtomicLong</span><span class="o">[]</span> <span class="n">longs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PaddingAtomicLong</span><span class="o">[</span><span class="n">NUM_THREADS</span><span class="o">];</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">index</span><span class="o">;</span>
+        <span class="kd">static</span> <span class="o">{</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NUM_THREADS</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="n">longs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PaddingAtomicLong</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="nf">NFSTest</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">index</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kt">long</span> <span class="n">i</span> <span class="o">=</span> <span class="n">ITERATIONS</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">i</span><span class="o">--</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">longs</span><span class="o">[</span><span class="n">index</span><span class="o">].</span><span class="na">set</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">runTest</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">Thread</span><span class="o">[]</span> <span class="n">ts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">[</span><span class="n">NFSTest</span><span class="o">.</span><span class="na">NUM_THREADS</span><span class="o">];</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NFSTest</span><span class="o">.</span><span class="na">NUM_THREADS</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="n">NFSTest</span> <span class="n">nfs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NFSTest</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="n">nfs</span><span class="o">);</span>
+                <span class="n">ts</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">start</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="k">for</span> <span class="o">(</span><span class="n">Thread</span> <span class="n">t</span> <span class="o">:</span> <span class="n">ts</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">t</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">// TODO Auto-generated catch block</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">start</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">();</span>
+        <span class="n">FSTest</span><span class="o">.</span><span class="na">runTest</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">()</span> <span class="o">-</span> <span class="n">start</span><span class="o">);</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">();</span>
+        <span class="n">NFSTest</span><span class="o">.</span><span class="na">runTest</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">()</span> <span class="o">-</span> <span class="n">start</span><span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="err">\\</span><span class="mi">8287659690</span>
+<span class="err">\\</span><span class="mi">939645571</span>
+</pre></div>
+
+
+<p>基本上伪共享会损失是10倍的性能。</p>
+<ul>
+<li><a href="http://openjdk.java.net/projects/code-tools/jol/">Code Tools: jol</a></li>
+<li><a href="https://software.intel.com/en-us/articles/avoiding-and-identifying-false-sharing-among-threads/">Avoiding and Identifying False Sharing Among Threads</a></li>
+<li><a href="https://www.cnblogs.com/cyfonly/p/5800758.html">伪共享（false sharing），并发编程无声的性能杀手</a></li>
+</ul>
+<h1 id="cpu-volatile">多核CPU Volatile解决数据可见性 和 分布式数据一致性</h1>
+<p>最近突然发现，体系结构中 CPU 缓存数据可见性　和　分布式系统中数据一致性有相似之处，遂记录之。在分布式系统中，我们希望多个客户端访问数据的时候，看到的数据是一致的，比如　Zookeeper 中的数据，需要在多台机器同步，但是客户端看到的就是一份而已，当某个客户端对该数据做出修改，另外客户端是立即可见的(Zookeeper 采用的是强一致性)。</p>
+<p>这就好比多线程共享同一份内存数据，线程看到的就是同一份而已，但其实多核都有缓存副本数据。多核CPU中，多线程在自己的　cache 中修改了数据，其他线程是无法立即看到的，Java 中为了保证数据的更改立即可见，就引入　<code>volatile</code> 关键字，就是数据的读取和写入不经过缓存，直接从主存进行读写。</p>
+<p>由于 Zookeeper 需要保证数据在多个机器上一致，因此对于一个写请求，必须要把数据同步完成才可以返回，继而继续处理后续的请求。我们知道，Zookeeper 客户端取数据是可以连接到任意一个客户端进行的，但是如何才能保证读和写的原子互斥呢? 即当一个写请求发给一台机器，而一个读请求会发给另一台机器，这个时候，显然读写是会相互扰乱的，可能写还没完，读就开始了。</p>
+<p>Zookeeper 是如何做到在一个写请求执行完成之后，读请求才开始的呢？　其实方法很简单，我们必须要让后续的读者或者写者知道，现在还有人在写呢？　因此需要一个统一的仲裁机构，这个机构就是我们所谓的　leader。　其实　Zookeeper 把所有的请求都先转发给　leader 了，　有了统一的仲裁机构，我们就可以知道读写的先后，比如时间或者编号等，然后保证读写的原子执行。</p>
+<p>在保证了读写的原子执行以后，我们就来讨论　写　到什么时候才可以　读　的问题。</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-05-30 16:02 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'false-sharing',
+  title: 'false-sharing',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
