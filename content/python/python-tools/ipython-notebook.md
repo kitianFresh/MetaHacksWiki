@@ -21,3 +21,6 @@ python2 -m ipykernel install # register Python 2 kernel
 
 
  - [27 个Jupyter Notebook的小提示与技巧](http://liuchengxu.org/pelican-blog/jupyter-notebook-tips.html)
+
+# 在 jupyter 中使用模块导入
+- [Importing Jupyter Notebooks as Modules](http://jupyter-notebook.readthedocs.io/en/latest/examples/Notebook/Importing%20Notebooks.html)
