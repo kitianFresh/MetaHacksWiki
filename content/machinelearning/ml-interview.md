@@ -238,3 +238,8 @@ KD 树通过对样本维度进行空间划分，构成一个平衡二叉树，�
  - [k-means聚类算法原理及其实现](http://shiyanjun.cn/archives/1375.html)
 
 
+# 贝叶斯先验概率后验概率条件概率似然函数
+后验概率 = 先验概率 x 似然函数
+ - [详解最大似然估计（MLE）、最大后验概率估计（MAP），以及贝叶斯公式的理解](https://blog.csdn.net/u011508640/article/details/72815981)
+ - [先验分布、后验分布、似然估计这几个概念是什么意思，它们之间的关系是什么？](https://www.zhihu.com/question/24261751)
+ - [贝叶斯平滑](http://d0evi1.com/ctr-smooth/)

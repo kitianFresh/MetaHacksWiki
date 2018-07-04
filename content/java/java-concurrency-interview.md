@@ -1195,6 +1195,19 @@ public class Lock{
 其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 `while() wait; notify;`,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！
 [Locks in Java](http://tutorials.jenkov.com/java-concurrency/locks.html)
 
+### synchronized 和 并发包中的Lock区别（使用场景）
+ReentrantLock的优势
+
+ 1. 能够中断获取锁过程 
+ 2. 在等待锁时可以指定超时时间 
+ 3. 能够创建公平锁 
+ 4. 获取所有等待锁的线程 
+ 5. 可以灵活的尝试获取锁而不锁定线程
+
+ReentrantLock的劣势
+ 
+ - ReentrantLock的主要缺点是使用ReentrantLock时必须将ReentrantLock中的方法放到try-finally结构中，这就造成了代码不易读并且隐藏了业务逻辑。
+
 ### Consumer & Producer 的两种实现方式
 #### 基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。
 ```java

@@ -156,7 +156,7 @@ find . -type f -print -delete
 ls -1 汇报内存不足如果目录下有上百万个小文件
 ls -1 | wc -l && time find . -type f -delete
 
-
+ - [目录中文件过多导致ls命令卡住-利用空设备重定向和strace监控ls](https://www.jianshu.com/p/353a5dbcd423)
 
 # check dev file system
 1. `lsblk -f` 可以看到所有附着设备的文件系统类型，如果有的话；无论是否mount
@@ -189,3 +189,20 @@ cat checksums.txt | md5
  - [How to increase swap space?](https://askubuntu.com/questions/178712/how-to-increase-swap-space/389067#389067)
 
  - [ How To Add Swap Space on Ubuntu 16.04](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-16-04)
+
+# Linux 磁盘性能测试benchmark
+## dd
+
+1. write test; `sync; dd if=/dev/zero of=tempfile bs=1M count=1024; sync`
+
+2. clear memory cache for tempfile; `sudo /sbin/sysctl -w vm.drop_caches=3`
+
+3. read test; `dd if=tempfile of=/dev/null bs=1M count=1024`
+
+## hdparm
+sudo hdparm -Tt /dev/sdb1
+
+## iotop
+
+
+ - [Disk Speed Test (Read/Write): HDD, SSD Performance in Linux](https://www.shellhacks.com/disk-speed-test-read-write-hdd-ssd-perfomance-linux/)
