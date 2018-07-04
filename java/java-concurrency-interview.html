@@ -160,6 +160,7 @@
 </li>
 <li><a href="#_4">补充知识资深话题</a></li>
 <li><a href="#locks">Locks</a><ul>
+<li><a href="#synchronized-lock">synchronized 和 并发包中的Lock区别（使用场景）</a></li>
 <li><a href="#consumer-producer">Consumer &amp; Producer 的两种实现方式</a><ul>
 <li><a href="#waitnotify-synchronized">基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。</a></li>
 <li><a href="#condition-reentrantlock">基于 Condition 和 ReentrantLock 的实现</a></li>
@@ -1323,6 +1324,19 @@ synchronized 是JVM 内置的,采用对象监控器的一种锁实现机制, 你
 </blockquote>
 <p>其实这个自旋锁如果你仔细观察的话，这不就是生产消费者模型里面的 <code>while() wait; notify;</code>,只是这里判断条件是单个bool变量，生产消费者模型中使用的是判断循环队列是空还是满．两者及其相似！<br />
 <a href="http://tutorials.jenkov.com/java-concurrency/locks.html">Locks in Java</a></p>
+<h3 id="synchronized-lock">synchronized 和 并发包中的Lock区别（使用场景）</h3>
+<p>ReentrantLock的优势</p>
+<ol>
+<li>能够中断获取锁过程 </li>
+<li>在等待锁时可以指定超时时间 </li>
+<li>能够创建公平锁 </li>
+<li>获取所有等待锁的线程 </li>
+<li>可以灵活的尝试获取锁而不锁定线程</li>
+</ol>
+<p>ReentrantLock的劣势</p>
+<ul>
+<li>ReentrantLock的主要缺点是使用ReentrantLock时必须将ReentrantLock中的方法放到try-finally结构中，这就造成了代码不易读并且隐藏了业务逻辑。</li>
+</ul>
 <h3 id="consumer-producer">Consumer &amp; Producer 的两种实现方式</h3>
 <h4 id="waitnotify-synchronized">基于 wait/notify 和 synchronized 原语的实现，这个是最基本的实现。</h4>
 <div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PCModel</span> <span class="o">{</span>
