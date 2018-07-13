@@ -81,6 +81,13 @@
 <li><a href="#iotop">iotop</a></li>
 </ul>
 </li>
+<li><a href="#nvidia-gpu">NVIDIA GPU</a><ul>
+<li><a href="#_4">卸载</a></li>
+<li><a href="#cuda-91">cuda 9.1</a></li>
+<li><a href="#catboost-cuda-91">catboost cuda-9.1</a></li>
+</ul>
+</li>
+<li><a href="#dockershadowsocks-vpn">自己搭建基于Docker的shadowsocks vpn</a></li>
 </ul>
 </div>
 <h1 id="linux">Linux 软件源更新</h1>
@@ -298,6 +305,54 @@ ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
 <ul>
 <li><a href="https://www.shellhacks.com/disk-speed-test-read-write-hdd-ssd-perfomance-linux/">Disk Speed Test (Read/Write): HDD, SSD Performance in Linux</a></li>
 </ul>
+<h1 id="nvidia-gpu">NVIDIA GPU</h1>
+<h2 id="_4">卸载</h2>
+<p><code>dpkg -l | grep cuda- | awk '{print $2}' | xargs -n1 sudo dpkg --purge</code></p>
+<h2 id="cuda-91">cuda 9.1</h2>
+<div class="hlcode"><pre><span class="c">#!/bin/bash</span>
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+sudo dpkg -i cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda-9.1
+<span class="c"># Enable persistence mode</span>
+nvidia-smi -pm 1
+</pre></div>
+
+
+<h2 id="catboost-cuda-91">catboost cuda-9.1</h2>
+<p>安装 python 2.7 版本的 catboost</p>
+<div class="hlcode"><pre>wget https://github.com/catboost/catboost/releases/download/v0.8.1/catboost-python-0.8.1-cuda-91.tar.gz
+tar -zvxf catboost-python-0.8.1-cuda-91.tar.gz
+<span class="nb">cd </span>linux-cuda9
+sudo pip install catboost-0.8.1-cp27-none-manylinux1_x86_64.whl
+</pre></div>
+
+
+<h1 id="dockershadowsocks-vpn">自己搭建基于Docker的shadowsocks vpn</h1>
+<ol>
+<li>在aws上申请一台免费的主机， 安装docker, ss等工具</li>
+</ol>
+<div class="hlcode"><pre>curl -sSL https://get.docker.com/ | sh
+git clone https://github.com/zhgqthomas/docker-shadowsocks.git
+<span class="nb">cd </span>docker-shadowsocks/
+sudo docker build -t shadowsocks .
+</pre></div>
+
+
+<ol>
+<li>
+<p>新建用户，新建docker 用户组，并添加当前用户到用户组<br />
+<code>sudo su; sudo adduser [your_user_name]; sudo groupadd docker;</code></p>
+</li>
+<li>
+<p>运行ss服务（记住必须开放端口安全组）<br />
+<code>sudo docker run --name ss -d -p 2018:2018 -p 2018:2018/udp shadowsocks -s 0.0.0.0 -p 2018 -k [your_ss-password] -m aes-256-cfb</code></p>
+</li>
+<li>
+<p>客户端（MAC版本）<br />
+https://github.com/shadowsocks/ShadowsocksX-NG</p>
+</li>
+</ol>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
