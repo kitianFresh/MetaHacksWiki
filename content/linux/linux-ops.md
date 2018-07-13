@@ -206,3 +206,47 @@ sudo hdparm -Tt /dev/sdb1
 
 
  - [Disk Speed Test (Read/Write): HDD, SSD Performance in Linux](https://www.shellhacks.com/disk-speed-test-read-write-hdd-ssd-perfomance-linux/)
+
+
+# NVIDIA GPU
+## 卸载
+`dpkg -l | grep cuda- | awk '{print $2}' | xargs -n1 sudo dpkg --purge`
+
+## cuda 9.1
+```bash
+#!/bin/bash
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+sudo dpkg -i cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda-9.1
+# Enable persistence mode
+nvidia-smi -pm 1
+```
+
+## catboost cuda-9.1
+安装 python 2.7 版本的 catboost
+```bash
+wget https://github.com/catboost/catboost/releases/download/v0.8.1/catboost-python-0.8.1-cuda-91.tar.gz
+tar -zvxf catboost-python-0.8.1-cuda-91.tar.gz
+cd linux-cuda9
+sudo pip install catboost-0.8.1-cp27-none-manylinux1_x86_64.whl
+```
+
+# 自己搭建基于Docker的shadowsocks vpn
+1. 在aws上申请一台免费的主机， 安装docker, ss等工具
+```bash
+curl -sSL https://get.docker.com/ | sh
+git clone https://github.com/zhgqthomas/docker-shadowsocks.git
+cd docker-shadowsocks/
+sudo docker build -t shadowsocks .
+```
+
+2. 新建用户，新建docker 用户组，并添加当前用户到用户组
+`sudo su; sudo adduser [your_user_name]; sudo groupadd docker;`
+
+3. 运行ss服务（记住必须开放端口安全组）
+`sudo docker run --name ss -d -p 2018:2018 -p 2018:2018/udp shadowsocks -s 0.0.0.0 -p 2018 -k [your_ss-password] -m aes-256-cfb`
+
+4. 客户端（MAC版本）
+https://github.com/shadowsocks/ShadowsocksX-NG
+
