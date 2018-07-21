@@ -141,21 +141,24 @@ extra xargs process).
 ```
 cut -d: -f1 < /etc/passwd | sort | xargs echo
 ```
-/bin/rm: Argument list too long.
-The problem is that when you type something like “rm -rf *”, the “*” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.
-To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:
-find . -type f -exec rm -v {} \;
-My problem is that I needed to delete 500,000 files and it was taking way too long.
-I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:
-find . -type f -delete
-Using this method, I was deleting files at a rate of about 2000 files/second – much faster!
-You can also show the filenames as you’re deleting them:
-find . -type f -print -delete
-…or even show how many files will be deleted, then time how long it takes to delete them:
+### `rm -rf \*` 删除上百万文件出错
+`/bin/rm: Argument list too long.` 错误的原因主要在于，使用正则符号匹配的所有文件名，会构成一个参数列表，存储参数的buffer申请的空间是有限的。
+>The problem is that when you type something like “rm -rf *”, the “*” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.
 
-ls -1 汇报内存不足如果目录下有上百万个小文件
-ls -1 | wc -l && time find . -type f -delete
+1. 方案一，通过 `exec` 删除，但是比较慢，这里是有多少个文件，调用多少次rm。
+`find . -type f -exec rm -v {} \;`
 
+2. 方案二，find命令自带的`delete`，速度中等。
+`find . -type f -delete`, or `find . -type f -print -delete` or ``ls -1 | wc -l && time find . -type f -delete`
+
+3. 方案三，rsync替换，速度很快， 主要是通过创建一个空的文件夹，然后通过同步数据块，覆盖掉原来文件夹内容以及文件inode.
+`rsync -a --delete blanktest/ test/`
+
+
+4. 方案四，perl删除, 速度最快
+`perl -e 'for(<*>){((stat)[9]<(unlink))`
+
+ - [Which is the fastest method to delete files in Linux](https://www.slashroot.in/which-is-the-fastest-method-to-delete-files-in-linux)
  - [目录中文件过多导致ls命令卡住-利用空设备重定向和strace监控ls](https://www.jianshu.com/p/353a5dbcd423)
 
 # check dev file system
