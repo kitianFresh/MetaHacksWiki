@@ -51,3 +51,22 @@ client端会对某个znode建立一个watcher事件，当该znode发生变化时
 
 
 # 分布式系统中数据一致性和多处理器cache一致性对比
+
+
+- [实例详解ZooKeeper ZAB协议、分布式锁与领导选举](http://dbaplus.cn/news-141-1875-1.html)
+- [ZooKeeper 技术内幕：Leader 选举](http://ningg.top/zookeeper-lesson-2-leader-election/)
+
+
+# Continuous base columns.
+    age = tf.contrib.layers.real_valued_column("age")
+    appearance = tf.contrib.layers.real_valued_column("appearance")
+    appearance_buckets = tf.contrib.layers.bucketized_column(appearance, boundaries=[60, 70, 80, 90])
+    age_buckets = tf.contrib.layers.bucketized_column(age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
+
+    real_valued_columns = []
+    features_to_train_sets = set(features_to_train)
+    for feat in float32_cols:
+        if feat in features_to_train_sets:
+            col = tf.contrib.layers.real_valued_column(feat)
+            real_valued_columns.append(col)
+    

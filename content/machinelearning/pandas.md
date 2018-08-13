@@ -139,3 +139,5 @@ print 'sum: ', s
 # final = pd.concat(keep) #concatenate the matching rows
 
 ```
+
+- [Summarising, Aggregating, and Grouping data in Python Pandas](https://www.shanelynn.ie/summarising-aggregation-and-grouping-data-in-python-pandas/)
