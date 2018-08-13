@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>probability - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#bigdata">bigdata</a>&nbsp;»&nbsp;probability</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">probability</div>
+<div id="content">
+  <h1 id="_1">蓄水池算法</h1>
+<blockquote>
+<p>在未知数据长度的情况下，从长度为n的数组中随机抽取k个数，但是n是未知的，不知道何时结束。</p>
+<p>特例就是在数据流中随机抽取一个数，使得抽取每个数的概率均等</p>
+</blockquote>
+<p>蓄水池算法：</p>
+<p>假设sample数组表示抽样结果，最开始流入k个元素一次放入sample[0,k-1]; 对于后面的元素，假设当前流入的是第 i 个元素(i &gt; k)，则以 $\frac{k}{i}$ 的概率留下该元素，即当产生[1,i] 的随机数小于等于 k 的时候，就替换掉随机数位置的元素。</p>
+<p>下面是Python代码：</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="k">def</span> <span class="nf">reservoir_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span>
+            <span class="n">sample</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># random.randint() 是闭区间！</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span> <span class="c"># pos &lt; k, replace elem with data[i], or not</span>
+                <span class="n">sample</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span>
+    <span class="k">return</span> <span class="n">sample</span>
+</pre></div>
+
+
+<p>测试用例：</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">collections</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">counter</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">reservoir_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+<span class="c">#     res = reservior_sampling(data, k)</span>
+<span class="c">#     res = reservoirSampling(data, k)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="n">t</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">sizes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+<span class="n">patches</span><span class="p">,</span> <span class="n">l_text</span><span class="p">,</span> <span class="n">p_text</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">pie</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                                       <span class="n">labeldistance</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">autopct</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%2.0f%%</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">startangle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">pctdistance</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;Reservoir sampling&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img src="/static/images/Bigdata/ReservoirSampleTest.png" style="width:500px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>ReservoirSample</strong> </u></font> </center></caption></p>
+<p>蓄水池算法证明:<br />
+要想理解这个问题，我们考虑最终被留在sample里的元素为什么或被留下，模拟这个过程就知道，即当他被加入的时候，后续步骤永远不会被替换掉。</p>
+<p>假设1~k 个元素中任意一个元素能够存在，说明后续流入过程中，该元素都没有被替换，比如第一个位置的元素，那么当第 k+1 个元素来的时候，取不属于第一个位置的k个元素（2~k+1）即可，概率为 $\frac{k}{k+1}$， 后续以此类推，那么通过条件概率计算：<br />
+$1 \cdot [\frac{k}{k+1}\cdot \frac{k+1}{k+2} \cdots \frac{k+n-k-1}{k+n-k}] = \frac{k}{n}$</p>
+<p>对于k+1~n 个元素中的任意一个元素，最终能够留下来的概率就是在流入的时候被选取留下，并且后续不再被替换，假设当前流入的是第 i (i &gt; k)个元素, 首先要留下该元素的概率是在k个已经留下的元素里面任选一个位置放入该元素，概率是 $\frac{k}{i}$, 要想最后数据流结束的时候这个元素还能被留下来，且概率为 $\frac{k}{n}$，第一种想法就是强行凑出这样一种公式，这是高中数学里面很常见的一个连乘分子分母相消例子。那么条件概率计算就是：<br />
+$\frac{k}{i} \cdot [\frac{i}{i+1} \cdot \frac{i+1}{i+2} \cdots \frac{n-1}{n}] = \frac{k}{n}$</p>
+<p>第二种想法就是，后续的数据流入过程中，每流入一个新元素，那么被留下表示事件$A$，被留下的意思是替换其他位置的元素或者不进行任何替换就表示事件，不被留下表示事件 $\bar{A}$, 即概率是 $p(\bar{A}) = \frac{1}{i+1}$, 那么$p(A)=\frac{i}{i+1}$. 以此类推。</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-08-13 17:10 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'probability',
+  title: 'probability',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2018 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
