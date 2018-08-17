@@ -5,16 +5,17 @@ date: 2018-08-13 17:10
 
 [TOC]
 
+
 # 蓄水池算法
 
 > 在未知数据长度的情况下，从长度为n的数组中随机抽取k个数，但是n是未知的，不知道何时结束。
 
 > 特例就是在数据流中随机抽取一个数，使得抽取每个数的概率均等
 
+## 均匀不带权取样：
 ### 场景
 无限数据流中随机取一条数据，使得取出每条数据的概率均等。比如实时文件流、监控实时数据。在监控实时数据里，可能一天产生5000w条数据，但是只想均匀取出1000w条存储。
 
-## 均匀不带权取样：
 
 假设sample数组表示抽样结果，最开始流入k个元素一次放入sample\[0,k-1\]; 对于后面的元素，假设当前流入的是第 i 个元素(i > k)，则以 $\frac{k}{i}$ 的概率留下该元素，即当产生\[1,i\] 的随机数小于等于 k 的时候，就替换掉随机数位置的元素。
 
@@ -97,13 +98,30 @@ $\frac{k}{i} \cdot [\frac{i}{i+1} \cdot \frac{i+1}{i+2} \cdots \frac{n-1}{n}] = 
 
 假设sample数组表示抽样结果，最开始流入k个元素一次放入sample\[0,k-1\]; 对于后面的元素，假设当前流入的是第 i 个元素(i > k)，则以 $\frac{sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot k$ 的概率留下该元素. 如果元素留下，替换谁呢？这里的Trick就是随机均匀的从sample从取一个替换掉，这是可以保证最后元素留下来的概率和权重成正比。
 
-对于取k=1 的情况，比较好理解，和均匀取样是一样的，选中以后就必须被替换，$\frac{sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(1-\frac{sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}}) \cdot (1-\frac{sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}}) \cdots (1- \frac{sequence[n].weight}{\sum_k^{n}{sequence[k].weight}})] = \frac{sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(\frac{\sum_k^{i}{sequence[k].weight}}{\sum_k^{i+1}{sequence[k].weight}}) \cdot \frac{\sum_k^{i+1}{sequence[k].weight}}{\sum_k^{i+2}{sequence[k].weight}} \cdots \frac{\sum_k^{n-1}{sequence[k].weight}}{\sum_k^{n}{sequence[k].weight}}] = \frac{sequence[i].weight}{\sum_k^{n}{sequence[k].weight}}$
+对于取k=1 的情况，比较好理解，和均匀取样是一样的，选中以后就必须被替换.
 
-对于取k > 1 的情况，实际上对于小数据集是不成立的，因为假设有两个数，我需要取两个数，那么两个数被取的概率就是1，并不和权重成正比，因此这里公式是一种大数据集合上的近似，对于后续流入的数据，就可以保证是按照权重取的。还是以某个正在流入的数据i来计算他最终被留下来的概率，当前它被留下的概率是 $P = \frac{k*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}}$, 他最终要想被留下来，那么后面的元素i+1 必定有两种情况，第一是元素 i+1 不被选中，概率 $P1 = 1-\frac{k*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}}$, 第二种情况是 i+1 也被选中，但是不替换第 i 个元素，则 $P2 = \frac{k*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} \frac{k-1}{k}$. 那么当第 i+1 个元素流入时，元素 i 被留下概率就是 $P(P1 + P2)$，以此类推，元素i在后续一直被留下来的概率是
 
 $$
-P(i) =\frac{k*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(1-\frac{k*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} + \frac{k*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} \frac{k-1}{k}) \cdot (1-\frac{k*sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}} + \frac{k*sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}} \frac{k-1}{k}) \cdots (1- \frac{k*sequence[n].weight}{\sum_k^{n}{sequence[k].weight}} + \frac{k*sequence[n].weight}{\sum_k^{n}{sequence[k].weight}} \frac{k-1}{k})] = \frac{k*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(\frac{\sum_k^{i}{sequence[k].weight}}{\sum_k^{i+1}{sequence[k].weight}}) \cdot \frac{\sum_k^{i+1}{sequence[k].weight}}{\sum_k^{i+2}{sequence[k].weight}} \cdots \frac{\sum_k^{n-1}{sequence[k].weight}}{\sum_k^{n}{sequence[k].weight}}]= \frac{k*sequence[i].weight}{\sum_k^{n}{sequence[k].weight}}$$
+p = \frac{sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(1-\frac{sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}}) \cdot (1-\frac{sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}}) \cdots (1- \frac{sequence[n].weight}{\sum_k^{n}{sequence[k].weight}})]
+= \frac{sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(\frac{\sum_k^{i}{sequence[k].weight}}{\sum_k^{i+1}{sequence[k].weight}}) \cdot \frac{\sum_k^{i+1}{sequence[k].weight}}{\sum_k^{i+2}{sequence[k].weight}} \cdots \frac{\sum_k^{n-1}{sequence[k].weight}}{\sum_k^{n}{sequence[k].weight}}]
+= \frac{sequence[i].weight}{\sum_k^{n}{sequence[k].weight}}
+$$
 
+<img src="/static/images/Bigdata/WeightedSample1.png" style="width:800px;height:300px;">
+<caption><center><u> <font color="purple"> **WeightedSample1** </u></font> </center></caption>
+
+对于取k > 1 的情况，实际上对于小数据集是不成立的，因为假设有两个数，我需要取两个数，那么两个数被取的概率就是1，并不和权重成正比，因此这里公式是一种大数据集合上的近似，对于后续流入的数据，就可以保证是按照权重取的。还是以某个正在流入的数据i来计算他最终被留下来的概率，当前它被留下的概率是 $P = \frac{k\*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}}$, 他最终要想被留下来，那么后面的元素i+1 必定有两种情况，第一是元素 i+1 不被选中，概率 $P1 = 1-\frac{k\*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}}$, 第二种情况是 i+1 也被选中，但是不替换第 i 个元素，则 $P2 = \frac{k\*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} \frac{k-1}{k}$. 那么当第 i+1 个元素流入时，元素 i 被留下概率就是 $P(P1 + P2)$，以此类推，元素i在后续一直被留下来的概率是
+
+$$
+P(i) = \frac{k\*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(1-\frac{k\*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} + \frac{k\*sequence[i+1].weight}{\sum_k^{i+1}{sequence[k].weight}} \frac{k-1}{k}) \cdot (1-\frac{k\*sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}} + \frac{k\*sequence[i+2].weight}{\sum_k^{i+2}{sequence[k].weight}} \frac{k-1}{k}) \cdots (1- \frac{k\*sequence[n].weight}{\sum_k^{n}{sequence[k].weight}} + \frac{k\*sequence[n].weight}{\sum_k^{n}{sequence[k].weight}} \frac{k-1}{k})]
+\\
+= \frac{k\*sequence[i].weight}{\sum_k^{i}{sequence[k].weight}} \cdot [(\frac{\sum_k^{i}{sequence[k].weight}}{\sum_k^{i+1}{sequence[k].weight}}) \cdot \frac{\sum_k^{i+1}{sequence[k].weight}}{\sum_k^{i+2}{sequence[k].weight}} \cdots \frac{\sum_k^{n-1}{sequence[k].weight}}{\sum_k^{n}{sequence[k].weight}}]
+\\
+= \frac{k\*sequence[i].weight}{\sum_k^{n}{sequence[k].weight}}
+$$
+
+<img src="/static/images/Bigdata/WeightedSamplek.png" style="width:800px;height:300px;">
+<caption><center><u> <font color="purple"> **WeightedSamplek** </u></font> </center></caption>
 
 代码如下：
 ```python
@@ -124,3 +142,27 @@ def weighted_reservior_sample(sequence, k):
             sample[random.randint(0, k-1)] = sequence[i]['value']
     return sample
 ```
+
+
+测试如下：
+```python
+import collections
+data = [1,2,3,4,5,6,7,8,9,10]
+seq = [{'weight': i * 1., 'value': i} for i in range(1, 10)]
+print(seq)
+k = 2
+n = 1000000
+counter = {}
+results = []
+for i in range(n):
+    res = weighted_reservior_sample(seq, k)
+#     res = reservoir_sample(data, k)
+#     res = reservior_sampling(data, k)
+#     res = reservoirSampling(data, k)
+    results.extend(res)
+t = collections.Counter(results)
+t
+```
+
+<img src="/static/images/Bigdata/WeightedReservoirSampleTest.png" style="width:500px;height:300px;">
+<caption><center><u> <font color="purple"> **WeightedReservoirSample** </u></font> </center></caption>
