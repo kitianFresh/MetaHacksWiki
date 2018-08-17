@@ -103,19 +103,7 @@
 <li><a href="http://dbaplus.cn/news-141-1875-1.html">实例详解ZooKeeper ZAB协议、分布式锁与领导选举</a></li>
 <li><a href="http://ningg.top/zookeeper-lesson-2-leader-election/">ZooKeeper 技术内幕：Leader 选举</a></li>
 </ul>
-<h1 id="continuous-base-columns">Continuous base columns.</h1>
-<div class="hlcode"><pre><span class="n">age</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">real_valued_column</span><span class="p">(</span><span class="s">&quot;age&quot;</span><span class="p">)</span>
-<span class="n">appearance</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">real_valued_column</span><span class="p">(</span><span class="s">&quot;appearance&quot;</span><span class="p">)</span>
-<span class="n">appearance_buckets</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">bucketized_column</span><span class="p">(</span><span class="n">appearance</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="p">[</span><span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
-<span class="n">age_buckets</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">bucketized_column</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">65</span><span class="p">])</span>
-
-<span class="n">real_valued_columns</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">features_to_train_sets</span> <span class="o">=</span> <span class="n">set</span><span class="p">(</span><span class="n">features_to_train</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">feat</span> <span class="n">in</span> <span class="n">float32_cols</span><span class="o">:</span>
-    <span class="k">if</span> <span class="n">feat</span> <span class="n">in</span> <span class="n">features_to_train_sets</span><span class="o">:</span>
-        <span class="n">col</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">real_valued_column</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
-        <span class="n">real_valued_columns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
-</pre></div>
+<p>Report-Google-Data-center-Scheduling</p>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
