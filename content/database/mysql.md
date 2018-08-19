@@ -443,7 +443,69 @@ select sum(isnull(item1,0)+isnull(item2,0)+isnull(item3,0))as itemSum  from usr_
  5. 尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可
 
 ## MySQL 事务和锁
+```sql
+drop table if exists `productsStock`;
+create table `productsStock` (
+    `id` int(11) not null auto_increment,
+    `name` varchar(255) default null,
+    `desc` text(1024) default null,
+    `stock` int(11) default null,
+    `version` int(64) default 0;
+    primary key (`id`),
+    unique key `idx_name` (`name`) using hash
+)
+```
+插入数据
+```sql
+INSERT INTO `productsStock` VALUES ('1', 'prod11', '', '1000');
+INSERT INTO `productsStock` VALUES ('2', 'prod12', '', '1000');
+INSERT INTO `productsStock` VALUES ('3', 'prod13', '', '1000');
+INSERT INTO `productsStock` VALUES ('4', 'prod14', '', '1000');
+INSERT INTO `productsStock` VALUES ('5', 'prod15', '', '1000');
+INSERT INTO `productsStock` VALUES ('6', 'prod16', '', '1000');
+INSERT INTO `productsStock` VALUES ('7', 'prod17', '', '1000');
+INSERT INTO `productsStock` VALUES ('8', 'prod18', '', '1000');
+INSERT INTO `productsStock` VALUES ('9', 'prod19', '', '1000');
+```
+### 乐观锁
+MYSQL乐观锁的实现和CAS是一样的原理，需要对每条记录增加version列进行控制，通过loop的方式进行重试，在查询和更新的时候获得的是同一个版本则更新成功，否则说明已经被其他实例修改，重试，伪代码如下：
+```java
+int affectedCount = 0;
+while (affectedCount == 0) {
+    // 乐观锁，尝试修改，不成功则自旋重试
+    Product product = execute("select * from productsStock where id=#{id}");
+    if (product.getStock>0) {
+        affectedCount = execute("update productsStock set stock=#{newStock}, version=#{product.version+1} where id=#{product.id} and version=#{product.version}");
+    } else {
+        return false;
+    }
+}
+return true;
+```
+乐观锁适用于写的比较少，读多的场景。
+### 悲观锁
+悲观锁和synchronized一样，首先进行枷锁，然后进行更改操作，MySQL innodb 引擎在使用索引查询的时候会自动加行锁，即锁住某行记录。不需要加一个version列就可以做。
+```java
+// 悲观锁，上来就先锁住
+Product product = execute("select * from productsStock where id=#{id} for update");
+if (product.getStock>0) {
+    execute("update productsStock set stock=#{newStock} where id=#{product.id}")
+} else {
+    return false;
+}
+```
+悲观锁适用于写的多频繁，读的少的场景。因为写的多场景下，采用CAS乐观锁大部分都是失败，导致自旋浪费CPU。不如直接采用悲观锁。
+
+1、如果对读的响应度要求非常高，比如证券交易系统，那么适合用乐观锁，因为悲观锁会阻塞读
+2、如果读远多于写，那么也适合用乐观锁，因为用悲观锁会导致大量读被少量的写阻塞
+3、如果写操作频繁并且冲突比例很高，那么适合用悲观写独占锁
+ 
+### 行锁、表锁
+不同的引擎和使用方式会导致MYSQL使用不同方式加锁，使用MYISAM引擎，都是表锁，而采用INNODB引擎，由于InnoDB 预设是Row-Level Lock，所以只有「明确」的指定主键，MySQL 才会执行Row lock (只锁住被选取的数据) ，否则MySQL 将会执行Table Lock (将整个数据表单给锁住)。
+
 - [MySQL中的锁（表锁、行锁）](http://www.cnblogs.com/chenqionghe/p/4845693.html)
+- [数据库：Mysql中“select ... for update”排他锁分析](https://blog.csdn.net/claram/article/details/54023216)
 - [how-to-do-distributed-locking](https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html)
 - [Questions about distributed locks](https://www.alibabacloud.com/forum/read-453)
 - [ a simple distributed lock service](http://www.scs.stanford.edu/14au-cs244b/labs/projects/pu_gao_qu.pdf)
+- [一种本地锁+分布式锁的实现](http://adamswanglin.com/wllock/)

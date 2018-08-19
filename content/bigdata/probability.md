@@ -166,3 +166,8 @@ t
 
 <img src="/static/images/Bigdata/WeightedReservoirSampleTest.png" style="width:500px;height:300px;">
 <caption><center><u> <font color="purple"> **WeightedReservoirSample** </u></font> </center></caption>
+
+
+# 参考
+ - [Reservoir sampling](https://en.wikipedia.org/wiki/Reservoir_sampling)
+ - [Weighted Random Sampling over Data Streams](https://arxiv.org/pdf/1012.0256.pdf)

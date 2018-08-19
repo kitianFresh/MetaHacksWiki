@@ -1633,6 +1633,61 @@ public class CASCounter {
 - [CountDownLatch](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html)
 - [CyclicBarrier](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CyclicBarrier.html)
 
+自制版CountDownLatch
+```java
+class CountDownLatch {
+	volatile int count;
+	public CountDownLatch(int cnt) {
+		count = cnt;
+	}
+	public synchronized void countDown() {
+		count --;
+		if (count == 0) notifyAll();
+	}
+	public synchronized void await() {
+		while (count != 0) {
+			wait();
+		}
+	}
+}
+```
+自制版CyclicBarrier
+```java
+class Generation {
+	boolean broken;
+}
+class CyclicBarrier {
+	int parties;
+	int count;
+	Runnable event;
+	Generation generation = new Generation();
+	public CyclicBarrier(int parties, Runnable event) {
+		this.parties = parties;
+		this.count = parties;
+		this.event = event;
+	}
+	public synchronized int await() {
+		Generation g = this.generation;
+		int index = --this.count;
+		if (index == 0) {
+			event.run();
+			//reset
+			this.count = this.parties;
+			this.generation = new Generation();
+			
+			notifyAll();
+			return index;
+		}
+		while(true) {
+			wait();
+			if (g != this.generation) {
+				return index;
+			}
+		}
+	}
+}
+```
+
 ### sun.misc.Unsafe
 - [Guide to sun.misc.Unsafe](http://www.baeldung.com/java-unsafe)
 - [Understanding sun.misc.Unsafe](https://dzone.com/articles/understanding-sunmiscunsafe)

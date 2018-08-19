@@ -55,5 +55,4 @@ client端会对某个znode建立一个watcher事件，当该znode发生变化时
 
 - [实例详解ZooKeeper ZAB协议、分布式锁与领导选举](http://dbaplus.cn/news-141-1875-1.html)
 - [ZooKeeper 技术内幕：Leader 选举](http://ningg.top/zookeeper-lesson-2-leader-election/)
-
-Report-Google-Data-center-Scheduling
+- [ZooKeeper part 2: building highly available applications, Ceilometer central agent unleashed](https://blogs.rdoproject.org/2015/08/zookeeper-part-2-building-highly-available-applications-ceilometer-central-agent-unleashed/)
