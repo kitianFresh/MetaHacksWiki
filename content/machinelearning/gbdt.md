@@ -10,7 +10,7 @@ date: 2018-06-01 15:59
 - [GBDT算法原理与系统设计简介](http://wepon.me/files/gbdt.pdf)
 - [CatBoost vs. Light GBM vs. XGBoost](https://towardsdatascience.com/catboost-vs-light-gbm-vs-xgboost-5f93620723db)
 - [【转】XGBoost参数调优完全指南（附Python代码）](https://zhuanlan.zhihu.com/p/29649128)
-
+- [机器学习算法总结--GBDT](https://blog.csdn.net/lc013/article/details/56667157)
 
 # CTR 大框架方法
 传统方法主要是线性模型如 LR,FM,FFM，提升树模型 gdbt, xgboost, lightGBM, 两种方法结合就是 facebook 的 GBDT + LR, 通过提升树自动做特征编码，然后再给LR模型。
@@ -22,6 +22,7 @@ date: 2018-06-01 15:59
  - [Tencen2017_Fianl_Coda_Allegro](https://github.com/BladeCoda/Tencent2017_Final_Coda_Allegro)
  - [GBDT原理及利用GBDT构造新的特征-Python实现](https://blog.csdn.net/shine19930820/article/details/71713680)
  - [Turing Test's 3rd Place Solution for Home Depot Product Search Relevance Competition on Kaggle ](https://github.com/ChenglongChen/Kaggle_HomeDepot)
+ - [Online Learning with Microsoft's AdPredictor algorithm](http://tullo.ch/articles/online-learning-with-adpredictor/)
  
 梯度下降学习率更新策略，本文介绍了常见的几种，并给出的试验数据
  - 在线学习中，LR对BOPR。BOPR效果稍微好于LR，但是LR更为简单，所以最后还是选择了LR
