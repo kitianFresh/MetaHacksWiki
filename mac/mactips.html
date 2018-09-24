@@ -75,6 +75,7 @@
 <li><a href="#iterm2">iTerm2</a></li>
 <li><a href="#screen">screen 使用简介</a></li>
 <li><a href="#tmux">配置 tmux</a></li>
+<li><a href="#mac-lightgbm">MAC 安装 lightgbm 出现问题</a></li>
 </ul>
 </li>
 </ul>
@@ -242,6 +243,15 @@ In order to connect to MySQL using command line client, do the following from OS
 <p>第二种就是 ssh 登陆到远程主机， 然后ssh 基本上很容易断开，一般使用 nohup &amp; 在后台运行命令， 但是如果使用 tmux， 就可以记录下来，关闭了也没关系，还可以再次恢复。</p>
 <p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
 <p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
+<h2 id="mac-lightgbm">MAC 安装 lightgbm 出现问题</h2>
+<p>可能是mac gcc 的原因，最好在编译的时候指定编译器, <code>-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/g++-8</code></p>
+<div class="hlcode"><pre>brew install cmake  
+brew install gcc --without-multilib  
+git clone --recursive https://github.com/Microsoft/LightGBM ; <span class="nb">cd </span>LightGBM  
+mkdir build ; <span class="nb">cd </span>build  
+cmake -DCMAKE_C_COMPILER<span class="o">=</span>/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER<span class="o">=</span>/usr/local/Cellar/gcc/8.1.0/bin/g++-8 ..
+make -j  
+</pre></div>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>

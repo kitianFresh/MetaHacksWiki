@@ -534,11 +534,74 @@ FROM &amp; JOIN -&gt; WHERE -&gt; GROUP BY -&gt; HAVING -&gt; SELECT -&gt; DISTI
 <li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
 </ol>
 <h2 id="mysql_8">MySQL 事务和锁</h2>
+<div class="hlcode"><pre><span class="k">drop</span> <span class="k">table</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="p">(</span>
+    <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">default</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="k">desc</span><span class="o">`</span> <span class="nb">text</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span> <span class="k">default</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">stock</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">default</span> <span class="k">null</span><span class="p">,</span>
+    <span class="o">`</span><span class="k">version</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span> <span class="k">default</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">primary</span> <span class="k">key</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">),</span>
+    <span class="k">unique</span> <span class="k">key</span> <span class="o">`</span><span class="n">idx_name</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="p">)</span> <span class="k">using</span> <span class="n">hash</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>插入数据</p>
+<div class="hlcode"><pre><span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;prod11&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;prod12&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;prod13&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;prod14&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;prod15&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;6&#39;</span><span class="p">,</span> <span class="s1">&#39;prod16&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;7&#39;</span><span class="p">,</span> <span class="s1">&#39;prod17&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;8&#39;</span><span class="p">,</span> <span class="s1">&#39;prod18&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="o">`</span><span class="n">productsStock</span><span class="o">`</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;9&#39;</span><span class="p">,</span> <span class="s1">&#39;prod19&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<h3 id="_3">乐观锁</h3>
+<p>MYSQL乐观锁的实现和CAS是一样的原理，需要对每条记录增加version列进行控制，通过loop的方式进行重试，在查询和更新的时候获得的是同一个版本则更新成功，否则说明已经被其他实例修改，重试，伪代码如下：</p>
+<div class="hlcode"><pre><span class="kt">int</span> <span class="n">affectedCount</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+<span class="k">while</span> <span class="o">(</span><span class="n">affectedCount</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// 乐观锁，尝试修改，不成功则自旋重试</span>
+    <span class="n">Product</span> <span class="n">product</span> <span class="o">=</span> <span class="n">execute</span><span class="o">(</span><span class="s">&quot;select * from productsStock where id=#{id}&quot;</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">product</span><span class="o">.</span><span class="na">getStock</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">affectedCount</span> <span class="o">=</span> <span class="n">execute</span><span class="o">(</span><span class="s">&quot;update productsStock set stock=#{newStock}, version=#{product.version+1} where id=#{product.id} and version=#{product.version}&quot;</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</pre></div>
+
+
+<p>乐观锁适用于写的比较少，读多的场景。</p>
+<h3 id="_4">悲观锁</h3>
+<p>悲观锁和synchronized一样，首先进行枷锁，然后进行更改操作，MySQL innodb 引擎在使用索引查询的时候会自动加行锁，即锁住某行记录。不需要加一个version列就可以做。</p>
+<div class="hlcode"><pre><span class="c1">// 悲观锁，上来就先锁住</span>
+<span class="n">Product</span> <span class="n">product</span> <span class="o">=</span> <span class="n">execute</span><span class="o">(</span><span class="s">&quot;select * from productsStock where id=#{id} for update&quot;</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">product</span><span class="o">.</span><span class="na">getStock</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">execute</span><span class="o">(</span><span class="s">&quot;update productsStock set stock=#{newStock} where id=#{product.id}&quot;</span><span class="o">)</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>悲观锁适用于写的多频繁，读的少的场景。因为写的多场景下，采用CAS乐观锁大部分都是失败，导致自旋浪费CPU。不如直接采用悲观锁。</p>
+<p>1、如果对读的响应度要求非常高，比如证券交易系统，那么适合用乐观锁，因为悲观锁会阻塞读<br />
+2、如果读远多于写，那么也适合用乐观锁，因为用悲观锁会导致大量读被少量的写阻塞<br />
+3、如果写操作频繁并且冲突比例很高，那么适合用悲观写独占锁</p>
+<h3 id="_5">行锁、表锁</h3>
+<p>不同的引擎和使用方式会导致MYSQL使用不同方式加锁，使用MYISAM引擎，都是表锁，而采用INNODB引擎，由于InnoDB 预设是Row-Level Lock，所以只有「明确」的指定主键，MySQL 才会执行Row lock (只锁住被选取的数据) ，否则MySQL 将会执行Table Lock (将整个数据表单给锁住)。</p>
 <ul>
 <li><a href="http://www.cnblogs.com/chenqionghe/p/4845693.html">MySQL中的锁（表锁、行锁）</a></li>
+<li><a href="https://blog.csdn.net/claram/article/details/54023216">数据库：Mysql中“select ... for update”排他锁分析</a></li>
 <li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">how-to-do-distributed-locking</a></li>
 <li><a href="https://www.alibabacloud.com/forum/read-453">Questions about distributed locks</a></li>
 <li><a href="http://www.scs.stanford.edu/14au-cs244b/labs/projects/pu_gao_qu.pdf"> a simple distributed lock service</a></li>
+<li><a href="http://adamswanglin.com/wllock/">一种本地锁+分布式锁的实现</a></li>
 </ul>
 </div>
 <div id="content-footer">

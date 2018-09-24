@@ -68,13 +68,29 @@
 <li><a href="#iterm2-tmux">配置 iTerm2 和 tmux</a><ul>
 <li><a href="#_1">局域网下互传大文件</a></li>
 <li><a href="#ifconfig-vs-ip">ifconfig VS ip</a></li>
-<li><a href="#_2">删除某个目录下的大量的文件</a></li>
+<li><a href="#_2">删除某个目录下的大量的文件</a><ul>
+<li><a href="#rm-rf">rm -rf \* 删除上百万文件出错</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#check-dev-file-system">check dev file system</a></li>
 <li><a href="#_3">检查占用空间大的文件</a></li>
 <li><a href="#md5">大文件分块计算md5 的命令</a></li>
 <li><a href="#linux_1">Linux分区和增大交换区</a></li>
+<li><a href="#linux-benchmark">Linux 磁盘性能测试benchmark</a><ul>
+<li><a href="#dd">dd</a></li>
+<li><a href="#hdparm">hdparm</a></li>
+<li><a href="#iotop">iotop</a></li>
+</ul>
+</li>
+<li><a href="#nvidia-gpu">NVIDIA GPU</a><ul>
+<li><a href="#_4">卸载</a></li>
+<li><a href="#cuda-91">cuda 9.1</a></li>
+<li><a href="#catboost-cuda-91">catboost cuda-9.1</a></li>
+</ul>
+</li>
+<li><a href="#dockershadowsocks-vpn">自己搭建基于Docker的shadowsocks vpn</a></li>
 </ul>
 </div>
 <h1 id="linux">Linux 软件源更新</h1>
@@ -221,19 +237,33 @@ extra xargs process).</p>
 </pre></div>
 
 
-<p>/bin/rm: Argument list too long.<br />
-The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.<br />
-To get around this problem, a lot of people will use the find command to find every file and pass them one-by-one to the “rm” command like this:<br />
-find . -type f -exec rm -v {} \;<br />
-My problem is that I needed to delete 500,000 files and it was taking way too long.<br />
-I stumbled upon a much faster way of deleting files – the “find” command has a “-delete” flag built right in! Here’s what I ended up using:<br />
-find . -type f -delete<br />
-Using this method, I was deleting files at a rate of about 2000 files/second – much faster!<br />
-You can also show the filenames as you’re deleting them:<br />
-find . -type f -print -delete<br />
-…or even show how many files will be deleted, then time how long it takes to delete them:</p>
-<p>ls -1 汇报内存不足如果目录下有上百万个小文件<br />
-ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
+<h3 id="rm-rf"><code>rm -rf \*</code> 删除上百万文件出错</h3>
+<p><code>/bin/rm: Argument list too long.</code> 错误的原因主要在于，使用正则符号匹配的所有文件名，会构成一个参数列表，存储参数的buffer申请的空间是有限的。</p>
+<blockquote>
+<p>The problem is that when you type something like “rm -rf <em>”, the “</em>” is replaced with a list of every matching file, like “rm -rf file1 file2 file3 file4” and so on. There is a reletively small buffer of memory allocated to storing this list of arguments and if it is filled up, the shell will not execute the program.</p>
+</blockquote>
+<ol>
+<li>
+<p>方案一，通过 <code>exec</code> 删除，但是比较慢，这里是有多少个文件，调用多少次rm。<br />
+<code>find . -type f -exec rm -v {} \;</code></p>
+</li>
+<li>
+<p>方案二，find命令自带的<code>delete</code>，速度中等。<br />
+<code>find . -type f -delete</code>, or <code>find . -type f -print -delete</code> or <code>`ls -1 | wc -l &amp;&amp; time find . -type f -delete</code></p>
+</li>
+<li>
+<p>方案三，rsync替换，速度很快， 主要是通过创建一个空的文件夹，然后通过同步数据块，覆盖掉原来文件夹内容以及文件inode.<br />
+<code>rsync -a --delete blanktest/ test/</code></p>
+</li>
+<li>
+<p>方案四，perl删除, 速度最快<br />
+<code>perl -e 'for(&lt;*&gt;){((stat)[9]&lt;(unlink))</code></p>
+</li>
+<li>
+<p><a href="https://www.slashroot.in/which-is-the-fastest-method-to-delete-files-in-linux">Which is the fastest method to delete files in Linux</a></p>
+</li>
+<li><a href="https://www.jianshu.com/p/353a5dbcd423">目录中文件过多导致ls命令卡住-利用空设备重定向和strace监控ls</a></li>
+</ol>
 <h1 id="check-dev-file-system">check dev file system</h1>
 <ol>
 <li><code>lsblk -f</code> 可以看到所有附着设备的文件系统类型，如果有的话；无论是否mount</li>
@@ -270,6 +300,73 @@ ls -1 | wc -l &amp;&amp; time find . -type f -delete</p>
 <p><a href="https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-16-04"> How To Add Swap Space on Ubuntu 16.04</a></p>
 </li>
 </ul>
+<h1 id="linux-benchmark">Linux 磁盘性能测试benchmark</h1>
+<h2 id="dd">dd</h2>
+<ol>
+<li>
+<p>write test; <code>sync; dd if=/dev/zero of=tempfile bs=1M count=1024; sync</code></p>
+</li>
+<li>
+<p>clear memory cache for tempfile; <code>sudo /sbin/sysctl -w vm.drop_caches=3</code></p>
+</li>
+<li>
+<p>read test; <code>dd if=tempfile of=/dev/null bs=1M count=1024</code></p>
+</li>
+</ol>
+<h2 id="hdparm">hdparm</h2>
+<p>sudo hdparm -Tt /dev/sdb1</p>
+<h2 id="iotop">iotop</h2>
+<ul>
+<li><a href="https://www.shellhacks.com/disk-speed-test-read-write-hdd-ssd-perfomance-linux/">Disk Speed Test (Read/Write): HDD, SSD Performance in Linux</a></li>
+</ul>
+<h1 id="nvidia-gpu">NVIDIA GPU</h1>
+<h2 id="_4">卸载</h2>
+<p><code>dpkg -l | grep cuda- | awk '{print $2}' | xargs -n1 sudo dpkg --purge</code></p>
+<h2 id="cuda-91">cuda 9.1</h2>
+<div class="hlcode"><pre><span class="c">#!/bin/bash</span>
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+sudo dpkg -i cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda-9.1
+<span class="c"># Enable persistence mode</span>
+nvidia-smi -pm 1
+</pre></div>
+
+
+<h2 id="catboost-cuda-91">catboost cuda-9.1</h2>
+<p>安装 python 2.7 版本的 catboost</p>
+<div class="hlcode"><pre>wget https://github.com/catboost/catboost/releases/download/v0.8.1/catboost-python-0.8.1-cuda-91.tar.gz
+tar -zvxf catboost-python-0.8.1-cuda-91.tar.gz
+<span class="nb">cd </span>linux-cuda9
+sudo pip install catboost-0.8.1-cp27-none-manylinux1_x86_64.whl
+</pre></div>
+
+
+<h1 id="dockershadowsocks-vpn">自己搭建基于Docker的shadowsocks vpn</h1>
+<ol>
+<li>在aws上申请一台免费的主机， 安装docker, ss等工具</li>
+</ol>
+<div class="hlcode"><pre>curl -sSL https://get.docker.com/ | sh
+git clone https://github.com/zhgqthomas/docker-shadowsocks.git
+<span class="nb">cd </span>docker-shadowsocks/
+sudo docker build -t shadowsocks .
+</pre></div>
+
+
+<ol>
+<li>
+<p>新建用户，新建docker 用户组，并添加当前用户到用户组<br />
+<code>sudo su; sudo adduser [your_user_name]; sudo groupadd docker;</code></p>
+</li>
+<li>
+<p>运行ss服务（记住必须开放端口安全组）<br />
+<code>sudo docker run --name ss -d -p 2018:2018 -p 2018:2018/udp shadowsocks -s 0.0.0.0 -p 2018 -k [your_ss-password] -m aes-256-cfb</code></p>
+</li>
+<li>
+<p>客户端（MAC版本）<br />
+https://github.com/shadowsocks/ShadowsocksX-NG</p>
+</li>
+</ol>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
