@@ -99,19 +99,33 @@
 <li><a href="http://wepon.me/files/gbdt.pdf">GBDT算法原理与系统设计简介</a></li>
 <li><a href="https://towardsdatascience.com/catboost-vs-light-gbm-vs-xgboost-5f93620723db">CatBoost vs. Light GBM vs. XGBoost</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/29649128">【转】XGBoost参数调优完全指南（附Python代码）</a></li>
-<li><a href="https://blog.csdn.net/lc013/article/details/56667157">机器学习算法总结--GBDT</a></li>
+<li>
+<p><a href="https://blog.csdn.net/lc013/article/details/56667157">机器学习算法总结--GBDT</a></p>
+</li>
+<li>
+<p><a href="https://github.com/owenzhang/kaggle-avazu">2nd place solution for Avazu click-through rate prediction competition</a></p>
+</li>
+<li><a href="https://github.com/guestwalk/kaggle-2014-criteo">kaggle-2014-criteo-champion</a></li>
+<li><a href="https://jiayi797.github.io/2017/06/07/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E8%B7%B5-CVR-Tencent_CVR%E9%A2%84%E4%BC%B0%E5%88%9D%E8%B5%9B&amp;%E5%A4%8D%E8%B5%9B%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93/">机器学习实践-CVR-Tencent_CVR预估初赛&amp;复赛思路总结</a></li>
+<li><a href="https://github.com/BladeCoda/Tencent2017_Final_Coda_Allegro">Tencen2017_Fianl_Coda_Allegro</a></li>
+<li><a href="https://github.com/ChenglongChen/Kaggle_HomeDepot">Turing Test's 3rd Place Solution for Home Depot Product Search Relevance Competition on Kaggle </a></li>
+<li><a href="http://tullo.ch/articles/online-learning-with-adpredictor/">Online Learning with Microsoft's AdPredictor algorithm</a></li>
+<li>
+<p><a href="https://github.com/freelzy/Tencent_Social_Ads">第一届腾讯社交广告高校算法大赛(全国14名)</a></p>
+</li>
+<li>
+<p><a href="https://zhuanlan.zhihu.com/p/36858386">IJCAI-18 阿里妈妈搜索广告转化预测总结( 29 / 0.13939 )</a></p>
+</li>
+<li><a href="https://blog.csdn.net/Bryan__/article/details/80600189">IJCAI-18 阿里妈妈搜索广告算法大赛亚军解决方案</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/38034501">2018腾讯广告算法大赛总结/0.772229/Rank11</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/38499275">第二届腾讯广告算法大赛总结（Rank 9）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/38341881">2018腾讯广告算法大赛总结（Rank6）-特征工程篇</a></li>
 </ul>
 <h1 id="ctr">CTR 大框架方法</h1>
 <p>传统方法主要是线性模型如 LR,FM,FFM，提升树模型 gdbt, xgboost, lightGBM, 两种方法结合就是 facebook 的 GBDT + LR, 通过提升树自动做特征编码，然后再给LR模型。<br />
  - <a href="https://www.zhihu.com/question/56204961">除了LR，FM（FFM）方法，CTR预测还有那些方法，应用较为广泛？</a><br />
  - <a href="https://cloud.tencent.com/developer/article/1005416">CTR 预估模型的进化之路</a><br />
- - <a href="https://github.com/owenzhang/kaggle-avazu">2nd place solution for Avazu click-through rate prediction competition</a><br />
- - <a href="https://github.com/guestwalk/kaggle-2014-criteo">kaggle-2014-criteo-champion</a><br />
- - <a href="https://jiayi797.github.io/2017/06/07/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E8%B7%B5-CVR-Tencent_CVR%E9%A2%84%E4%BC%B0%E5%88%9D%E8%B5%9B&amp;%E5%A4%8D%E8%B5%9B%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93/">机器学习实践-CVR-Tencent_CVR预估初赛&amp;复赛思路总结</a><br />
- - <a href="https://github.com/BladeCoda/Tencent2017_Final_Coda_Allegro">Tencen2017_Fianl_Coda_Allegro</a><br />
- - <a href="https://blog.csdn.net/shine19930820/article/details/71713680">GBDT原理及利用GBDT构造新的特征-Python实现</a><br />
- - <a href="https://github.com/ChenglongChen/Kaggle_HomeDepot">Turing Test's 3rd Place Solution for Home Depot Product Search Relevance Competition on Kaggle </a><br />
- - <a href="http://tullo.ch/articles/online-learning-with-adpredictor/">Online Learning with Microsoft's AdPredictor algorithm</a></p>
+ - <a href="https://blog.csdn.net/shine19930820/article/details/71713680">GBDT原理及利用GBDT构造新的特征-Python实现</a></p>
 <p>梯度下降学习率更新策略，本文介绍了常见的几种，并给出的试验数据<br />
  - 在线学习中，LR对BOPR。BOPR效果稍微好于LR，但是LR更为简单，所以最后还是选择了LR<br />
  - GDBT迭代轮数，大部分优化只需要500轮迭代GBDT模型可以完成。<br />
@@ -266,7 +280,6 @@
 <li><a href="https://blog.csdn.net/dengxing1234/article/details/77965657">【实践】CTR预估中的贝叶斯平滑方法（二）</a></li>
 <li><a href="http://chrisstrelioff.ws/sandbox/2014/12/11/inferring_probabilities_with_a_beta_prior_a_third_example_of_bayesian_calculations.html">Inferring probabilities with a Beta prior, a third example of Bayesian calculations</a></li>
 <li><a href="https://www.datascience.com/blog/introduction-to-bayesian-inference-learn-data-science-tutorials">Introduction to Bayesian Inference</a></li>
-<li><a href="https://github.com/freelzy/Tencent_Social_Ads">第一届腾讯社交广告高校算法大赛(全国14名)</a></li>
 <li><a href="http://www.cs.cmu.edu/~xuerui/papers/ctr.pdf">yahoo-ctr-smoothing-paper</a></li>
 </ul>
 <p># 数据科学竞赛中的Data Leakage<br />
