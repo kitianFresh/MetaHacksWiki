@@ -12,17 +12,28 @@ date: 2018-06-01 15:59
 - [【转】XGBoost参数调优完全指南（附Python代码）](https://zhuanlan.zhihu.com/p/29649128)
 - [机器学习算法总结--GBDT](https://blog.csdn.net/lc013/article/details/56667157)
 
-# CTR 大框架方法
-传统方法主要是线性模型如 LR,FM,FFM，提升树模型 gdbt, xgboost, lightGBM, 两种方法结合就是 facebook 的 GBDT + LR, 通过提升树自动做特征编码，然后再给LR模型。
- - [除了LR，FM（FFM）方法，CTR预测还有那些方法，应用较为广泛？](https://www.zhihu.com/question/56204961)
- - [CTR 预估模型的进化之路](https://cloud.tencent.com/developer/article/1005416)
+
  - [2nd place solution for Avazu click-through rate prediction competition](https://github.com/owenzhang/kaggle-avazu)
  - [kaggle-2014-criteo-champion](https://github.com/guestwalk/kaggle-2014-criteo)
  - [机器学习实践-CVR-Tencent_CVR预估初赛&复赛思路总结](https://jiayi797.github.io/2017/06/07/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E8%B7%B5-CVR-Tencent_CVR%E9%A2%84%E4%BC%B0%E5%88%9D%E8%B5%9B&%E5%A4%8D%E8%B5%9B%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93/)
  - [Tencen2017_Fianl_Coda_Allegro](https://github.com/BladeCoda/Tencent2017_Final_Coda_Allegro)
- - [GBDT原理及利用GBDT构造新的特征-Python实现](https://blog.csdn.net/shine19930820/article/details/71713680)
  - [Turing Test's 3rd Place Solution for Home Depot Product Search Relevance Competition on Kaggle ](https://github.com/ChenglongChen/Kaggle_HomeDepot)
  - [Online Learning with Microsoft's AdPredictor algorithm](http://tullo.ch/articles/online-learning-with-adpredictor/)
+- [第一届腾讯社交广告高校算法大赛(全国14名)](https://github.com/freelzy/Tencent_Social_Ads)
+
+
+- [IJCAI-18 阿里妈妈搜索广告转化预测总结( 29 / 0.13939 )](https://zhuanlan.zhihu.com/p/36858386)
+- [IJCAI-18 阿里妈妈搜索广告算法大赛亚军解决方案](https://blog.csdn.net/Bryan__/article/details/80600189)
+- [2018腾讯广告算法大赛总结/0.772229/Rank11](https://zhuanlan.zhihu.com/p/38034501)
+- [第二届腾讯广告算法大赛总结（Rank 9）](https://zhuanlan.zhihu.com/p/38499275)
+- [2018腾讯广告算法大赛总结（Rank6）-特征工程篇](https://zhuanlan.zhihu.com/p/38341881)
+
+# CTR 大框架方法
+传统方法主要是线性模型如 LR,FM,FFM，提升树模型 gdbt, xgboost, lightGBM, 两种方法结合就是 facebook 的 GBDT + LR, 通过提升树自动做特征编码，然后再给LR模型。
+ - [除了LR，FM（FFM）方法，CTR预测还有那些方法，应用较为广泛？](https://www.zhihu.com/question/56204961)
+ - [CTR 预估模型的进化之路](https://cloud.tencent.com/developer/article/1005416)
+ - [GBDT原理及利用GBDT构造新的特征-Python实现](https://blog.csdn.net/shine19930820/article/details/71713680)
+ 
  
 梯度下降学习率更新策略，本文介绍了常见的几种，并给出的试验数据
  - 在线学习中，LR对BOPR。BOPR效果稍微好于LR，但是LR更为简单，所以最后还是选择了LR
@@ -168,7 +179,6 @@ CART是最常见的决策树实现，既可以回归也可以分类，并且他�
  - [【实践】CTR预估中的贝叶斯平滑方法（二）](https://blog.csdn.net/dengxing1234/article/details/77965657)
  - [Inferring probabilities with a Beta prior, a third example of Bayesian calculations](http://chrisstrelioff.ws/sandbox/2014/12/11/inferring_probabilities_with_a_beta_prior_a_third_example_of_bayesian_calculations.html)
  - [Introduction to Bayesian Inference](https://www.datascience.com/blog/introduction-to-bayesian-inference-learn-data-science-tutorials)
- - [第一届腾讯社交广告高校算法大赛(全国14名)](https://github.com/freelzy/Tencent_Social_Ads)
  - [yahoo-ctr-smoothing-paper](http://www.cs.cmu.edu/~xuerui/papers/ctr.pdf)
 
 

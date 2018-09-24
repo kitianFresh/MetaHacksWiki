@@ -94,7 +94,11 @@ set hive.mapjoin.smalltable.filesize = 2500000 ;//刷入内存表的大小(字�
 可以对文件进行切分成　K 份，每一份能装入内存，那么可以求每一份的　topk, 然后再从ｋ 份　topk 中求出 最终的 topk
 如果每一份还是不能装入内存，可以使用优化，分布式并行计算。每一份分发到不同的主机，每一个主机内并行的进行　TopK 的求解，　最后汇总结果，其实就是　Map Reduce
 
+# 大数据采样算法之 蓄水池算法([reservoir sampling](https://en.wikipedia.org/wiki/Reservoir_sampling))
 
+ - [随机抽样问题（reservoir sampling）的证明](http://blog.sina.com.cn/s/blog_48e3f9cd01019jyr.html)
+ - [蓄水池算法的分析与python实现](https://blog.yangx.site/2016/09/12/reservoir-sampling/)
+ - [数据工程师必知算法：蓄水池抽样](http://blog.jobbole.com/42550/)
 
 # 数据划分并采用堆进行排序
 
