@@ -72,21 +72,22 @@
 <li><a href="#_3">提升树模型</a></li>
 <li><a href="#_4">决策树</a><ul>
 <li><a href="#cart">决策树的最常见实现CART</a></li>
+<li><a href="#_5">决策树剪枝算法</a></li>
 <li><a href="#param-tuning">Param Tuning</a></li>
 </ul>
 </li>
-<li><a href="#_5">点击率相关特征平滑</a><ul>
-<li><a href="#_6">先验概率后验概率似然函数</a></li>
+<li><a href="#_6">点击率相关特征平滑</a><ul>
+<li><a href="#_7">先验概率后验概率似然函数</a></li>
 <li><a href="#pdfpmfcdf">概率中的PDF，PMF，CDF</a></li>
 <li><a href="#beta">beta 分布、二项分布和贝叶斯推断</a></li>
-<li><a href="#_7">各种离散编码方式对比</a><ul>
-<li><a href="#_8">参考</a></li>
+<li><a href="#_8">各种离散编码方式对比</a><ul>
+<li><a href="#_9">参考</a></li>
 </ul>
 </li>
 <li><a href="#one-hot">ONE-HOT 编码解释</a></li>
 </ul>
 </li>
-<li><a href="#_9">特征处理</a><ul>
+<li><a href="#_10">特征处理</a><ul>
 <li><a href="#onehot">类别特征和Onehot</a></li>
 </ul>
 </li>
@@ -94,6 +95,7 @@
 </ul>
 </div>
 <ul>
+<li><a href="http://www.52caml.com/">计算广告与机器学习</a></li>
 <li><a href="http://www.ccs.neu.edu/home/vip/teach/MLcourse/4_boosting/slides/gradient_boosting.pdf">A Gentle Introduction to Gradient Boosting</a></li>
 <li><a href="https://arxiv.org/pdf/1603.02754v1.pdf">XGBoost: A Scalable Tree Boosting System</a></li>
 <li><a href="http://wepon.me/files/gbdt.pdf">GBDT算法原理与系统设计简介</a></li>
@@ -206,6 +208,11 @@
 <li><a href="https://liangyaorong.github.io/blog/2017/scikit-learn%E4%B8%AD%E7%9A%84GBDT%E5%AE%9E%E7%8E%B0/">scikit-learn中的GBDT实现</a></li>
 <li><a href="http://d0evi1.com/sklearn/model_evaluation/">sklearn中的模型评估</a></li>
 </ul>
+<h2 id="_5">决策树剪枝算法</h2>
+<p>预剪枝和后剪枝．预剪枝就是在训练过程中，通过设置叶子数目和深度最小分裂数目等参数来进行，而后剪枝则如李航统计<br />
+sklearn 实现就是预剪枝，sklearn目前没有具体实现剪枝的功能。现在能做的是预剪枝，就是设置Classifier或者Regression里的参数max_depth, min_samples_split, min_samples_leaf。</p>
+<p>预剪枝就是在构建决策树的时候进行剪枝。通常决策树会不断生长，直到该树枝无法变得更纯（对于ID3决策树来说，就是无法使得熵更小）。我们可以通过设定一个阈值使得决策树提前终止生长。比如设定最小分叉样本数(sklearn RandomForest中的min_samples_split)，当该树杈上的样本小于所设定的min_sample_splt，树就不再继续生长。</p>
+<p>后剪枝就是在决策树在完全生长完之后，再剪去一些树枝、枝叶。方法也是类似的，我们先设定一个阈值。将某节点与其父节点合并，熵必然会增加，如果这个增加值小于这个阈值，我们最终就保留这个合并。这个过程由树叶逐渐向根部进行。</p>
 <h2 id="param-tuning">Param Tuning</h2>
 <ul>
 <li>
@@ -237,10 +244,10 @@
 <li><a href="https://medium.com/@pushkarmandot/https-medium-com-pushkarmandot-what-is-lightgbm-how-to-implement-it-how-to-fine-tune-the-parameters-60347819b7fc">What is LightGBM, How to implement it? How to fine tune the parameters?</a></li>
 <li><a href="https://www.datacareer.de/blog/parameter-tuning-in-gradient-boosting-gbm/">Parameter Tuning in Gradient Boosting (GBM) with Python</a></li>
 </ul>
-<h1 id="_5">点击率相关特征平滑</h1>
+<h1 id="_6">点击率相关特征平滑</h1>
 <p>点击率、喜爱率、偏爱率的统计，如果是直接用点击数比总数，对于CTR来说往往会有偏差，比如一个用户看了一个视频，而且点了，那么他的点击率就是1，但是一个用户看了100个视频，点了80个，点击率是0.8，显然，我们不能说前者就是倾向于更爱点击了，因此我们需要做平滑处理！<br />
 雅虎一篇论文做了关于CTR特征平滑的方法，$\frac{C + \alpha}{I + \alpha + \beta}$, 关键是找到分子分母合适的平滑参数。I 代表曝光次数 impressions， C 代表点击次数 clicks</p>
-<h2 id="_6">先验概率后验概率似然函数</h2>
+<h2 id="_7">先验概率后验概率似然函数</h2>
 <ul>
 <li><a href="https://blog.csdn.net/u011508640/article/details/72815981">详解最大似然估计（MLE）、最大后验概率估计（MAP），以及贝叶斯公式的理解</a></li>
 <li><a href="https://www.zhihu.com/question/24261751">先验分布、后验分布、似然估计这几个概念是什么意思，它们之间的关系是什么？</a></li>
@@ -290,7 +297,7 @@
 </ul>
 <p># 特征离散化<br />
 离散化是特征处理的重要手段之一，可以提高模型的抗干扰能力，比如年龄20和30其实对某些视频点击差异不大，但是如果使用连续值，在LR中会导致W差异巨大。比如一个年龄突然200岁，如果可以分段，那么相对来说，就可以避免这一异常。</p>
-<h2 id="_7">各种离散编码方式对比</h2>
+<h2 id="_8">各种离散编码方式对比</h2>
 <ul>
 <li>Categorical Encoding (raw, as is)</li>
 <li>原始的分类特征，不一定是数字，比如，性别（男女），国家（中国、美国、俄罗斯）</li>
@@ -302,7 +309,7 @@
 <li>对分类的N种取值进行二进制编码，这就是计算机编码方式，只需要 logN 的维度即可</li>
 </ul>
 <p>LR 模型比较适合 one-hot 编码，树模型直接使用 Categorical 或者 Numerical Encoding 即可，其他编码方式对于树模型来讲，效果一般</p>
-<h3 id="_8">参考</h3>
+<h3 id="_9">参考</h3>
 <ul>
 <li><a href="https://medium.com/data-design/visiting-categorical-features-and-encoding-in-decision-trees-53400fa65931">Categorical Features and Encoding in Decision Trees</a></li>
 <li><a href="https://roamanalytics.com/2016/10/28/are-categorical-variables-getting-lost-in-your-random-forests/">Are categorical variables getting lost in your random forests?</a></li>
@@ -315,7 +322,7 @@
 <li>离散特征进行one-hot编码后，编码后的特征，其实每一维度的特征都可以看做是连续的特征。就可以跟对连续型特征的归一化方法一样，对每一维特征进行归一化。比如归一化到[-1,1]或归一化到均值为0,方差为1.</li>
 <li>基于树的方法是不需要进行特征的归一化，例如随机森林，bagging 和 boosting等。基于参数的模型或基于距离的模型，都是要进行特征的归一化.</li>
 </ul>
-<h1 id="_9">特征处理</h1>
+<h1 id="_10">特征处理</h1>
 <h2 id="onehot">类别特征和Onehot</h2>
 <p>onehot 和 embedding 特征对于训练神经网络特别有用, onehot 对于线性模型也是非常有用的，它相当于让线性模型变得非线性，通过逻辑组合特征，维度升高之后，能够实现非线性数据的划分，如果直接使用类别特征，LR可能无法分类。</p>
 <blockquote>

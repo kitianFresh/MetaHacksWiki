@@ -89,6 +89,45 @@
 
 <h2 id="_2">大数据集上的抽样概率法</h2>
 <p>根据auc 描述任意取一个正例和负例，预测的整列预测值大于负例预测值的概率</p>
+<p>"""<br />
+<strong>According the experiments, when pca's eigen vectors are the same with the svd's right singular vectors, PCA and SVD yield identical results. or, eigen vectors have opposite sign with singular vectors, PCA and SVD yield results with opposite sign.</strong><br />
+"""</p>
+<h1 id="def-svd_principal_componentsm-n_componentsnone-component_idsnone">def svd_principal_components(M, n_components=None, component_ids=None):</h1>
+<h1 id="_3">"""</h1>
+<h1 id="transform-matrix-m-using-the-singular-values-decomposition-technique">transform matrix M using the Singular Values Decomposition technique.</h1>
+<h1 id="args">Args:</h1>
+<h1 id="m">M:</h1>
+<h1 id="n_components">n_components:</h1>
+<h1 id="components_ids">components_ids:</h1>
+<h1 id="return">Return:</h1>
+<h1 id="reduced-matrix-of-matrix-m-by-svd">reduced matrix of matrix M by svd.</h1>
+<h1 id="_4">"""</h1>
+<h1 id="mean-of-each-feature"># mean of each feature</h1>
+<h1 id="n_samples-n_features-mshape">n_samples, n_features = M.shape</h1>
+<h1 id="mean-nparraynpmeanm-i-for-i-in-rangen_features">mean = np.array([np.mean(M[:, i]) for i in range(n_features)])</h1>
+<h1 id="normalization"># normalization</h1>
+<h1 id="norm_m-m-mean">norm_M = M - mean</h1>
+<h1 id="calculate-the-eigenvectors-and-eigenvalues-by-svd"># calculate the eigenvectors and eigenvalues by SVD</h1>
+<h1 id="u-s-vt-lasvdnorm_m-full_matricesfalse">u, s, vt = la.svd(norm_M, full_matrices=False)</h1>
+<h1 id="s-npdiags">s = np.diag(s)</h1>
+<h1 id="print-s-">print('----------------s------------')</h1>
+<h1 id="prints">print(s)</h1>
+<h1 id="print-u-">print('----------------u------------')</h1>
+<h1 id="printu">print(u)</h1>
+<h1 id="print-vt-">print('----------------vt------------')</h1>
+<h1 id="printvtt">print(vt.T)</h1>
+<h1 id="select-components"># select components</h1>
+<h1 id="if-n_components-none">if n_components != None:</h1>
+<h1 id="u_k-u0n_components">u_k = u[:,0:n_components]</h1>
+<h1 id="s_k-s0n_components-0n_components">s_k = s[0:n_components, 0:n_components]</h1>
+<h1 id="elif-component_ids-none">elif component_ids != None:</h1>
+<h1 id="u_k-u-component_ids">u_k = u[:, component_ids]</h1>
+<h1 id="rows-nparraycomponent_ids">rows = np.array(component_ids)</h1>
+<h1 id="cols-nparraycomponent_ids">cols = np.array(component_ids)</h1>
+<h1 id="s_k-srowsnone-cols">s_k = s[rows[:,None], cols]</h1>
+<h1 id="new-matrix"># new matrix</h1>
+<h1 id="matrix-npdotu_k-s_k">matrix = np.dot(u_k, s_k)</h1>
+<h1 id="return-matrix">return matrix</h1>
 </div>
 <div id="content-footer">
   <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
