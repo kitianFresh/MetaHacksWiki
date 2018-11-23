@@ -5,6 +5,7 @@ date: 2018-06-01 15:59
 
 [TOC]
 
+- [计算广告与机器学习](http://www.52caml.com/)
 - [A Gentle Introduction to Gradient Boosting](http://www.ccs.neu.edu/home/vip/teach/MLcourse/4_boosting/slides/gradient_boosting.pdf)
 - [XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)
 - [GBDT算法原理与系统设计简介](http://wepon.me/files/gbdt.pdf)
@@ -107,6 +108,17 @@ CART是最常见的决策树实现，既可以回归也可以分类，并且他�
  
  - [scikit-learn中的GBDT实现](https://liangyaorong.github.io/blog/2017/scikit-learn%E4%B8%AD%E7%9A%84GBDT%E5%AE%9E%E7%8E%B0/)
  - [sklearn中的模型评估](http://d0evi1.com/sklearn/model_evaluation/)
+
+## 决策树剪枝算法
+预剪枝和后剪枝．预剪枝就是在训练过程中，通过设置叶子数目和深度最小分裂数目等参数来进行，而后剪枝则如李航统计
+sklearn 实现就是预剪枝，sklearn目前没有具体实现剪枝的功能。现在能做的是预剪枝，就是设置Classifier或者Regression里的参数max_depth, min_samples_split, min_samples_leaf。
+
+预剪枝就是在构建决策树的时候进行剪枝。通常决策树会不断生长，直到该树枝无法变得更纯（对于ID3决策树来说，就是无法使得熵更小）。我们可以通过设定一个阈值使得决策树提前终止生长。比如设定最小分叉样本数(sklearn RandomForest中的min_samples_split)，当该树杈上的样本小于所设定的min_sample_splt，树就不再继续生长。
+
+
+
+后剪枝就是在决策树在完全生长完之后，再剪去一些树枝、枝叶。方法也是类似的，我们先设定一个阈值。将某节点与其父节点合并，熵必然会增加，如果这个增加值小于这个阈值，我们最终就保留这个合并。这个过程由树叶逐渐向根部进行。
+
 ## Param Tuning
  - XGBoost:
     - booster: gblinear/gbtree 基分类器用线性分类器还是决策树
