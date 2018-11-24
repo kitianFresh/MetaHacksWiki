@@ -77,8 +77,28 @@ $$</p>
 <h2 id="_2">坐标基变换</h2>
 <h2 id="_3">降维</h2>
 <p>矩阵乘于向量会得到一个新的向量，并且可以改变这个向量的维度。这个其实就是矩阵乘以向量的应用之一。矩阵作用再某个向量上会对向量进行多种变换和拉伸得到一个新的向量。线性代数还喜欢研究一种特殊的变换，就是 $Av=\lambda v$. 研究的是一个方阵的特征向量和特征值。因为这种矩阵对自己的特征向量做变换，其实就是对特征向量做线性的变换。</p>
-<p>假设我们找到一个矩阵$P_{k\times n}$, $P$ 可以对数据 $X_{n\times m}$ 做相应的变换操作，使得$Y_{k\times m}=P_{k\times n}X_{n\times m}$. 这样原来在n维空间的m个向量数据就变到k维空间的m个数据，$k&lt;n$</p>
+<p>假设我们找到一个矩阵$P_{k\times n}$, $P$ 可以对数据 $X_{n\times m}$ 做相应的变换操作，使得$Y_{k\times m}=P_{k\times n}X_{n\times m}$. 这样原来在n维空间的m个向量数据就变到k维空间的m个数据，$k&lt;n$. <strong>矩阵 $P$ 是对数据 $X$ 中的每一条列向量做变换操作，使得每一个列向量映射到新的空间。</strong></p>
+<h2 id="_4">协方差</h2>
+<p>那么什么样的 P 能够再降维后还能保证原来的矩阵元素信息。 $X$ 中的是m 个列向量都是n维， 为了让这n个字段的信息尽可能保留，最后的 $Y$ 的 k 个字段也应该尽可能保留原始n维度的信息。那么 k 个维度应该非线性相关，将一组N维向量降为k维（k大于0，小于n），其目标是选择k个单位（模为1）正交基，使得原始数据变换到这组基上后，<strong>各字段（不同特征维度）两两间协方差为0，而字段的方差（同一特征维度下不同数据）则尽可能大（在正交的约束下，取最大的k个方差）。</strong></p>
+<p>数学上的协方差可以表示两组变量的关系独立性，举个例子，假设 $X$ 是二维空间的数据点。</p>
 <p>$$<br />
+\frac{1}{m}XX^\mathsf{T}=\begin{pmatrix}<br />
+  \frac{1}{m}\sum_{i=1}^m{a_i^2}   &amp; \frac{1}{m}\sum_{i=1}^m{a_ib_i} \<br />
+  \frac{1}{m}\sum_{i=1}^m{a_ib_i} &amp; \frac{1}{m}\sum_{i=1}^m{b_i^2}<br />
+\end{pmatrix}<br />
+$$</p>
+<h2 id="_5">实对称矩阵对角化</h2>
+<p><strong>线性代数中，<a href="http://58.20.53.45/files/files_upload/content/material_59/content/011004/file_1.htm">实对称矩阵一定可以对角化</a>.</strong> 我们的协方差矩阵恰好就是实对称矩阵.<br />
+$$<br />
+E^\mathsf{T}CE=\Lambda=\begin{pmatrix}<br />
+  \lambda_1 &amp;             &amp;         &amp; \<br />
+              &amp; \lambda_2 &amp;         &amp; \<br />
+              &amp;             &amp; \ddots &amp; \<br />
+              &amp;             &amp;         &amp; \lambda_n<br />
+\end{pmatrix}<br />
+$$<br />
+因此，最后的 $Y$ 需要满足的条件的协方差矩阵 $D=YY^T$ 其实是可以通过 $C=XX^T$ 对角化来得到，而且得到的是一个满足<strong>各字段（不同特征维度）两两间协方差为0，而字段的方差（同一特征维度下不同数据）则尽可能大（在正交的约束下，取最大的k个方差）的对角矩阵。</strong><br />
+$$<br />
 \begin{array}{l l l}<br />
   D &amp; = &amp; \frac{1}{m}YY^\mathsf{T} \<br />
     &amp; = &amp; \frac{1}{m}(PX)(PX)^\mathsf{T} \<br />
@@ -86,14 +106,126 @@ $$</p>
     &amp; = &amp; P(\frac{1}{m}XX^\mathsf{T})P^\mathsf{T} \<br />
     &amp; = &amp; PCP^\mathsf{T}<br />
 \end{array}<br />
+$$</p>
+<h2 id="pca-by-covariance-matrix">PCA by  Covariance Matrix</h2>
+<p>steps:<br />
+ 1. normalization matrix M.<br />
+ 2. compute covariance matrix scatter matrix.<br />
+ 3. compute eigen vectors and eigen values of scatter matrix.<br />
+ 4. sort eigen vectors and eigen values to get sorted V.<br />
+ 5. compute reduced dimension matrix MV.</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">pca</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">component_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    transform matrix M using the Principal Component Analysis technique.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        M:</span>
+<span class="sd">        n_components:</span>
+<span class="sd">        components_ids:</span>
+<span class="sd">    Return:</span>
+<span class="sd">        reduced matrix of matrix M by PCA.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># mean of each feature</span>
+    <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
+    <span class="c"># normalization</span>
+    <span class="n">norm_M</span> <span class="o">=</span> <span class="n">M</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="c"># scatter matrix</span>
+    <span class="n">scatter_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">norm_M</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm_M</span><span class="p">)</span>
+    <span class="c"># calculate the eigenvectors and eigenvalues</span>
+    <span class="n">eig_val</span><span class="p">,</span> <span class="n">eig_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">scatter_matrix</span><span class="p">)</span>
+
+    <span class="n">eig_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eig_val</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">eig_vec</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)]</span>
+    <span class="c"># select components</span>
+    <span class="n">eig_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">eig_pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sorted_eig_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ele</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">eig_pairs</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">principal_components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">norm_M</span><span class="p">,</span> <span class="n">sorted_eig_vec</span><span class="p">)</span>
+<span class="c">#     print(principal_components)</span>
+
+    <span class="k">if</span> <span class="n">n_components</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">sorted_eig_vec</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">n_components</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">component_ids</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">sorted_eig_vec</span><span class="p">[:,</span> <span class="n">component_ids</span><span class="p">]</span>
+
+    <span class="c"># new matrix</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">norm_M</span><span class="p">,</span> <span class="n">feature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matrix</span>
+</pre></div>
+
+
+<p>设有m条n维数据。</p>
+<p>1）将原始数据按列组成n行m列矩阵X</p>
+<p>2）将X的每一行（代表一个属性字段）进行零均值化，即减去这一行的均值</p>
+<p>3）求出协方差矩阵$C=XX^T$</p>
+<p>4）求出协方差矩阵的特征值及对应的特征向量</p>
+<p>5）将特征向量按对应特征值大小从上到下按行排列成矩阵，取前k行组成矩阵P</p>
+<p>6）Y=PX即为降维到k维后的数据</p>
+<h2 id="pca-by-svd">PCA by SVD</h2>
+<p>steps:<br />
+ 1. normalization matrix M.<br />
+ 2. extract svd basis u,s,v from M.<br />
+ 3. get eigen vectors from s,v.<br />
+ 4. compute reduced dimension matrix us.</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">svd_principal_components</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">component_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    transform matrix M using the Singular Values Decomposition technique. </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        M:</span>
+<span class="sd">        n_components:</span>
+<span class="sd">        components_ids:</span>
+<span class="sd">    Return:</span>
+<span class="sd">        reduced matrix of matrix M by svd.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># mean of each feature</span>
+    <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
+    <span class="c"># normalization</span>
+    <span class="n">norm_M</span> <span class="o">=</span> <span class="n">M</span> <span class="o">-</span> <span class="n">mean</span>
+
+    <span class="c"># calculate the eigenvectors and eigenvalues by SVD</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">vt</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">norm_M</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="c"># select components</span>
+    <span class="k">if</span> <span class="n">n_components</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">u_k</span> <span class="o">=</span> <span class="n">u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">n_components</span><span class="p">]</span>
+        <span class="n">s_k</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n_components</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">n_components</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">component_ids</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">u_k</span> <span class="o">=</span> <span class="n">u</span><span class="p">[:,</span> <span class="n">component_ids</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">component_ids</span><span class="p">)</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">component_ids</span><span class="p">)</span>
+        <span class="n">s_k</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rows</span><span class="p">[:,</span><span class="bp">None</span><span class="p">],</span> <span class="n">cols</span><span class="p">]</span>
+
+    <span class="c"># new matrix</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_k</span><span class="p">,</span> <span class="n">s_k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matrix</span>
+</pre></div>
+
+
+<h2 id="svd">SVD</h2>
+<p>$$<br />
+M = U\Sigma V^T, M^T = V\Sigma^TU^T, \Sigma=\Sigma^T<br />
+$$</p>
+<p>$$<br />
+MM^T = (U\Sigma V^T)(V\Sigma U^T) = U\Sigma V^T V \Sigma^T U^T = U\Sigma \mathbb{I} \Sigma U^T = U (\Sigma^2) U^T.<br />
 $$<br />
-那么什么样的 P 能够再降维后还能保证原来的矩阵元素信息。 $X$ 中的是m 个列向量都是n维， 为了让这n个字段的信息尽可能保留，最后的 $Y$ 的 k 个字段也应该尽可能保留 n 原始维度的信息。那么 k 个维度应该非线性相关，将一组N维向量降为K维（K大于0，小于N），其目标是选择K个单位（模为1）正交基，使得原始数据变换到这组基上后，<strong>各字段（不同特征维度）两两间协方差为0，而字段的方差（同一特征维度下不同数据）则尽可能大（在正交的约束下，取最大的K个方差）。</strong></p>
-<h1 id="_4">参考</h1>
+$$<br />
+M^TM = (V\Sigma U^T)(U\Sigma V^T) = V \Sigma^T U^T U\Sigma V^T = V\Sigma \mathbb{I} \Sigma V^T = V (\Sigma^2) V^T.<br />
+$$</p>
+<p>SVD compute steps:<br />
+ 1. we compute $M^TM$ as $v$ and $MM^T$ as $u$.<br />
+ 2. compute eigen values and eigen vectors of $v$ and $u$.<br />
+ 3. sort eigen values and eigen vectors.<br />
+ 4. return sorted $u$, $v$, $s$.</p>
+<p>根据上面对PCA的数学原理的解释，我们可以了解到一些PCA的能力和限制。PCA本质上是将方差最大的方向作为主要特征，并且在各个正交方向上将数据“离相关”，也就是让它们在不同正交方向上没有相关性。</p>
+<p>因此，PCA也存在一些限制，例如它可以很好的解除线性相关，但是对于高阶相关性就没有办法了，对于存在高阶相关性的数据，可以考虑Kernel PCA，通过Kernel函数将非线性相关转为线性相关，关于这点就不展开讨论了。另外，PCA假设数据各主特征是分布在正交方向上，如果在非正交方向上存在几个方差较大的方向，PCA的效果就大打折扣了。</p>
+<h1 id="_6">参考</h1>
 <ul>
-<li><a href="http://blog.codinglabs.org/articles/pca-tutorial.htmls">PCA的数学原理</a></li>
+<li><a href="http://blog.codinglabs.org/articles/pca-tutorial.html">PCA的数学原理</a></li>
 <li><a href="https://eli.thegreenplace.net/2015/change-of-basis-in-linear-algebra/">Change of basis in Linear Algebra</a></li>
 <li><a href="https://people.duke.edu/~ccc14/sta-663/PCASolutions.html">PCASolutions</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/37777074s">主成分分析（PCA）原理详解</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/37777074">主成分分析（PCA）原理详解</a></li>
 <li><a href="http://cognitivemedium.com/emm/emm.html">Toward an exploratory medium for mathematics</a></li>
 <li><a href="https://mlln.cn/2017/06/28/svd%E5%92%8Cpca%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB%EF%BC%8C%E9%99%84%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">svd和pca的区别和联系，附代码实现</a></li>
 <li><a href="http://nicolas-hug.com/blog/matrix_facto_1">Understanding matrix factorization for recommendation (part 1) - preliminary insights on PCA</a></li>
