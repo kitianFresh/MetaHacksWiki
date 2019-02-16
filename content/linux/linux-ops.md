@@ -253,3 +253,31 @@ sudo docker build -t shadowsocks .
 4. 客户端（MAC版本）
 https://github.com/shadowsocks/ShadowsocksX-NG
 
+
+
+# CURL
+## post
+### post application/json
+
+### post application/x-www-form-urlencoded
+For sending data with POST and PUT requests, these are common curl options:
+
+request type
+
+-X POST
+-X PUT
+content type header
+
+-H "Content-Type: application/x-www-form-urlencoded"
+
+-H "Content-Type: application/json"
+
+data
+
+form urlencoded: -d "param1=value1&param2=value2" or -d @data.txt
+json: -d '{"key1":"value1", "key2":"value2"}' or -d @data.json
+
+
+
+
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -d "user_id=2&rest_id=2&score=5&comments=shit" http://localhost:9090/Yelper/reviews

@@ -8,7 +8,7 @@ date: 2018-08-18 11:38
 IOC(Iversion-of-Control) 控制反转，在IoC出现以前，组件之间的协调关系是由程序内部代码来控制的，或者说，以前我们使用New关键字来实现两组间之间的依赖关系的。
 
 这种方式就造成了组件之间的互相耦合。这个主要是在对象组合的时候存在耦合，比如类A需要依赖类B的功能，一般会通过一下方式去依赖B, 比如定义一个B属性，或者传递B参数等。
-<img src="/static/images/AComputingThinking/program-paradigm/di-types.png" style="width:800px;height:300px;">
+<img src="/static/images/AComputingThinking/program-paradigm/di-types.JPG" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **DI** </u></font> </center></caption>
 
 但是这种方式耦合度过高IoC(控制反转)就是来解决这个问题的，它将实现组件间的关系从程序内部提到外部容器来管理。也就是说，由容器在运行期将组件间的某种依赖关系动态的注入组件中。

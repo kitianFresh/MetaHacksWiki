@@ -321,7 +321,6 @@ Hadoop根据输入数据与实际分配的计算资源之间的距离将任务�
 # org.apache.hadoop.mapred.JobInProgress
 这里的步骤6 是利用数据本地性策略的关键，首先创建该 `Map<Node, List<TaskInProgress>>` 的缓存map对象，该对象中包含 每个节点可以运行的任务列表。缓存利用了网络拓扑结构，Hadoop 利用 `org.apache.hadoop.net.NetworkTopology` 将整个集群抽象成树形网络拓扑结构，其中 host, rack/switch/router, datacenter 都是抽象成节点 Node. Hadoop 只能感知到交换机这一层。如图 是构建该缓存的过程，`maxLevel`控制着缓存的级别，第2层就是交换机这一层，第0层即使node-local, 第1层就是rack-local, 如果允许 off-switch, 则再利用缓存查询的时候，可以直接遍历到该层来获取Tasks。
 
-
 <div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/HadoopNetwokTopologyNodeCache.jpg" style="width:700px;height:500px;">
 <caption><center> hadoopNetworkTopologyNodeCache </center></caption></div>
 
