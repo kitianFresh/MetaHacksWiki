@@ -64,7 +64,7 @@
 <h2 id="ioc">IOC</h2>
 <p>IOC(Iversion-of-Control) 控制反转，在IoC出现以前，组件之间的协调关系是由程序内部代码来控制的，或者说，以前我们使用New关键字来实现两组间之间的依赖关系的。</p>
 <p>这种方式就造成了组件之间的互相耦合。这个主要是在对象组合的时候存在耦合，比如类A需要依赖类B的功能，一般会通过一下方式去依赖B, 比如定义一个B属性，或者传递B参数等。<br />
-<img src="/static/images/AComputingThinking/program-paradigm/di-types.png" style="width:800px;height:300px;"><br />
+<img src="/static/images/AComputingThinking/program-paradigm/di-types.JPG" style="width:800px;height:300px;"><br />
 <caption><center><u> <font color="purple"> <strong>DI</strong> </u></font> </center></caption></p>
 <p>但是这种方式耦合度过高IoC(控制反转)就是来解决这个问题的，它将实现组件间的关系从程序内部提到外部容器来管理。也就是说，由容器在运行期将组件间的某种依赖关系动态的注入组件中。<br />
 IoC的一个重点是在系统运行中，动态的向某个对象提供它所需要的其他对象。实现原理就是利用Java的反射机制，配置好需要的类之后，可以直接调用容器方法根据配置文件动态的把需要的类以及方法加载和组装起来提供给其他对象。这样就从代码层面实现了类的解耦。</p>
@@ -115,7 +115,7 @@ gitment.render('comments')
         </div>
         <div id="footer">
             <span>
-                Copyright © 2018 田奇.
+                Copyright © 2019 田奇.
                 Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
                 Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
             </span>

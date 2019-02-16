@@ -1,0 +1,258 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>j2ee - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#java">java</a>&nbsp;»&nbsp;j2ee</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">j2ee</div>
+<div id="content">
+  <h1 id="install-jre-jdk">Install JRE &amp; JDK</h1>
+<h2 id="ubuntu1604">Ubuntu16.04</h2>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="k">default</span><span class="o">-</span><span class="n">jre</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="k">default</span><span class="o">-</span><span class="n">jdk</span>
+</pre></div>
+
+
+<h1 id="install-tomcat-9">Install Tomcat 9</h1>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.13/bin/apache-tomcat-9.0.13.tar.gz</span>
+
+<span class="n">sudo</span> <span class="n">tar</span> <span class="n">xvf</span> <span class="n">apache</span><span class="o">-</span><span class="n">tomcat</span><span class="o">-</span><span class="mf">9.0.13</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span> <span class="o">-</span><span class="n">C</span> <span class="o">/</span><span class="n">opt</span>
+
+<span class="n">sudo</span> <span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="n">apache</span><span class="o">-</span><span class="n">tomcat</span><span class="o">-</span><span class="mf">9.0.13</span> <span class="n">tomcat9</span>
+</pre></div>
+
+
+<p>新建服务单元 sudo vim /etc/systemd/system/tomcat9.service</p>
+<div class="hlcode"><pre><span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Tomcat9</span>
+<span class="na">After</span><span class="o">=</span><span class="s">network.target</span>
+
+<span class="k">[Service]</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">forking</span>
+<span class="na">User</span><span class="o">=</span><span class="s">root</span>
+<span class="na">Group</span><span class="o">=</span><span class="s">root</span>
+
+<span class="na">Environment</span><span class="o">=</span><span class="s">CATALINA_PID=/opt/tomcat9/temp/tomcat9.pid</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">CATALINA_HOME=/opt/tomcat9</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">CATALINA_BASE=/opt/tomcat9</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">&quot;CATALINA_OPTS=-Xms512m -Xmx512m&quot;</span>
+<span class="na">Environment</span><span class="o">=</span><span class="s">&quot;JAVA_OPTS=-Dfile.encoding=UTF-8 -Dnet.sf.ehcache.skipUpdateCheck=true -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+UseParNewGC&quot;</span>
+
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/opt/tomcat9/bin/startup.sh</span>
+<span class="na">ExecStop</span><span class="o">=</span><span class="s">/opt/tomcat9/bin/shutdown.sh</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">multi-user.target</span>
+</pre></div>
+
+
+<p>启动tomcat服务</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">tomcat9</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">tomcat9</span>
+</pre></div>
+
+
+<h2 id="firewall">firewall</h2>
+<p>设置开放8080端口，然后访问 localhost:8080</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">ufw</span> <span class="n">allow</span> <span class="mi">8080</span>
+</pre></div>
+
+
+<ul>
+<li><a href="https://www.digitalocean.com/community/tutorials/install-tomcat-9-ubuntu-1804">How To Install Apache Tomcat 9 on Ubuntu 18.04</a></li>
+</ul>
+<h1 id="install-mysql">Install MySQL</h1>
+<h2 id="1-install">1. install</h2>
+<p>密码设置成1234</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">mysql</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+
+
+<h2 id="2-verify">2. verify</h2>
+<div class="hlcode"><pre><span class="c1">// Show packages relating to mysql</span>
+<span class="err">$</span> <span class="n">dpkg</span> <span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">selections</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">mysql</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="mf">5.7</span>       <span class="n">install</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="mf">5.7</span>  <span class="n">install</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">common</span>           <span class="n">install</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">server</span>           <span class="n">install</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mf">5.7</span>       <span class="n">install</span>
+<span class="n">mysql</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="mf">5.7</span>  <span class="n">install</span>
+
+
+<span class="c1">// Check the details of a package</span>
+<span class="err">$</span> <span class="n">dpkg</span> <span class="o">--</span><span class="n">status</span> <span class="n">mysql</span><span class="o">-</span><span class="n">server</span>
+<span class="p">......</span>
+<span class="nl">Version:</span> <span class="mf">5.7.16</span><span class="o">-</span><span class="mh">0</span><span class="n">ubuntu0</span><span class="mf">.16.04.1</span>
+<span class="p">.......</span>
+
+<span class="c1">// List the installed files of a package</span>
+<span class="err">$</span> <span class="n">dpkg</span> <span class="o">--</span><span class="n">listfiles</span> <span class="n">mysql</span><span class="o">-</span><span class="n">server</span>
+<span class="p">.......</span>
+
+<span class="c1">// Check the location of &quot;mysqld&quot; (MySQL server deamon)</span>
+<span class="err">$</span> <span class="n">which</span> <span class="n">mysqld</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">mysqld</span>
+<span class="err">$</span> <span class="n">whereis</span> <span class="n">mysqld</span>
+<span class="nl">mysqld:</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">mysqld</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">man</span><span class="o">/</span><span class="n">man8</span><span class="o">/</span><span class="n">mysqld</span><span class="mf">.8</span><span class="p">.</span><span class="n">gz</span>
+<span class="err">$</span> <span class="n">man</span> <span class="n">mysqld</span>   <span class="c1">// Read the manual</span>
+
+<span class="c1">// Check the location of &quot;mysql&quot; (MySQL command-line client)</span>
+<span class="err">$</span> <span class="n">which</span> <span class="n">mysql</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span>
+<span class="err">$</span> <span class="n">whereis</span> <span class="n">mysql</span>
+<span class="nl">mysql:</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">mysql</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mysql</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="no">X11</span><span class="o">/</span><span class="n">mysql</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">mysql</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">man</span><span class="o">/</span><span class="n">man1</span><span class="o">/</span><span class="n">mysql</span><span class="mf">.1</span><span class="p">.</span><span class="n">gz</span>
+<span class="err">$</span> <span class="n">man</span> <span class="n">mysql</span>   <span class="c1">// Read the manual</span>
+</pre></div>
+
+
+<h2 id="3-config-mysql-server">3. config mysql server（可乎略）</h2>
+<p>Step 3: Configure MySQL Server<br />
+MySQL reads the startup options from the files shown below, in the specified order (top files are read first, files read later take precedence) (Reference: http://dev.mysql.com/doc/refman/5.7/en/option-files.html)</p>
+<div class="hlcode"><pre><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">my</span><span class="p">.</span><span class="n">cnf</span>
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">mysql</span><span class="o">/</span><span class="n">my</span><span class="p">.</span><span class="n">cnf</span>
+<span class="n">SYSCONFDIR</span><span class="o">/</span><span class="n">my</span><span class="p">.</span><span class="n">cnf</span>
+<span class="err">$</span><span class="n">MYSQL_HOME</span><span class="o">/</span><span class="n">my</span><span class="p">.</span><span class="n">cnf</span> <span class="p">(</span><span class="n">server</span> <span class="n">only</span><span class="p">)</span>
+<span class="n">The</span> <span class="n">file</span> <span class="n">specified</span> <span class="n">in</span> <span class="o">--</span><span class="n">defaults</span><span class="o">-</span><span class="n">extra</span><span class="o">-</span><span class="n">file</span> <span class="n">startup</span> <span class="n">option</span><span class="p">,</span> <span class="k">if</span> <span class="n">any</span>
+<span class="o">~/</span><span class="p">.</span><span class="n">my</span><span class="p">.</span><span class="n">cnf</span>
+<span class="o">~/</span><span class="p">.</span><span class="n">mylogin</span><span class="p">.</span><span class="n">cnf</span> <span class="p">(</span><span class="n">client</span> <span class="n">only</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The installation default /etc/mysql/my.cnf includes directories /etc/mysql/conf.d/ and /etc/mysql/mysql.conf.d/. The /etc/mysql/conf.d/mysql.cnf is empty. Hence, the main configuaration file is /etc/mysql/mysql.conf.d/mysqld.cnf.</p>
+<p>Browse through /etc/mysql/mysql.conf.d/mysqld.cnf:</p>
+<div class="hlcode"><pre><span class="k">[mysqld]</span>
+<span class="na">user</span>            <span class="o">=</span> <span class="s">mysql</span>
+<span class="na">port</span>            <span class="o">=</span> <span class="s">3306</span>
+<span class="na">basedir</span>         <span class="o">=</span> <span class="s">/usr</span>
+<span class="na">datadir</span>         <span class="o">=</span> <span class="s">/var/lib/mysql</span>
+<span class="err">......</span>
+<span class="na">log_error</span> <span class="o">=</span> <span class="s">/var/log/mysql/error.log</span>
+<span class="err">......</span>
+</pre></div>
+
+
+<ul>
+<li>A special user called "mysql" is created to run the MySQL server.</li>
+<li>The server runs on the default port number of 3306.</li>
+<li>The data directory is located at /var/lib/mysql (owned by mysql:mysql).</li>
+<li>The error log is located at /var/log/mysql/error.log.</li>
+</ul>
+<h2 id="4-startshutdown-mysql-server">4. start/shutdown mysql server</h2>
+<p>MySQL is run as a service called "mysql" (configured at "/etc/init.d/mysql"), which is started automatically after boot. To start/stop/restart mysql, you could:</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">start</span>
+<span class="err">$</span> <span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">stop</span>
+<span class="err">$</span> <span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">restart</span>
+   <span class="c1">// Stop and start</span>
+<span class="err">$</span> <span class="n">sudo</span> <span class="n">service</span> <span class="n">mysql</span> <span class="n">status</span>
+   <span class="c1">// Show the status</span>
+</pre></div>
+
+
+<h1 id="jdbc">jdbc</h1>
+<p>安装 <code>sudo apt-get install libmysql-java</code>; 然后 <code>ll /usr/share/java/mysql-connector-java*</code> 查看 <code>mysql-connector-java.jar</code> 的位置。拷贝到<code>/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/ext</code>目录下，这样webapps就不需要这个包了。另一种方法是直接拷贝到<code>/opt/tomcat9/webapps/Yelper/WEB-INF/lib</code> 目录下面也可以。</p>
+<h1 id="_1">应用部署</h1>
+<p>将应用放入 <code>/opt/tomcat9/webapps</code> 目录下即可。然后访问 <code>localhost:8080/Yelper</code></p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2018-11-29 18:38 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'j2ee',
+  title: 'j2ee',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,949 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>mapred-v1-scheduler - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;mapred-v1-scheduler</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">mapred-v1-scheduler</div>
+<div id="content">
+  <h1 id="mapred">第一代mapred调度架构</h1>
+<h2 id="mapredv1-scheduler">mapredv1 scheduler 分析</h2>
+<p>第一代 mapred 调度器是通过实现 <code>TaskScheduler</code> 接口来提供的，是一个可插拔的接口，用户可以定义自己的调度器，并通过配置文件指定。通过反射机制，可以加载调度器。但是，由于第一代 mapred 计算框架的设计的原因，调度方式其实受到 <code>JobTracker</code> 中资源表示和管理的严格限制。</p>
+<p>调度的资源表示模型采用的是 基于静态的固定分类的slots表示方法，将多维度的 CPU/MEM 等资源降维成一个维度的 slot，slot 中 CPU和MEM 大小则是通过配置得到。而每种 Task 需要的资源都是通过 slots 来表示。TaskTracker 上拥有 map slots 和 reduce slots, Task 需要多少 slots 由程序指定。这也意味着， 每个节点上的slot数目决定了该节点上的最大允许的任务并发度。 为了区分Map Task和Reduce Task所用资源量的差异， slot又被分为Map slot和Reduce slot两种， 它们分别只能被Map Task和Reduce Task使用。 Hadoop集群管理员可根据各个节点硬件配置和应用特点为它们分配不同的Map slot数（由参数mapred.tasktracker.map.tasks.maximum指定） 和Reduce slot数（由参数mapred.tasktracker.reduce.tasks.maximum指定） 。</p>
+<p>比如， 管理员事先规划好一个slot代表2 GB内存和1个CPU， 如果一个应用程序的任务只需要1 GB内存， 则会产生“资源碎片”， 从而降低集群资源的利用率； 同样， 如果一个应用程序的任务需要3 GB内存， 则会隐式地抢占其他任务的资源， 从而产生资源抢占现象， 可能导致集群利用率过高。 因此， 寻求一种更精细的资源划分方法显得尤为必要。</p>
+<p>在Hadoop中， 由于Map Task和Reduce Task运行时使用了不同种类的资源（不同种类的slot） ， 且这两种资源之间不能混用， 因此任务调度器分别对Map Task和Reduce Task单独进行调度。 而对于同一个作业而言， Reduce Task和Map Task之间存在数据依赖关系， 默认情况下， 当Map Task完成数目达到总数的5%（可通过参数mapred.reduce.slowstart.completed.maps配置） 后， 才开始启动Reduce Task(ReduceTask开始被调度).</p>
+<p>第一代 mapred 提供了一个默认的调度器，<code>org.apache.hadoop.mapred.JobQueueTaskScheduler</code>，也是一个FIFO作业调度器，实现非常简单。</p>
+<p>调度器调度的时候，并不是主动行为，而是每一个节点 <code>TaskTracker</code> 通过心跳的方式从 <code>JobTracker</code> 拿到任务列表，而 <code>JobTracker</code> 则利用调度器的 <code>assignTasks</code> 方法进行调度。也就是说调度器每次只处理一个 <code>TaskTracker</code> 的任务调度请求，他负责从队列中取出作业，再将作业的任务分配给可以接受的 <code>TaskTracker</code>，下图是作业提交到执行的过程。</p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobSubmitDataFlowProcess.jpg" style="width:700px;height:500px;">
+<caption><center> JobSubmitDataFlowProcess </center></caption></div>
+
+<p>是节点向 <code>JobTracker</code> 申请 <code>Task</code>，而不是任务被提交后就可以立即由调度器进行调度分配，Hadoop 采用这种模式，我认为主要是因为第一，离线任务都属于耗时任务，任务提交后排队延迟相对于任务本身的时间忽略不计, 而像公有云虚拟机调度，是希望调度能够立即响应出分配策略的，因此采用了主控制器主动分配给某个Host节点，而不是由Host节点主动通过心跳包拉取可分配的任务; 第二， <code>JobTracker</code> 和 <code>TaskTracker</code> 之间是通过 RPC 协议通讯的，这里 <code>JobTracker</code> 对于 <code>TaskTracker</code> 来说，扮演的其实是服务器的角色。<code>JobTracker</code> 不会去主动调用 <code>TaskTracker</code> 的方法。</p>
+<p><code>TaskScheduler</code> 和 <code>JobTracker</code> 之间其实是通过观察者模式来实现的，如图 JobTracker-TaskScheduler-观察者模式 所示，<code>JobTracker</code> 作为被观察者，其实真正的观察者是 <code>JobInProgressListener</code> , <code>TaskScheduler</code> 只是利用了注册在 <code>JobTracker</code> 中的 <code>JobInProgressListener</code> 来获取作业队列。在默认调度器中，队列其实是由<code>JobQueueJobInProgressListener.jobQueue</code> 数据结构来维护，他其实是 <code>TreeMap</code>，key 是 <code>JobSchedulingInfo</code>, 通过 开始时间 排序。</p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobQueueTaskScheduler-Observer.jpg" style="width:700px;height:500px;">
+<caption><center> JobQueueTaskScheduler-Observer </center></caption></div>
+
+<p>Job 的添加/删除 <code>JobTracker</code> 都会第一时间通知观察者，<code>addJob</code> 就是通知观察者有新 Job 加入的函数，观察者会触发相应的动作。</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kd">synchronized</span> <span class="n">JobStatus</span> <span class="nf">addJob</span><span class="o">(</span><span class="n">JobID</span> <span class="n">jobId</span><span class="o">,</span> <span class="n">JobInProgress</span> <span class="n">job</span><span class="o">)</span> 
+  <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="n">totalSubmissions</span><span class="o">++;</span>
+
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">jobs</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">taskScheduler</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">jobs</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getProfile</span><span class="o">().</span><span class="na">getJobID</span><span class="o">(),</span> <span class="n">job</span><span class="o">);</span>
+      <span class="k">for</span> <span class="o">(</span><span class="n">JobInProgressListener</span> <span class="n">listener</span> <span class="o">:</span> <span class="n">jobInProgressListeners</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">listener</span><span class="o">.</span><span class="na">jobAdded</span><span class="o">(</span><span class="n">job</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="n">myInstrumentation</span><span class="o">.</span><span class="na">submitJob</span><span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getJobConf</span><span class="o">(),</span> <span class="n">jobId</span><span class="o">);</span>
+  <span class="n">job</span><span class="o">.</span><span class="na">getQueueMetrics</span><span class="o">().</span><span class="na">submitJob</span><span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getJobConf</span><span class="o">(),</span> <span class="n">jobId</span><span class="o">);</span>
+  <span class="o">......</span>
+  <span class="k">return</span> <span class="n">job</span><span class="o">.</span><span class="na">getStatus</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>比如 <code>JobTracker</code> 在添加一个 Job的时候，对于默认调度器而言，调度器中的 <code>EagerTaskInitializationListener</code> 是通过线程池完成对作业的初始化的。</p>
+<p><code>Task</code>, <code>TaskTracker</code>, <code>Node</code> 的物理视图。 一个 <code>Node</code> 可以含有多个 <code>TaskTracker</code>, 但是通常而言是一个; 一个 <code>TaskTracker</code> 控制多个 <code>Task</code>， 而 <code>Task</code> 运行所在的 <code>Node</code> 一定是 <code>TaskTracker</code> 所在的<code>Node</code> 吗？<br />
+答案是否定的，<code>Task</code> 不一定运行在管理它的 <code>TaskTracker</code> 所在节点运行，例如有些 <code>Task</code> 不需要考虑 data locality, 可能它的 <code>InputSplitLocation</code> 是空的; 下图是 <code>Task</code>, <code>TaskTracker</code>, <code>Node</code> 的物理运行视图。<br />
+<img alt="" src="" /></p>
+<p>一个Task可使用多少slot完全由调度器决定。 当前大部分调度器只支持一个Task占用一个slot， 比如FIFO和Fair Scheduler； 而Capacity Scheduler则可根据Task内存需求为其分配多个slot。</p>
+<p><code>JobQueueTaskScheduler</code> 调度过程如下：<br />
+1. 获取整个集群的容量以及当前请求的 TaskTracker 容量。<br />
+2. 计算目前整个集群能达到的最大负载峰值。通过计算出所有在运行以及将要运行的任务，即总需求量，除以整个集群的容量即可求出负载因子。</p>
+<div class="hlcode"><pre>    <span class="kt">int</span> <span class="n">remainingReduceLoad</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">remainingMapLoad</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">for</span> <span class="o">(</span><span class="n">JobInProgress</span> <span class="n">job</span> <span class="o">:</span> <span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getStatus</span><span class="o">().</span><span class="na">getRunState</span><span class="o">()</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="na">RUNNING</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">remainingMapLoad</span> <span class="o">+=</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">desiredMaps</span><span class="o">()</span> <span class="o">-</span> <span class="n">job</span><span class="o">.</span><span class="na">finishedMaps</span><span class="o">());</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">scheduleReduces</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">remainingReduceLoad</span> <span class="o">+=</span> 
+              <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">desiredReduces</span><span class="o">()</span> <span class="o">-</span> <span class="n">job</span><span class="o">.</span><span class="na">finishedReduces</span><span class="o">());</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Compute the &#39;load factor&#39; for maps and reduces</span>
+    <span class="kt">double</span> <span class="n">mapLoadFactor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">clusterMapCapacity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">mapLoadFactor</span> <span class="o">=</span> <span class="o">(</span><span class="kt">double</span><span class="o">)</span><span class="n">remainingMapLoad</span> <span class="o">/</span> <span class="n">clusterMapCapacity</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kt">double</span> <span class="n">reduceLoadFactor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">clusterReduceCapacity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">reduceLoadFactor</span> <span class="o">=</span> <span class="o">(</span><span class="kt">double</span><span class="o">)</span><span class="n">remainingReduceLoad</span> <span class="o">/</span> <span class="n">clusterReduceCapacity</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></div>
+
+
+<ol>
+<li>计算当前 TaskTracker 可分配的空闲资源，这里采用的策略是不能超过负载峰值，即 TaskTracker 的空闲资源是其容量乘于负载因子，而不是真实的容量。这也是为了保证集群的负载均衡，让所有TaskTracker 尽可能保持均衡的资源消耗。</li>
+</ol>
+<div class="hlcode"><pre><span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerCurrentMapCapacity</span> <span class="o">=</span> 
+      <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span><span class="n">Math</span><span class="o">.</span><span class="na">ceil</span><span class="o">(</span><span class="n">mapLoadFactor</span> <span class="o">*</span> <span class="n">trackerMapCapacity</span><span class="o">),</span> 
+                              <span class="n">trackerMapCapacity</span><span class="o">);</span>
+<span class="kt">int</span> <span class="n">availableMapSlots</span> <span class="o">=</span> <span class="n">trackerCurrentMapCapacity</span> <span class="o">-</span> <span class="n">trackerRunningMaps</span><span class="o">;</span>
+</pre></div>
+
+
+<ol>
+<li>遍历队列中的作业，尝试将所有可分配的任务分配给该 TaskTracker. v1 中的任务选择策略是一样的， hadoop 将之封装在通用模块中供各种调度器使用，具体就是调用 <code>JobInProgress.obtainNewNodeOrRackLocalMapTask</code> 或者 <code>JobInProgress.obtainNewNonLocalMapTask</code> 来获取可分配任务。这些函数最终调用的是 <code>findNewMapTask</code>， 通过采用网络拓扑和数据本地性策略来分配。</li>
+</ol>
+<div class="hlcode"><pre><span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;</span> <span class="nf">assignTasks</span><span class="o">(</span><span class="n">TaskTracker</span> <span class="n">taskTracker</span><span class="o">)</span>
+      <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">TaskTrackerStatus</span> <span class="n">taskTrackerStatus</span> <span class="o">=</span> <span class="n">taskTracker</span><span class="o">.</span><span class="na">getStatus</span><span class="o">();</span> 
+    <span class="n">ClusterStatus</span> <span class="n">clusterStatus</span> <span class="o">=</span> <span class="n">taskTrackerManager</span><span class="o">.</span><span class="na">getClusterStatus</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">numTaskTrackers</span> <span class="o">=</span> <span class="n">clusterStatus</span><span class="o">.</span><span class="na">getTaskTrackers</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">clusterMapCapacity</span> <span class="o">=</span> <span class="n">clusterStatus</span><span class="o">.</span><span class="na">getMaxMapTasks</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">clusterReduceCapacity</span> <span class="o">=</span> <span class="n">clusterStatus</span><span class="o">.</span><span class="na">getMaxReduceTasks</span><span class="o">();</span>
+
+    <span class="n">Collection</span><span class="o">&lt;</span><span class="n">JobInProgress</span><span class="o">&gt;</span> <span class="n">jobQueue</span> <span class="o">=</span>
+      <span class="n">jobQueueJobInProgressListener</span><span class="o">.</span><span class="na">getJobQueue</span><span class="o">();</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// Get map + reduce counts for the current tracker.</span>
+    <span class="c1">//</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerMapCapacity</span> <span class="o">=</span> <span class="n">taskTrackerStatus</span><span class="o">.</span><span class="na">getMaxMapSlots</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerReduceCapacity</span> <span class="o">=</span> <span class="n">taskTrackerStatus</span><span class="o">.</span><span class="na">getMaxReduceSlots</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerRunningMaps</span> <span class="o">=</span> <span class="n">taskTrackerStatus</span><span class="o">.</span><span class="na">countMapTasks</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerRunningReduces</span> <span class="o">=</span> <span class="n">taskTrackerStatus</span><span class="o">.</span><span class="na">countReduceTasks</span><span class="o">();</span>
+
+    <span class="c1">// Assigned tasks</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;</span> <span class="n">assignedTasks</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;();</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// Compute (running + pending) map and reduce task numbers across pool</span>
+    <span class="c1">//</span>
+    <span class="kt">int</span> <span class="n">remainingReduceLoad</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">remainingMapLoad</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">for</span> <span class="o">(</span><span class="n">JobInProgress</span> <span class="n">job</span> <span class="o">:</span> <span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getStatus</span><span class="o">().</span><span class="na">getRunState</span><span class="o">()</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="na">RUNNING</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">remainingMapLoad</span> <span class="o">+=</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">desiredMaps</span><span class="o">()</span> <span class="o">-</span> <span class="n">job</span><span class="o">.</span><span class="na">finishedMaps</span><span class="o">());</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">scheduleReduces</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">remainingReduceLoad</span> <span class="o">+=</span> 
+              <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">desiredReduces</span><span class="o">()</span> <span class="o">-</span> <span class="n">job</span><span class="o">.</span><span class="na">finishedReduces</span><span class="o">());</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Compute the &#39;load factor&#39; for maps and reduces</span>
+    <span class="kt">double</span> <span class="n">mapLoadFactor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">clusterMapCapacity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">mapLoadFactor</span> <span class="o">=</span> <span class="o">(</span><span class="kt">double</span><span class="o">)</span><span class="n">remainingMapLoad</span> <span class="o">/</span> <span class="n">clusterMapCapacity</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kt">double</span> <span class="n">reduceLoadFactor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">clusterReduceCapacity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">reduceLoadFactor</span> <span class="o">=</span> <span class="o">(</span><span class="kt">double</span><span class="o">)</span><span class="n">remainingReduceLoad</span> <span class="o">/</span> <span class="n">clusterReduceCapacity</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// In the below steps, we allocate first map tasks (if appropriate),</span>
+    <span class="c1">// and then reduce tasks if appropriate.  We go through all jobs</span>
+    <span class="c1">// in order of job arrival; jobs only get serviced if their </span>
+    <span class="c1">// predecessors are serviced, too.</span>
+    <span class="c1">//</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// We assign tasks to the current taskTracker if the given machine </span>
+    <span class="c1">// has a workload that&#39;s less than the maximum load of that kind of</span>
+    <span class="c1">// task.</span>
+    <span class="c1">// However, if the cluster is close to getting loaded i.e. we don&#39;t</span>
+    <span class="c1">// have enough _padding_ for speculative executions etc., we only </span>
+    <span class="c1">// schedule the &quot;highest priority&quot; task i.e. the task from the job </span>
+    <span class="c1">// with the highest priority.</span>
+    <span class="c1">//</span>
+
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerCurrentMapCapacity</span> <span class="o">=</span> 
+      <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span><span class="n">Math</span><span class="o">.</span><span class="na">ceil</span><span class="o">(</span><span class="n">mapLoadFactor</span> <span class="o">*</span> <span class="n">trackerMapCapacity</span><span class="o">),</span> 
+                              <span class="n">trackerMapCapacity</span><span class="o">);</span>
+    <span class="kt">int</span> <span class="n">availableMapSlots</span> <span class="o">=</span> <span class="n">trackerCurrentMapCapacity</span> <span class="o">-</span> <span class="n">trackerRunningMaps</span><span class="o">;</span>
+    <span class="kt">boolean</span> <span class="n">exceededMapPadding</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">availableMapSlots</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">exceededMapPadding</span> <span class="o">=</span> 
+        <span class="n">exceededPadding</span><span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="n">clusterStatus</span><span class="o">,</span> <span class="n">trackerMapCapacity</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="n">numLocalMaps</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">numNonLocalMaps</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="nl">scheduleMaps:</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">availableMapSlots</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">JobInProgress</span> <span class="n">job</span> <span class="o">:</span> <span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getStatus</span><span class="o">().</span><span class="na">getRunState</span><span class="o">()</span> <span class="o">!=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="na">RUNNING</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">continue</span><span class="o">;</span>
+          <span class="o">}</span>
+
+          <span class="n">Task</span> <span class="n">t</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+          <span class="c1">// Try to schedule a node-local or rack-local Map task</span>
+          <span class="n">t</span> <span class="o">=</span> 
+            <span class="n">job</span><span class="o">.</span><span class="na">obtainNewNodeOrRackLocalMapTask</span><span class="o">(</span><span class="n">taskTrackerStatus</span><span class="o">,</span> 
+                <span class="n">numTaskTrackers</span><span class="o">,</span> <span class="n">taskTrackerManager</span><span class="o">.</span><span class="na">getNumberOfUniqueHosts</span><span class="o">());</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">assignedTasks</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+            <span class="o">++</span><span class="n">numLocalMaps</span><span class="o">;</span>
+
+            <span class="c1">// Don&#39;t assign map tasks to the hilt!</span>
+            <span class="c1">// Leave some free slots in the cluster for future task-failures,</span>
+            <span class="c1">// speculative tasks etc. beyond the highest priority job</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">exceededMapPadding</span><span class="o">)</span> <span class="o">{</span>
+              <span class="k">break</span> <span class="n">scheduleMaps</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="c1">// Try all jobs again for the next Map task </span>
+            <span class="k">break</span><span class="o">;</span>
+          <span class="o">}</span>
+
+          <span class="c1">// Try to schedule a node-local or rack-local Map task</span>
+          <span class="n">t</span> <span class="o">=</span> 
+            <span class="n">job</span><span class="o">.</span><span class="na">obtainNewNonLocalMapTask</span><span class="o">(</span><span class="n">taskTrackerStatus</span><span class="o">,</span> <span class="n">numTaskTrackers</span><span class="o">,</span>
+                                   <span class="n">taskTrackerManager</span><span class="o">.</span><span class="na">getNumberOfUniqueHosts</span><span class="o">());</span>
+
+          <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">assignedTasks</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+            <span class="o">++</span><span class="n">numNonLocalMaps</span><span class="o">;</span>
+
+            <span class="c1">// We assign at most 1 off-switch or speculative task</span>
+            <span class="c1">// This is to prevent TaskTrackers from stealing local-tasks</span>
+            <span class="c1">// from other TaskTrackers.</span>
+            <span class="k">break</span> <span class="n">scheduleMaps</span><span class="o">;</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="kt">int</span> <span class="n">assignedMaps</span> <span class="o">=</span> <span class="n">assignedTasks</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// Same thing, but for reduce tasks</span>
+    <span class="c1">// However we _never_ assign more than 1 reduce task per heartbeat</span>
+    <span class="c1">//</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">trackerCurrentReduceCapacity</span> <span class="o">=</span> 
+      <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span><span class="n">Math</span><span class="o">.</span><span class="na">ceil</span><span class="o">(</span><span class="n">reduceLoadFactor</span> <span class="o">*</span> <span class="n">trackerReduceCapacity</span><span class="o">),</span> 
+               <span class="n">trackerReduceCapacity</span><span class="o">);</span>
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">availableReduceSlots</span> <span class="o">=</span> 
+      <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">((</span><span class="n">trackerCurrentReduceCapacity</span> <span class="o">-</span> <span class="n">trackerRunningReduces</span><span class="o">),</span> <span class="mi">1</span><span class="o">);</span>
+    <span class="kt">boolean</span> <span class="n">exceededReducePadding</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">availableReduceSlots</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">exceededReducePadding</span> <span class="o">=</span> <span class="n">exceededPadding</span><span class="o">(</span><span class="kc">false</span><span class="o">,</span> <span class="n">clusterStatus</span><span class="o">,</span> 
+                                              <span class="n">trackerReduceCapacity</span><span class="o">);</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">JobInProgress</span> <span class="n">job</span> <span class="o">:</span> <span class="n">jobQueue</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getStatus</span><span class="o">().</span><span class="na">getRunState</span><span class="o">()</span> <span class="o">!=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="na">RUNNING</span> <span class="o">||</span>
+              <span class="n">job</span><span class="o">.</span><span class="na">numReduceTasks</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">continue</span><span class="o">;</span>
+          <span class="o">}</span>
+
+          <span class="n">Task</span> <span class="n">t</span> <span class="o">=</span> 
+            <span class="n">job</span><span class="o">.</span><span class="na">obtainNewReduceTask</span><span class="o">(</span><span class="n">taskTrackerStatus</span><span class="o">,</span> <span class="n">numTaskTrackers</span><span class="o">,</span> 
+                                    <span class="n">taskTrackerManager</span><span class="o">.</span><span class="na">getNumberOfUniqueHosts</span><span class="o">()</span>
+                                    <span class="o">);</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">assignedTasks</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+            <span class="k">break</span><span class="o">;</span>
+          <span class="o">}</span>
+
+          <span class="c1">// Don&#39;t assign reduce tasks to the hilt!</span>
+          <span class="c1">// Leave some free slots in the cluster for future task-failures,</span>
+          <span class="c1">// speculative tasks etc. beyond the highest priority job</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">exceededReducePadding</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">break</span><span class="o">;</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">LOG</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&quot;Task assignments for &quot;</span> <span class="o">+</span> <span class="n">taskTrackerStatus</span><span class="o">.</span><span class="na">getTrackerName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; --&gt; &quot;</span> <span class="o">+</span>
+                <span class="s">&quot;[&quot;</span> <span class="o">+</span> <span class="n">mapLoadFactor</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">trackerMapCapacity</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> 
+                <span class="n">trackerCurrentMapCapacity</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">trackerRunningMaps</span> <span class="o">+</span> <span class="s">&quot;] -&gt; [&quot;</span> <span class="o">+</span> 
+                <span class="o">(</span><span class="n">trackerCurrentMapCapacity</span> <span class="o">-</span> <span class="n">trackerRunningMaps</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span>
+                <span class="n">assignedMaps</span> <span class="o">+</span> <span class="s">&quot; (&quot;</span> <span class="o">+</span> <span class="n">numLocalMaps</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">numNonLocalMaps</span> <span class="o">+</span> 
+                <span class="s">&quot;)] [&quot;</span> <span class="o">+</span> <span class="n">reduceLoadFactor</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">trackerReduceCapacity</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> 
+                <span class="n">trackerCurrentReduceCapacity</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span> <span class="o">+</span> <span class="n">trackerRunningReduces</span> <span class="o">+</span> 
+                <span class="s">&quot;] -&gt; [&quot;</span> <span class="o">+</span> <span class="o">(</span><span class="n">trackerCurrentReduceCapacity</span> <span class="o">-</span> <span class="n">trackerRunningReduces</span><span class="o">)</span> <span class="o">+</span> 
+                <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="o">(</span><span class="n">assignedTasks</span><span class="o">.</span><span class="na">size</span><span class="o">()-</span><span class="n">assignedMaps</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="n">assignedTasks</span><span class="o">;</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<h2 id="_1">任务选择策略分析</h2>
+<p>选择任务能够是否能够分配给TaskTracker，首先得把Job拆分成Tasks，然后根据相应的策略来分析是否将Task 分配给TaskTracker。Hadoop 不仅使用计算资源slot模型来调度和分配任务，而且引入网络拓扑，考虑数据本地性，网络带宽等拓扑数据进行调度。</p>
+<h3 id="_2">数据本地性</h3>
+<p>Hadoop根据输入数据与实际分配的计算资源之间的距离将任务分成三类： node-local(输入数据与计算资源同节点), rack-local(同机架)和 off-switch(跨机架). 当输入数据与计算资源位于不同节点上时， Hadoop需将输入数据远程复制到计算资源所在节点进行处理。 两者距离越远，需要的网络开销越大， 因此调度器进行任务分配时尽量选择离输入数据近的节点资源。<br />
+当Hadoop进行任务选择时， 采用了自下向上查找的策略。 由于当前采用了两层网络拓扑结构， 因此这种选择机制决定了任务优先级从高到低依次为： node-local、 rack-local和off-switch。 下面结合图介绍三种类型的任务被选中的场景。</p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/hadoopNetworkTopology.jpg" style="width:700px;height:500px;">
+<caption><center> hadoopNetworkTopology </center></caption></div>
+
+<p>假设某一时刻， TaskTracker X出现空闲的计算资源， 向JobTracker汇报心跳请求新的任务， 调度器根据一定的调度策略为之选择了任务Y。<br />
+场景1 如果X是H1， 任务Y输入数据块为b1， 则该任务为node-local。<br />
+场景2 如果X是H1， 任务Y输入数据块为b2， 则该任务为rack-local。<br />
+场景3 如果X是H1， 任务Y输入数据块为b4， 则该任务为off-switch。</p>
+<h3 id="job-tasks">Job 和 Tasks 初始化</h3>
+<p><code>Job</code> 的提交/删除/更新都是通过观察者模式来实现，客户端调用 <code>submitJob</code> RPC 以后，<code>JobTracker</code> 就会通知所有的监听器 <code>Job</code> 被提交。<code>Job</code> 被提交之后的行为基本上通过外部调度器来完成。当然 <code>JobRecoveryManager</code> 也会进行<code>Job</code> 初始化工作。</p>
+<p>例如 <code>JobQueueTaskScheduler</code> 是通过 <code>EagerTaskInitializationListener</code> 监听器实现初始化，并且该监听器内部维护一个 <code>jobInitManagerThread</code> 线程完成 <code>Job</code> 的初始化工作, 该线程又是通过线程池来执行要初始化的 <code>Job</code>。</p>
+<p>而 <code>FairScheduler</code> 则通过 <code>JobInitializer</code> 初始化。</p>
+<p><code>JobTracker</code> 提供了 <code>initJob()</code> 方法来对 Job 进行初始化，该方法调用的是 <code>JobInProgress.initTasks()</code> 方法。主要是设置 Job 的相关 Tasks 以及他们的具有本地数据的节点缓存。</p>
+<ol>
+<li>设置 Job 优先级</li>
+<li>生成 security key</li>
+<li>根据输入文件进行分片计算，<code>createSplits(jobId)</code> 创建出 Map 的分片元信息，设置 Map 任务数 numMapTasks, 这里必须和splits分片数一样</li>
+<li>设置 QueueMetrics 计量</li>
+<li>新建 maps TaskInProgress 任务数组</li>
+<li><code>createCache()</code> 创建 <code>nonRunningMapCache</code> 节点本地任务缓存</li>
+<li>新建 reduces TaskInProgress 任务数组</li>
+<li>设置 cleanup 和 setup 任务</li>
+</ol>
+<h1 id="orgapachehadoopmapredjobinprogress">org.apache.hadoop.mapred.JobInProgress</h1>
+<p>这里的步骤6 是利用数据本地性策略的关键，首先创建该 <code>Map&lt;Node, List&lt;TaskInProgress&gt;&gt;</code> 的缓存map对象，该对象中包含 每个节点可以运行的任务列表。缓存利用了网络拓扑结构，Hadoop 利用 <code>org.apache.hadoop.net.NetworkTopology</code> 将整个集群抽象成树形网络拓扑结构，其中 host, rack/switch/router, datacenter 都是抽象成节点 Node. Hadoop 只能感知到交换机这一层。如图 是构建该缓存的过程，<code>maxLevel</code>控制着缓存的级别，第2层就是交换机这一层，第0层即使node-local, 第1层就是rack-local, 如果允许 off-switch, 则再利用缓存查询的时候，可以直接遍历到该层来获取Tasks。</p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/HadoopNetwokTopologyNodeCache.jpg" style="width:700px;height:500px;">
+<caption><center> hadoopNetworkTopologyNodeCache </center></caption></div>
+
+<div class="hlcode"><pre><span class="kd">private</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;&gt;</span> <span class="n">createCache</span><span class="o">(</span>
+                                 <span class="n">TaskSplitMetaInfo</span><span class="o">[]</span> <span class="n">splits</span><span class="o">,</span> <span class="kt">int</span> <span class="n">maxLevel</span><span class="o">)</span>
+                                 <span class="kd">throws</span> <span class="n">UnknownHostException</span> <span class="o">{</span>
+    <span class="c1">// 创建缓存对象</span>
+    <span class="n">Map</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;&gt;</span> <span class="n">cache</span> <span class="o">=</span> 
+      <span class="k">new</span> <span class="n">IdentityHashMap</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;&gt;(</span><span class="n">maxLevel</span><span class="o">);</span>
+
+    <span class="c1">// 每一个数据分片会对应一个MapTask，而数据分片在HDFS上都含有副本，因此可以得到某个分片splits[i]的所有副本所在的机器 splitLocations</span>
+    <span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">uniqueHosts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TreeSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">splits</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+      <span class="n">String</span><span class="o">[]</span> <span class="n">splitLocations</span> <span class="o">=</span> <span class="n">splits</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">getLocations</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">splitLocations</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">splitLocations</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">nonLocalMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">maps</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+        <span class="k">continue</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="c1">// 对所有含有副本数据的host，都加入到 map&lt;node，tips&gt; cache 缓存之中</span>
+      <span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">host:</span> <span class="n">splitLocations</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">resolveAndAddToTopology</span><span class="o">(</span><span class="n">host</span><span class="o">);</span>
+        <span class="n">uniqueHosts</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">host</span><span class="o">);</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;tip:&quot;</span> <span class="o">+</span> <span class="n">maps</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">getTIPId</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; has split on node:&quot;</span> <span class="o">+</span> <span class="n">node</span><span class="o">);</span>
+        <span class="c1">// 这里是对树形网络拓扑结构，将副本数据所在的顶层rack/switch/router Node 也加入缓存，这样就知道每个Node缓存适合运行的tips列表了</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">maxLevel</span><span class="o">;</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+          <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">hostMaps</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">node</span><span class="o">);</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">hostMaps</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">hostMaps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;();</span>
+            <span class="n">cache</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">hostMaps</span><span class="o">);</span>
+            <span class="n">hostMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">maps</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+          <span class="o">}</span>
+          <span class="c1">//check whether the hostMaps already contains an entry for a TIP</span>
+          <span class="c1">//This will be true for nodes that are racks and multiple nodes in</span>
+          <span class="c1">//the rack contain the input for a tip. Note that if it already</span>
+          <span class="c1">//exists in the hostMaps, it must be the last element there since</span>
+          <span class="c1">//we process one TIP at a time sequentially in the split-size order</span>
+          <span class="c1">// 多个数据副本可能在同一个rack之内，因此可能已经含有该rack Node 的hostMaps 了，检查是否已经加入过该maptask[i], 没有则加入</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">hostMaps</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">hostMaps</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">!=</span> <span class="n">maps</span><span class="o">[</span><span class="n">i</span><span class="o">])</span> <span class="o">{</span>
+            <span class="n">hostMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">maps</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+          <span class="o">}</span>
+          <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">getParent</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">//设置需要使用 data locality 任务的等待时间因子</span>
+    <span class="c1">// Calibrate the localityWaitFactor - Do not override user intent!</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">localityWaitFactor</span> <span class="o">==</span> <span class="n">DEFAULT_LOCALITY_WAIT_FACTOR</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">int</span> <span class="n">jobNodes</span> <span class="o">=</span> <span class="n">uniqueHosts</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+      <span class="kt">int</span> <span class="n">clusterNodes</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getNumberOfUniqueHosts</span><span class="o">();</span>
+
+      <span class="k">if</span> <span class="o">(</span><span class="n">clusterNodes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">localityWaitFactor</span> <span class="o">=</span> 
+          <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">((</span><span class="kt">float</span><span class="o">)</span><span class="n">jobNodes</span><span class="o">/</span><span class="n">clusterNodes</span><span class="o">,</span> <span class="n">localityWaitFactor</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="n">jobId</span> <span class="o">+</span> <span class="s">&quot; LOCALITY_WAIT_FACTOR=&quot;</span> <span class="o">+</span> <span class="n">localityWaitFactor</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="n">cache</span><span class="o">;</span>
+  <span class="o">}</span>
+
+ <span class="kd">public</span> <span class="n">Node</span> <span class="nf">resolveAndAddToTopology</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">UnknownHostException</span> <span class="o">{</span>
+  <span class="n">List</span> <span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tmpList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;(</span><span class="mi">1</span><span class="o">);</span>
+  <span class="n">tmpList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+  <span class="n">List</span> <span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">rNameList</span> <span class="o">=</span> <span class="n">dnsToSwitchMapping</span><span class="o">.</span><span class="na">resolve</span><span class="o">(</span><span class="n">tmpList</span><span class="o">);</span>
+  <span class="n">String</span> <span class="n">rName</span> <span class="o">=</span> <span class="n">rNameList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+  <span class="n">String</span> <span class="n">networkLoc</span> <span class="o">=</span> <span class="n">NodeBase</span><span class="o">.</span><span class="na">normalize</span><span class="o">(</span><span class="n">rName</span><span class="o">);</span>
+  <span class="k">return</span> <span class="nf">addHostToNodeMapping</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">networkLoc</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// clusterMap = new NetworkTopology();</span>
+<span class="kd">private</span> <span class="n">Node</span> <span class="nf">addHostToNodeMapping</span><span class="o">(</span><span class="n">String</span> <span class="n">host</span><span class="o">,</span> <span class="n">String</span> <span class="n">networkLoc</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">nodesAtMaxLevel</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">((</span><span class="n">node</span> <span class="o">=</span> <span class="n">clusterMap</span><span class="o">.</span><span class="na">getNode</span><span class="o">(</span><span class="n">networkLoc</span><span class="o">+</span><span class="s">&quot;/&quot;</span><span class="o">+</span><span class="n">host</span><span class="o">))</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">node</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NodeBase</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">networkLoc</span><span class="o">);</span>
+      <span class="n">clusterMap</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">node</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">getLevel</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">getNumTaskCacheLevels</span><span class="o">())</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">fatal</span><span class="o">(</span><span class="s">&quot;Got a host whose level is: &quot;</span> <span class="o">+</span> <span class="n">node</span><span class="o">.</span><span class="na">getLevel</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span> 
+            <span class="o">+</span> <span class="s">&quot; Should get at least a level of value: &quot;</span> 
+            <span class="o">+</span> <span class="n">getNumTaskCacheLevels</span><span class="o">());</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">stopTracker</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ie</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Exception encountered during shutdown: &quot;</span> 
+              <span class="o">+</span> <span class="n">StringUtils</span><span class="o">.</span><span class="na">stringifyException</span><span class="o">(</span><span class="n">ie</span><span class="o">));</span>
+          <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+      <span class="n">hostnameToNodeMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">node</span><span class="o">);</span>
+      <span class="c1">// Make an entry for the node at the max level in the cache</span>
+      <span class="n">nodesAtMaxLevel</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">getParentNode</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">getNumTaskCacheLevels</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">));</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>以上创建节点任务映射缓存的目的就是为调度任务提供本地性选择策略。最后选择的 Task 只是一次尝试运行。需要注意的是，JobTracker 中有一个 <code>org.apache.hadoop.mapred.TaskInProgress</code> 类和 <code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 类不是同一个。一个Task Attempt在某个节点上运行失败之后， 调度器便不会再将同一个Task的Task Attempt分配给该节点； 而<br />
+一个Task Attempt被杀掉后， 仍可能被调度到同一个节点上运行。</p>
+<p>TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskInProgress的一个 TaskAttempt 任务， 是TaskInProgress 的一次任务尝试， 该尝试任务 Task(MapTask/ReduceTask) 会装入TaskAction 一起序列化通过RPC 从 JobTracker 流入 TaskTracker, TaskTracker 利用自己的<code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 对 Task 进行重新封装，该内部TIP包含 Task, TaskRunner, TaskLauncher, TaskStatus 是Task真实运行状态和行为控制的数据结构，JobTracker 中的 <code>org.apache.hadoop.mapred.TaskInProgress</code> 只是含有一些运行过程的数据。</p>
+<h3 id="task">Task 分配</h3>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">Task</span> <span class="nf">obtainNewNodeLocalMapTask</span><span class="o">(</span><span class="n">TaskTrackerStatus</span> <span class="n">tts</span><span class="o">,</span>
+                                                     <span class="kt">int</span> <span class="n">clusterSize</span><span class="o">,</span>
+                                                     <span class="kt">int</span> <span class="n">numUniqueHosts</span><span class="o">)</span>
+  <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">tasksInited</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Cannot create task split for &quot;</span> <span class="o">+</span> <span class="n">profile</span><span class="o">.</span><span class="na">getJobID</span><span class="o">());</span>
+      <span class="k">try</span> <span class="o">{</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">IOException</span><span class="o">(</span><span class="s">&quot;state = &quot;</span> <span class="o">+</span> <span class="n">status</span><span class="o">.</span><span class="na">getRunState</span><span class="o">());</span> <span class="o">}</span>
+      <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ioe</span><span class="o">)</span> <span class="o">{</span><span class="n">ioe</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();}</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="n">target</span> <span class="o">=</span> <span class="n">findNewMapTask</span><span class="o">(</span><span class="n">tts</span><span class="o">,</span> <span class="n">clusterSize</span><span class="o">,</span> <span class="n">numUniqueHosts</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> 
+                                <span class="n">status</span><span class="o">.</span><span class="na">mapProgress</span><span class="o">());</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">target</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="n">Task</span> <span class="n">result</span> <span class="o">=</span> <span class="n">maps</span><span class="o">[</span><span class="n">target</span><span class="o">].</span><span class="na">getTaskToRun</span><span class="o">(</span><span class="n">tts</span><span class="o">.</span><span class="na">getTrackerName</span><span class="o">());</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">addRunningTaskToTIP</span><span class="o">(</span><span class="n">maps</span><span class="o">[</span><span class="n">target</span><span class="o">],</span> <span class="n">result</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">(),</span> <span class="n">tts</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+      <span class="n">resetSchedulingOpportunities</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="c1">// TaskInProgress</span>
+<span class="kd">public</span> <span class="n">Task</span> <span class="nf">getTaskToRun</span><span class="o">(</span><span class="n">String</span> <span class="n">taskTracker</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">execStartTime</span><span class="o">){</span>
+      <span class="c1">// assume task starts running now</span>
+      <span class="n">execStartTime</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getClock</span><span class="o">().</span><span class="na">getTime</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="c1">// 创建一个任务尝试id,返回一个新的MapTask或者ReduceTask, 对于JobTracker 来说只是TIP中的一次尝试，对于TaskTracker来说就是一个真实运行的任务</span>
+    <span class="c1">// Create the &#39;taskid&#39;; do not count the &#39;killed&#39; tasks against the job!</span>
+    <span class="n">TaskAttemptID</span> <span class="n">taskid</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">nextTaskId</span> <span class="o">&lt;</span> <span class="o">(</span><span class="n">MAX_TASK_EXECS</span> <span class="o">+</span> <span class="n">maxTaskAttempts</span> <span class="o">+</span> <span class="n">numKilledTasks</span><span class="o">))</span> <span class="o">{</span>
+      <span class="c1">// Make sure that the attempts are unqiue across restarts</span>
+      <span class="kt">int</span> <span class="n">attemptId</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="na">getNumRestarts</span><span class="o">()</span> <span class="o">*</span> <span class="n">NUM_ATTEMPTS_PER_RESTART</span> <span class="o">+</span> <span class="n">nextTaskId</span><span class="o">;</span>
+      <span class="n">taskid</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TaskAttemptID</span><span class="o">(</span> <span class="n">id</span><span class="o">,</span> <span class="n">attemptId</span><span class="o">);</span>
+      <span class="o">++</span><span class="n">nextTaskId</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Exceeded limit of &quot;</span> <span class="o">+</span> <span class="o">(</span><span class="n">MAX_TASK_EXECS</span> <span class="o">+</span> <span class="n">maxTaskAttempts</span><span class="o">)</span> <span class="o">+</span>
+              <span class="s">&quot; (plus &quot;</span> <span class="o">+</span> <span class="n">numKilledTasks</span> <span class="o">+</span> <span class="s">&quot; killed)&quot;</span>  <span class="o">+</span> 
+              <span class="s">&quot; attempts for the tip &#39;&quot;</span> <span class="o">+</span> <span class="n">getTIPId</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;&#39;&quot;</span><span class="o">);</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="nf">addRunningTask</span><span class="o">(</span><span class="n">taskid</span><span class="o">,</span> <span class="n">taskTracker</span><span class="o">);</span>
+  <span class="o">}</span>
+ <span class="c1">// obtainNewNodeOrRackLocalMapTask</span>
+<span class="c1">// int target = findNewMapTask(tts, clusterSize, numUniqueHosts, maxLevel, status.mapProgress());</span>
+
+<span class="c1">// obtainNewNonLocalMapTask</span>
+<span class="c1">// int target = findNewMapTask(tts, clusterSize, numUniqueHosts, NON_LOCAL_CACHE_LEVEL, status.mapProgress());</span>
+</pre></div>
+
+
+<p>当需要从作业中选择一个MapTask时， 调度器会直接调用<code>JobInProgress</code>中的<code>obtainNewMapTask</code>等方法。 这些方法最终调用的是 <code>findNewMapTask</code> 该方法封装了所有调度器公用的任务选择策略实现。 其主要思想是优先选择运行失败的任务， 以让其快速获取重新运行的机会， 其次是按照数据本地性策略选择尚未运行的任务， 最后是查找正在运行的任务， 尝试为“拖后腿”任务启动备份任务。 </p>
+<p>具体步骤如下：<br />
+1. 合法性检查。 如果一个作业在某个节点上失败任务数目超过一定阈值或者该节点剩余磁盘容量不足， 则不再将该作业的任何任务分配给该节点。</p>
+<div class="hlcode"><pre><span class="c1">// Check to ensure this TaskTracker has enough resources to </span>
+<span class="c1">// run tasks from this job</span>
+<span class="n">long</span> <span class="n">outSize</span> <span class="o">=</span> <span class="n">resourceEstimator</span><span class="p">.</span><span class="n">getEstimatedMapOutputSize</span><span class="p">();</span>
+<span class="n">long</span> <span class="n">availSpace</span> <span class="o">=</span> <span class="n">tts</span><span class="p">.</span><span class="n">getResourceStatus</span><span class="p">().</span><span class="n">getAvailableSpace</span><span class="p">();</span>
+<span class="k">if</span><span class="p">(</span><span class="n">availSpace</span> <span class="o">&lt;</span> <span class="n">outSize</span><span class="p">)</span> <span class="p">{</span>
+  <span class="no">LOG</span><span class="p">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;No room for map task. Node &quot;</span> <span class="o">+</span> <span class="n">tts</span><span class="p">.</span><span class="n">getHost</span><span class="p">()</span> <span class="o">+</span> 
+            <span class="s">&quot; has &quot;</span> <span class="o">+</span> <span class="n">availSpace</span> <span class="o">+</span> 
+            <span class="s">&quot; bytes free; but we expect map to take &quot;</span> <span class="o">+</span> <span class="n">outSize</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="o">-</span><span class="mh">1</span><span class="p">;</span> <span class="c1">//see if a different TIP might work better. </span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这里采用的预估算法是一种简单的线性算法，通过已经运行完成的任务产生的数据量估算出其他同作业任务需要的磁盘空间<br />
+$$<br />
+estimatedTotalMapOutput = inputSize \times \frac{completedMapsOutputSize}{completedMapsInputSize} \times 2<br />
+$$</p>
+<p>$$<br />
+estimatedMapOutputSize = \frac{estimatedTotalMapOutput}{numMapTasks}<br />
+estimatedReduceInput = \frac{estimatedTotalMapOutput}{numReduceTasks}<br />
+$$</p>
+<p>其中， inputSize表示输入数据总量， completedMapsInputSize和completedMapsOutputSize 分别表示所有已经运行完成的Map Task的总输入数据量和总输出数据量， 最后乘2表示输出数据量会翻倍（保守估计）。如果估算到某个Map/Reduce Task产生的数据量或者输入的数据量超过某个TaskTracker剩余磁盘空间， 则不会将该Task分配给它。</p>
+<h2 id="nonrunning">nonRunning</h2>
+<ol>
+<li>从failedMaps列表中选择任务。 failedMaps保存了按照Task Attempt失败次数排序的TIP集合。 失败次数越多的任务， 被调度的机会越大。 需要注意的是， 为了让失败的任务快速得到重新运行的机会， 在进行任务选择时不再考虑数据本地性。</li>
+<li>从nonRunningMapCache列表中选择任务。 采用的任务选择方法完全遵循数据本地性策略， 即任务选择优先级从高到低依次为node-local, rack-local和off-switch类型的任务。</li>
+<li>从nonLocalMaps列表中选择任务。 由于nonLocalMaps中的任务没有输入数据， 因此无须考虑数据本地性。</li>
+</ol>
+<h2 id="runing">runing</h2>
+<ol>
+<li>从runningMapCache列表中选择任务。 遍历runningMapCache列表， 查找是否存在正运行且“拖后腿”的任务， 如果有， 则为其启动一个备份任务。</li>
+<li>从nonLocalRunningMaps列表中选择任务。 同步骤5， 从nonLocalRunningMaps列表中查找“拖后腿”任务， 并为其启动备份任务。</li>
+</ol>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">findNewMapTask</span><span class="o">(</span><span class="kd">final</span> <span class="n">TaskTrackerStatus</span> <span class="n">tts</span><span class="o">,</span> 
+                                          <span class="kd">final</span> <span class="kt">int</span> <span class="n">clusterSize</span><span class="o">,</span>
+                                          <span class="kd">final</span> <span class="kt">int</span> <span class="n">numUniqueHosts</span><span class="o">,</span>
+                                          <span class="kd">final</span> <span class="kt">int</span> <span class="n">maxCacheLevel</span><span class="o">,</span>
+                                          <span class="kd">final</span> <span class="kt">double</span> <span class="n">avgProgress</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">numMapTasks</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span><span class="o">(</span><span class="n">LOG</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&quot;No maps to schedule for &quot;</span> <span class="o">+</span> <span class="n">profile</span><span class="o">.</span><span class="na">getJobID</span><span class="o">());</span>
+      <span class="o">}</span>
+      <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="n">String</span> <span class="n">taskTracker</span> <span class="o">=</span> <span class="n">tts</span><span class="o">.</span><span class="na">getTrackerName</span><span class="o">();</span>
+    <span class="n">TaskInProgress</span> <span class="n">tip</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// Update the last-known clusterSize</span>
+    <span class="c1">//</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">clusterSize</span> <span class="o">=</span> <span class="n">clusterSize</span><span class="o">;</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">shouldRunOnTaskTracker</span><span class="o">(</span><span class="n">taskTracker</span><span class="o">))</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Check to ensure this TaskTracker has enough resources to </span>
+    <span class="c1">// run tasks from this job</span>
+    <span class="kt">long</span> <span class="n">outSize</span> <span class="o">=</span> <span class="n">resourceEstimator</span><span class="o">.</span><span class="na">getEstimatedMapOutputSize</span><span class="o">();</span>
+    <span class="kt">long</span> <span class="n">availSpace</span> <span class="o">=</span> <span class="n">tts</span><span class="o">.</span><span class="na">getResourceStatus</span><span class="o">().</span><span class="na">getAvailableSpace</span><span class="o">();</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">availSpace</span> <span class="o">&lt;</span> <span class="n">outSize</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;No room for map task. Node &quot;</span> <span class="o">+</span> <span class="n">tts</span><span class="o">.</span><span class="na">getHost</span><span class="o">()</span> <span class="o">+</span> 
+               <span class="s">&quot; has &quot;</span> <span class="o">+</span> <span class="n">availSpace</span> <span class="o">+</span> 
+               <span class="s">&quot; bytes free; but we expect map to take &quot;</span> <span class="o">+</span> <span class="n">outSize</span><span class="o">);</span>
+
+      <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span> <span class="c1">//see if a different TIP might work better. </span>
+    <span class="o">}</span>
+
+
+    <span class="c1">// When scheduling a map task:</span>
+    <span class="c1">//  0) Schedule a failed task without considering locality</span>
+    <span class="c1">//  1) Schedule non-running tasks</span>
+    <span class="c1">//  2) Schedule speculative tasks</span>
+    <span class="c1">//  3) Schedule tasks with no location information</span>
+
+    <span class="c1">// First a look up is done on the non-running cache and on a miss, a look </span>
+    <span class="c1">// up is done on the running cache. The order for lookup within the cache:</span>
+    <span class="c1">//   1. from local node to root [bottom up]</span>
+    <span class="c1">//   2. breadth wise for all the parent nodes at max level</span>
+    <span class="c1">// We fall to linear scan of the list ((3) above) if we have misses in the </span>
+    <span class="c1">// above caches</span>
+
+    <span class="c1">// 0) Schedule the task with the most failures, unless failure was on this</span>
+    <span class="c1">//    machine</span>
+    <span class="n">tip</span> <span class="o">=</span> <span class="n">findTaskFromList</span><span class="o">(</span><span class="n">failedMaps</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> <span class="n">numUniqueHosts</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// Add to the running list</span>
+      <span class="n">scheduleMap</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Choosing a failed task &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTIPId</span><span class="o">());</span>
+      <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="n">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getNode</span><span class="o">(</span><span class="n">tts</span><span class="o">.</span><span class="na">getHost</span><span class="o">());</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// 1) Non-running TIP :</span>
+    <span class="c1">// </span>
+
+    <span class="c1">// 1. check from local node to the root [bottom up cache lookup]</span>
+    <span class="c1">//    i.e if the cache is available and the host has been resolved</span>
+    <span class="c1">//    (node!=null)</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Node</span> <span class="n">key</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+      <span class="kt">int</span> <span class="n">level</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+      <span class="c1">// maxCacheLevel might be greater than this.maxLevel if findNewMapTask is</span>
+      <span class="c1">// called to schedule any task (local, rack-local, off-switch or</span>
+      <span class="c1">// speculative) tasks or it might be NON_LOCAL_CACHE_LEVEL (i.e. -1) if</span>
+      <span class="c1">// findNewMapTask is (i.e. -1) if findNewMapTask is to only schedule</span>
+      <span class="c1">// off-switch/speculative tasks</span>
+      <span class="kt">int</span> <span class="n">maxLevelToSchedule</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">maxCacheLevel</span><span class="o">,</span> <span class="n">maxLevel</span><span class="o">);</span>
+      <span class="c1">// 先从第一层次host local即当前tracker本身可运行的数据局部性Map任务，让后就找第二层rack local即在同一个rack可以运行的任务</span>
+      <span class="k">for</span> <span class="o">(</span><span class="n">level</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span><span class="n">level</span> <span class="o">&lt;</span> <span class="n">maxLevelToSchedule</span><span class="o">;</span> <span class="o">++</span><span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">List</span> <span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">cacheForLevel</span> <span class="o">=</span> <span class="n">nonRunningMapCache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">cacheForLevel</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">tip</span> <span class="o">=</span> <span class="n">findTaskFromList</span><span class="o">(</span><span class="n">cacheForLevel</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> 
+              <span class="n">numUniqueHosts</span><span class="o">,</span><span class="n">level</span> <span class="o">==</span> <span class="mi">0</span><span class="o">);</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Add to running cache</span>
+            <span class="n">scheduleMap</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+
+            <span class="c1">// remove the cache if its empty</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">cacheForLevel</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+              <span class="n">nonRunningMapCache</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">getParent</span><span class="o">();</span>
+      <span class="o">}</span>
+      <span class="c1">//如果只调度 node-local / rack-local, 则返回</span>
+      <span class="c1">// Check if we need to only schedule a local task (node-local/rack-local)</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">level</span> <span class="o">==</span> <span class="n">maxCacheLevel</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">// 调度 off-switch , 扫描所有顶层的节点</span>
+    <span class="c1">//2. Search breadth-wise across parents at max level for non-running </span>
+    <span class="c1">//   TIP if</span>
+    <span class="c1">//     - cache exists and there is a cache miss </span>
+    <span class="c1">//     - node information for the tracker is missing (tracker&#39;s topology</span>
+    <span class="c1">//       info not obtained yet)</span>
+
+    <span class="c1">// collection of node at max level in the cache structure</span>
+    <span class="n">Collection</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&gt;</span> <span class="n">nodesAtMaxLevel</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getNodesAtMaxLevel</span><span class="o">();</span>
+
+    <span class="c1">// get the node parent at max level</span>
+    <span class="n">Node</span> <span class="n">nodeParentAtMaxLevel</span> <span class="o">=</span> 
+      <span class="o">(</span><span class="n">node</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">?</span> <span class="kc">null</span> <span class="o">:</span> <span class="n">JobTracker</span><span class="o">.</span><span class="na">getParentNode</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">maxLevel</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+
+    <span class="k">for</span> <span class="o">(</span><span class="n">Node</span> <span class="n">parent</span> <span class="o">:</span> <span class="n">nodesAtMaxLevel</span><span class="o">)</span> <span class="o">{</span>
+
+      <span class="c1">// skip the parent that has already been scanned</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">nodeParentAtMaxLevel</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">continue</span><span class="o">;</span>
+      <span class="o">}</span>
+
+      <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">nonRunningMapCache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">cache</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">tip</span> <span class="o">=</span> <span class="n">findTaskFromList</span><span class="o">(</span><span class="n">cache</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> <span class="n">numUniqueHosts</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="c1">// Add to the running cache</span>
+          <span class="n">scheduleMap</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+
+          <span class="c1">// remove the cache if empty</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">cache</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">nonRunningMapCache</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+          <span class="o">}</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Choosing a non-local task &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTIPId</span><span class="o">());</span>
+          <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 3. Search non-local tips for a new task</span>
+    <span class="n">tip</span> <span class="o">=</span> <span class="n">findTaskFromList</span><span class="o">(</span><span class="n">nonLocalMaps</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> <span class="n">numUniqueHosts</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// Add to the running list</span>
+      <span class="n">scheduleMap</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Choosing a non-local task &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTIPId</span><span class="o">());</span>
+      <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// 2) Running TIP : 运行中的task</span>
+    <span class="c1">// </span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">hasSpeculativeMaps</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">long</span> <span class="n">currentTime</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getClock</span><span class="o">().</span><span class="na">getTime</span><span class="o">();</span>
+
+      <span class="c1">// 1. Check bottom up for speculative tasks from the running cache</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Node</span> <span class="n">key</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">level</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="n">maxLevel</span><span class="o">;</span> <span class="o">++</span><span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">Set</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">cacheForLevel</span> <span class="o">=</span> <span class="n">runningMapCache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">cacheForLevel</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">tip</span> <span class="o">=</span> <span class="n">findSpeculativeTask</span><span class="o">(</span><span class="n">cacheForLevel</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> 
+                                      <span class="n">avgProgress</span><span class="o">,</span> <span class="n">currentTime</span><span class="o">,</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">0</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+              <span class="k">if</span> <span class="o">(</span><span class="n">cacheForLevel</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">runningMapCache</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+              <span class="o">}</span>
+              <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+            <span class="o">}</span>
+          <span class="o">}</span>
+          <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">getParent</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+
+      <span class="c1">// 2. Check breadth-wise for speculative tasks</span>
+
+      <span class="k">for</span> <span class="o">(</span><span class="n">Node</span> <span class="n">parent</span> <span class="o">:</span> <span class="n">nodesAtMaxLevel</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// ignore the parent which is already scanned</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">nodeParentAtMaxLevel</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">Set</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">runningMapCache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">cache</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">tip</span> <span class="o">=</span> <span class="n">findSpeculativeTask</span><span class="o">(</span><span class="n">cache</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> <span class="n">avgProgress</span><span class="o">,</span> 
+                                    <span class="n">currentTime</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+          <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// remove empty cache entries</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">cache</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+              <span class="n">runningMapCache</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Choosing a non-local task &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTIPId</span><span class="o">()</span> 
+                     <span class="o">+</span> <span class="s">&quot; for speculation&quot;</span><span class="o">);</span>
+            <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+
+      <span class="c1">// 3. Check non-local tips for speculation</span>
+      <span class="n">tip</span> <span class="o">=</span> <span class="n">findSpeculativeTask</span><span class="o">(</span><span class="n">nonLocalRunningMaps</span><span class="o">,</span> <span class="n">tts</span><span class="o">,</span> <span class="n">avgProgress</span><span class="o">,</span> 
+                                <span class="n">currentTime</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">tip</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Choosing a non-local task &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTIPId</span><span class="o">()</span> 
+                 <span class="o">+</span> <span class="s">&quot; for speculation&quot;</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">tip</span><span class="o">.</span><span class="na">getIdWithinJob</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cm">/**</span>
+<span class="cm">   * Adds a map tip to the list of running maps.</span>
+<span class="cm">   * @param tip the tip that needs to be scheduled as running</span>
+<span class="cm">   */</span>
+  <span class="kd">protected</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">scheduleMap</span><span class="o">(</span><span class="n">TaskInProgress</span> <span class="n">tip</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">runningMapCache</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Running cache for maps is missing!! &quot;</span> 
+               <span class="o">+</span> <span class="s">&quot;Job details are missing.&quot;</span><span class="o">);</span>
+      <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">String</span><span class="o">[]</span> <span class="n">splitLocations</span> <span class="o">=</span> <span class="n">tip</span><span class="o">.</span><span class="na">getSplitLocations</span><span class="o">();</span>
+
+    <span class="c1">// Add the TIP to the list of non-local running TIPs</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">splitLocations</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">splitLocations</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">nonLocalRunningMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+      <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="c1">// 将任务添加到正在运行任务拓扑缓存中</span>
+    <span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">host:</span> <span class="n">splitLocations</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="n">jobtracker</span><span class="o">.</span><span class="na">getNode</span><span class="o">(</span><span class="n">host</span><span class="o">);</span>
+
+      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">maxLevel</span><span class="o">;</span> <span class="o">++</span><span class="n">j</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Set</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">hostMaps</span> <span class="o">=</span> <span class="n">runningMapCache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">node</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hostMaps</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="c1">// create a cache if needed</span>
+          <span class="n">hostMaps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinkedHashSet</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;();</span>
+          <span class="n">runningMapCache</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">hostMaps</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">hostMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">getParent</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="c1">// 从tips集合中找到合适的任务</span>
+ <span class="kd">private</span> <span class="kd">synchronized</span> <span class="n">TaskInProgress</span> <span class="nf">findTaskFromList</span><span class="o">(</span>
+      <span class="n">Collection</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">tips</span><span class="o">,</span> <span class="n">TaskTrackerStatus</span> <span class="n">ttStatus</span><span class="o">,</span>
+      <span class="kt">int</span> <span class="n">numUniqueHosts</span><span class="o">,</span>
+      <span class="kt">boolean</span> <span class="n">removeFailedTip</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">TaskInProgress</span><span class="o">&gt;</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">tips</span><span class="o">.</span><span class="na">iterator</span><span class="o">();</span>
+    <span class="k">while</span> <span class="o">(</span><span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">TaskInProgress</span> <span class="n">tip</span> <span class="o">=</span> <span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+
+      <span class="c1">// Select a tip if</span>
+      <span class="c1">//   1. runnable   : still needs to be run and is not completed</span>
+      <span class="c1">//   2. ~running   : no other node is running it</span>
+      <span class="c1">//   3. earlier attempt failed : has not failed on this host</span>
+      <span class="c1">//                               and has failed on all the other hosts</span>
+      <span class="c1">// A TIP is removed from the list if </span>
+      <span class="c1">// (1) this tip is scheduled</span>
+      <span class="c1">// (2) if the passed list is a level 0 (host) cache</span>
+      <span class="c1">// (3) when the TIP is non-schedulable (running, killed, complete)</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">tip</span><span class="o">.</span><span class="na">isRunnable</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">tip</span><span class="o">.</span><span class="na">isRunning</span><span class="o">())</span> <span class="o">{</span>
+        <span class="c1">// check if the tip has failed on this host</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">tip</span><span class="o">.</span><span class="na">hasFailedOnMachine</span><span class="o">(</span><span class="n">ttStatus</span><span class="o">.</span><span class="na">getHost</span><span class="o">())</span> <span class="o">||</span> 
+             <span class="n">tip</span><span class="o">.</span><span class="na">getNumberOfFailedMachines</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="n">numUniqueHosts</span><span class="o">)</span> <span class="o">{</span>
+          <span class="c1">// check if the tip has failed on all the nodes</span>
+          <span class="n">iter</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+          <span class="k">return</span> <span class="n">tip</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">removeFailedTip</span><span class="o">)</span> <span class="o">{</span> 
+          <span class="c1">// the case where we want to remove a failed tip from the host cache</span>
+          <span class="c1">// point#3 in the TIP removal logic above</span>
+          <span class="n">iter</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="c1">// see point#3 in the comment above for TIP removal logic</span>
+        <span class="n">iter</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>reduce调度， reduce 调度的时机是在 Job 的MapTask 完成一定数目的时候才开始的，这个数目由参数<br />
+<code>mapred.reduce.slowstart.completed.maps</code> 控制，默认情况下， 当Map Task完成数目达到总数的5%.</p>
+<div class="hlcode"><pre><span class="n">completedMapsForReduceSlowstart</span> <span class="o">=</span> 
+      <span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="n">Math</span><span class="o">.</span><span class="na">ceil</span><span class="o">(</span>
+          <span class="o">(</span><span class="n">conf</span><span class="o">.</span><span class="na">getFloat</span><span class="o">(</span><span class="s">&quot;mapred.reduce.slowstart.completed.maps&quot;</span><span class="o">,</span> 
+                         <span class="n">DEFAULT_COMPLETED_MAPS_PERCENT_FOR_REDUCE_SLOWSTART</span><span class="o">)</span> <span class="o">*</span> 
+           <span class="n">numMapTasks</span><span class="o">));</span>
+<span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">Task</span> <span class="nf">obtainNewReduceTask</span><span class="o">(</span><span class="n">TaskTrackerStatus</span> <span class="n">tts</span><span class="o">,</span>
+                                               <span class="kt">int</span> <span class="n">clusterSize</span><span class="o">,</span>
+                                               <span class="kt">int</span> <span class="n">numUniqueHosts</span>
+                                              <span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">getRunState</span><span class="o">()</span> <span class="o">!=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="na">RUNNING</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Cannot create task split for &quot;</span> <span class="o">+</span> <span class="n">profile</span><span class="o">.</span><span class="na">getJobID</span><span class="o">());</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** check to see if we have any misbehaving reducers. If the expected output</span>
+<span class="cm">    * for reducers is huge then we just fail the job and error out. The estimated</span>
+<span class="cm">    * size is divided by 2 since the resource estimator returns the amount of disk </span>
+<span class="cm">    * space the that the reduce will use (which is 2 times the input, space for merge + reduce</span>
+<span class="cm">    * input). **/</span>
+  <span class="kt">long</span> <span class="n">estimatedReduceInputSize</span> <span class="o">=</span> <span class="n">resourceEstimator</span><span class="o">.</span><span class="na">getEstimatedReduceInputSize</span><span class="o">()/</span><span class="mi">2</span><span class="o">;</span>
+  <span class="k">if</span> <span class="o">(((</span><span class="n">estimatedReduceInputSize</span><span class="o">)</span> <span class="o">&gt;</span> 
+    <span class="n">reduce_input_limit</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">reduce_input_limit</span> <span class="o">&gt;</span> <span class="mi">0L</span><span class="o">))</span> <span class="o">{</span>
+    <span class="c1">// make sure jobtracker lock is held</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Exceeded limit for reduce input size: Estimated:&quot;</span> <span class="o">+</span> 
+        <span class="n">estimatedReduceInputSize</span> <span class="o">+</span> <span class="s">&quot; Limit: &quot;</span> <span class="o">+</span> 
+        <span class="n">reduce_input_limit</span> <span class="o">+</span> <span class="s">&quot; Failing Job &quot;</span> <span class="o">+</span> <span class="n">jobId</span><span class="o">);</span>
+    <span class="n">status</span><span class="o">.</span><span class="na">setFailureInfo</span><span class="o">(</span><span class="s">&quot;Job exceeded Reduce Input limit &quot;</span> 
+        <span class="o">+</span> <span class="s">&quot; Limit:  &quot;</span> <span class="o">+</span> <span class="n">reduce_input_limit</span> <span class="o">+</span> 
+        <span class="s">&quot; Estimated: &quot;</span> <span class="o">+</span> <span class="n">estimatedReduceInputSize</span><span class="o">);</span>
+    <span class="n">jobtracker</span><span class="o">.</span><span class="na">failJob</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="c1">// Ensure we have sufficient map outputs ready to shuffle before </span>
+  <span class="c1">// scheduling reduces</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">scheduleReduces</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kt">int</span>  <span class="n">target</span> <span class="o">=</span> <span class="n">findNewReduceTask</span><span class="o">(</span><span class="n">tts</span><span class="o">,</span> <span class="n">clusterSize</span><span class="o">,</span> <span class="n">numUniqueHosts</span><span class="o">,</span> 
+                                  <span class="n">status</span><span class="o">.</span><span class="na">reduceProgress</span><span class="o">());</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">target</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="n">Task</span> <span class="n">result</span> <span class="o">=</span> <span class="n">reduces</span><span class="o">[</span><span class="n">target</span><span class="o">].</span><span class="na">getTaskToRun</span><span class="o">(</span><span class="n">tts</span><span class="o">.</span><span class="na">getTrackerName</span><span class="o">());</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">addRunningTaskToTIP</span><span class="o">(</span><span class="n">reduces</span><span class="o">[</span><span class="n">target</span><span class="o">],</span> <span class="n">result</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">(),</span> <span class="n">tts</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">boolean</span> <span class="nf">scheduleReduces</span><span class="o">()</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="n">finishedMapTasks</span> <span class="o">&gt;=</span> <span class="n">completedMapsForReduceSlowstart</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-02-02 15:32 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'mapred-v1-scheduler',
+  title: 'mapred-v1-scheduler',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

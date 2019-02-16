@@ -1,0 +1,1038 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>mapred-v1-source - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;mapred-v1-source</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">mapred-v1-source</div>
+<div id="content">
+  <h2 id="mapredv1">mapredv1 架构分析</h2>
+<h3 id="_1">简单而有效的哲学</h3>
+<p>mapreduce 的算法思想就是分治算法，计算任务不是单机的多线程并行处理，而是扩展到多台机器并行处理，分治算法是计算机科学的一种非常重要的算法，这种算法其实我们生活中到处都是，也很容易想到，当一个任务可以拆分成互相无关的相同的子任务的时候，我们就可以使用分治算法，任务从单机扩展到多机其实也是自然而然的想法，例如数组求和，人口统计。</p>
+<p>框架对外提供一种抽象接口，即 Map 和 Reduce 接口，用户通过该接口编写 mapred 程序，数据被分块并行处理， 这已经被大多数博客讲烂了，也就是所谓的 mapreduce 编程模型，这是 mapreduce 系统的编程范式，你需要想办法把你的作业拆分成多个map任务和reduce任务来完成。wordcount也是hadoop最初提供的例子了。</p>
+<p>mapreduce 的工程背后，其实蕴含了Unix Pipe的系统哲学。我们来看一个数据处理的例子。假设你有如下nginx 日志，其中一行:</p>
+<div class="hlcode"><pre><span class="mf">216.58</span><span class="o">.</span><span class="mf">210.78</span> <span class="o">-</span> <span class="o">-</span> <span class="p">[</span><span class="mi">27</span><span class="o">/</span><span class="n">Feb</span><span class="o">/</span><span class="mi">2015</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">55</span><span class="p">:</span><span class="mi">11</span> <span class="o">+</span><span class="mo">0000</span><span class="p">]</span> <span class="s">&quot;GET /2018/01/01/thread-local-storage/ HTTP/1.1&quot;</span>
+<span class="mi">200</span> <span class="mi">3377</span> <span class="s">&quot;http://blog.hacksmeta.com/&quot;</span> <span class="s">&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X</span>
+<span class="mi">10</span><span class="n">_9_5</span><span class="p">)</span> <span class="n">AppleWebKit</span><span class="o">/</span><span class="mf">537.36</span> <span class="p">(</span><span class="n">KHTML</span><span class="p">,</span> <span class="n">like</span> <span class="n">Gecko</span><span class="p">)</span> <span class="n">Chrome</span><span class="o">/</span><span class="mf">40.0</span><span class="o">.</span><span class="mf">2214.115</span>
+<span class="n">Safari</span><span class="o">/</span><span class="mf">537.36</span><span class="s">&quot;</span>
+</pre></div>
+
+
+<p>日志的结构解析定义如下，</p>
+<div class="hlcode"><pre><span class="err">$</span><span class="n">remote_addr</span> <span class="o">-</span> <span class="err">$</span><span class="n">remote_user</span> <span class="p">[</span><span class="err">$</span><span class="n">time_local</span><span class="p">]</span> <span class="s">&quot;$request&quot;</span>
+<span class="err">$</span><span class="n">status</span> <span class="err">$</span><span class="n">body_bytes_sent</span> <span class="s">&quot;$http_referer&quot;</span> <span class="s">&quot;$http_user_agent&quot;</span>
+</pre></div>
+
+
+<p>如果要统计网站页面访问次数前五的页面，</p>
+<h4 id="unix-chain">unix chain</h4>
+<p>再unix中可以使用 Unix Pipe 工具</p>
+<div class="hlcode"><pre>cat /var/log/nginx/access.log |
+ awk <span class="s1">&#39;{print $7}&#39;</span>   |
+ sort               |
+ uniq -c            |
+ sort -r -n         |
+ head -n 5
+</pre></div>
+
+
+<ol>
+<li><code>cat</code> 读取日志文件</li>
+<li><code>awk</code> 把每一行日志拆分成结构字段，并只输出第七个字段即 request url</li>
+<li><code>sort</code> 按照字母标顺序给 url 排序</li>
+<li><code>uniq</code> 可以通过检查相邻行是否相同来过滤重复的行，<code>-c</code> 选项要求同时输出每个唯一的url重复出现次数</li>
+<li><code>sort</code> 再次按照出现在每一行的数字排序，<code>-n</code> 表示按照数字排序，<code>-r</code> 表示倒序</li>
+<li><code>head</code> 显示前 5 行</li>
+</ol>
+<h4 id="_2">自定义程序</h4>
+<p>如果采用自定义程序，则可以使用 比如Python</p>
+<div class="hlcode"><pre><span class="n">counter</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;/var/log/nginx/access.log&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">counter</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">top5</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">countser</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">5</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">top5</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span>
+</pre></div>
+
+
+<p>对于自定义 python 脚本，采用了 hash 表存储不同的url，如果distinct url 非常多，那么hash table可能就存不下了。 但是对于 unix sort 方法可以支持比内存还大的排序的。而且 sort 经过优化，可以将超出内存的数据溢出磁盘，并利用多核排序， unix 命令形式是可以轻松扩展到大数据集的，瓶颈可能在于文件被读取的速率。</p>
+<p>从以上例子，可以看到 Unix 系统的这种设计理念。 Unix pipes 的发明人 Doug McIlroy 描述:</p>
+<blockquote>
+<p>“We should have some ways of connecting programs like [a] garden hose—screw in another segment when it becomes necessary to massage data in another way. This is the way of I/O also.” </p>
+</blockquote>
+<h4 id="_3">统一接口</h4>
+<p>通过接口把一个程序的输出连接到另一个程序的输入，而在 Unix 系统种，接口就是 file。file 也是 Unix 对一切设备的抽象，file 可以认为就是一串有序字节。而在 Mapreduce 系统中，接口也是文件，是分布式文件系统 hdfs 提供的文件。 Job 和 Job 之间，或者 Map 和 Reduce 之间都是通过 hdfs 文件连接起来。</p>
+<h4 id="_4">逻辑和结构分离</h4>
+<p>Unix pipes 的控制结构不用改变，通过标准输入输出，我们就可以再 shell 中将程序连接起来，程序逻辑由用户自己实现，只需要支持标准输入输出即可。Mapreduce 系统种的 mapper 和 reducer 程序都是由用户自定义的，而这中间的连接过程是由 系统自己控制的。系统通过回调函数 map 和 reduce 来实现运行用户自定义mapper 和 reducer 代码。 具体到 Java 代码，就是通过设置好 Mapper 和 Reducer 类，然后JVM 会通过类加载器和反射来拿到具体实现类。</p>
+<div class="hlcode"><pre><span class="c1">//旧API作业配置实例：</span>
+<span class="n">JobConf</span> <span class="n">job</span><span class="o">=</span><span class="k">new</span> <span class="n">JobConf</span><span class="err">（</span><span class="k">new</span> <span class="n">Configuration</span><span class="o">()</span><span class="err">，</span> <span class="n">MyJob</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setJobName</span><span class="err">（</span><span class="s">&quot;myjob&quot;</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setMapperClass</span><span class="err">（</span><span class="n">MyJob</span><span class="o">.</span><span class="na">MyMapper</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setReducerClass</span><span class="err">（</span><span class="n">MyJob</span><span class="o">.</span><span class="na">MyReducer</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">JobClient</span><span class="o">.</span><span class="na">runJob</span><span class="err">（</span><span class="n">job</span><span class="err">）</span> <span class="err">；</span>
+<span class="c1">//新API作业配置实例：</span>
+<span class="n">Configuration</span> <span class="n">conf</span><span class="o">=</span><span class="k">new</span> <span class="n">Configuration</span><span class="o">()</span><span class="err">；</span>
+<span class="n">Job</span> <span class="n">job</span><span class="o">=</span><span class="k">new</span> <span class="n">Job</span><span class="err">（</span><span class="n">conf</span><span class="err">，</span> <span class="s">&quot;myjob&quot;</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setJarByClass</span><span class="err">（</span><span class="n">MyJob</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setMapperClass</span><span class="err">（</span><span class="n">MyJob</span><span class="o">.</span><span class="na">MyMapper</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">job</span><span class="o">.</span><span class="na">setReducerClass</span><span class="err">（</span><span class="n">MyJob</span><span class="o">.</span><span class="na">MyReducer</span><span class="o">.</span><span class="na">class</span><span class="err">）</span> <span class="err">；</span>
+<span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="err">（</span><span class="n">job</span><span class="o">.</span><span class="na">waitForCompletion</span><span class="err">（</span><span class="kc">true</span><span class="err">）</span> <span class="o">?</span><span class="mi">0</span><span class="err">：</span> <span class="mi">1</span><span class="err">）</span> <span class="err">；</span>
+</pre></div>
+
+
+<p>对于 hadoop stream 这种实现也很简单，运行自定义的 mapper 和 reducer 脚本其实是通过框架自定义的实现 map 方法的 mapper 封装类，通过启动子进程的方式执行可执行的脚本文件。</p>
+<p>Hadoop Streaming工具包实际上是一个使用Java编写的MapReduce作业。 当用户使用可执行文件或者脚本文件充当Mapper或者Reducer时， Java端的Mapper或者Reducer充当了wrapper角色， 它们将输入文件中的key和value直接传递给可执行文件或者脚本文件进行处理， 并将处理结果写入HDFS;</p>
+<div class="hlcode"><pre><span class="c1">//将wc_mapper封装成一个进程</span>
+<span class="n">ProcessBuilder</span> <span class="n">builder</span><span class="o">=</span><span class="k">new</span> <span class="n">ProcessBuilder</span><span class="o">(</span><span class="s">&quot;wc_mapper&quot;</span><span class="o">);</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">environment</span><span class="o">().</span><span class="na">putAll</span><span class="o">(</span><span class="n">childEnv</span><span class="o">.</span><span class="na">toMap</span><span class="o">());</span> <span class="c1">//设置环境变量</span>
+<span class="n">sim</span><span class="o">=</span><span class="n">builder</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+<span class="c1">//创建标准输出流</span>
+<span class="n">clientOut_</span><span class="o">=</span><span class="k">new</span> <span class="n">DataOutputStream</span><span class="o">(</span><span class="k">new</span> <span class="n">BufferedOutputStream</span><span class="o">(</span>
+<span class="n">sim</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">(),</span> <span class="n">BUFFER_SIZE</span><span class="o">));</span>
+<span class="c1">//创建标准输入流</span>
+<span class="n">clientIn_</span><span class="o">=</span><span class="k">new</span> <span class="n">DataInputStream</span><span class="o">(</span><span class="k">new</span> <span class="n">BufferedInputStream</span><span class="o">(</span>
+<span class="n">sim</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">(),</span> <span class="n">BUFFER_SIZE</span><span class="o">));</span>
+<span class="c1">//创建标准错误流</span>
+<span class="n">clientErr_</span><span class="o">=</span><span class="k">new</span> <span class="n">DataInputStream</span><span class="o">(</span><span class="k">new</span> <span class="n">BufferedInputStream</span><span class="o">(</span><span class="n">sim</span><span class="o">.</span><span class="na">getErrorStream</span><span class="o">()));</span>
+</pre></div>
+
+
+<p>，而框架本身需要屏蔽底层网络通讯，多机器管理，任务分发，容错等细节。hadoop 1.0.0 主要是 hdfs 分布式文件系统和 mapreduce 分布式计算框架两部分。</p>
+<h2 id="_5">作业提交流程分析</h2>
+<p>用户可以采用命令行的方式提交作业，对于 java 作业，一般会打包成 jar 包，通过以下命令提交作业:</p>
+<div class="hlcode"><pre><span class="nv">$HADOOP_HOME</span>/bin/hadoop jar xxx.jar<span class="se">\</span>
+-D mapred.job.name<span class="o">=</span><span class="s2">&quot;xxx&quot;</span><span class="se">\</span>
+-D mapred.reduce.tasks<span class="o">=</span>2<span class="se">\</span>
+-files<span class="o">=</span>blacklist.txt, whitelist.txt<span class="se">\</span>
+-libjars<span class="o">=</span>third-party.jar<span class="se">\</span>
+-archives<span class="o">=</span>dictionary.zip<span class="se">\</span>
+-input/test/input<span class="se">\</span>
+-output/test/output
+</pre></div>
+
+
+<p>实际上<code>$HADOOP_HOME/bin/hadoop</code> 脚本中，会从 runJar 类通过反射机制和类加载器开始运行作业。</p>
+<div class="hlcode"><pre>  <span class="c">#core commands  </span>
+  *<span class="o">)</span>
+    <span class="c"># the core commands</span>
+    ...
+    <span class="k">elif</span> <span class="o">[</span> <span class="s2">&quot;$COMMAND&quot;</span> <span class="o">=</span> <span class="s2">&quot;jar&quot;</span> <span class="o">]</span> ; <span class="k">then</span>
+<span class="k">      </span><span class="nv">CLASS</span><span class="o">=</span>org.apache.hadoop.util.RunJar
+      <span class="k">if</span> <span class="o">[[</span> -n <span class="s2">&quot;${YARN_OPTS}&quot;</span> <span class="o">]]</span> <span class="o">||</span> <span class="o">[[</span> -n <span class="s2">&quot;${YARN_CLIENT_OPTS}&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
+<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;WARNING: Use \&quot;yarn jar\&quot; to launch YARN applications.&quot;</span> 1&gt;&amp;2
+      <span class="k">fi</span>
+    ...
+    <span class="nb">export </span><span class="nv">CLASSPATH</span><span class="o">=</span><span class="nv">$CLASSPATH</span>
+    <span class="nb">exec</span> <span class="s2">&quot;$JAVA&quot;</span> <span class="nv">$JAVA_HEAP_MAX</span> <span class="nv">$HADOOP_OPTS</span> <span class="nv">$CLASS</span> <span class="s2">&quot;$@&quot;</span>
+    ;;
+</pre></div>
+
+
+<p><code>org.apache.hadoop.util.RunJar</code> 类的代码如下，通过解压 jar 文件，然后通过类加载器将主类加载进来，在通过反射机制运行主类的main方法，开始执行用户所编写的 mapred 程序。</p>
+<div class="hlcode"><pre>  <span class="cm">/** Run a Hadoop job jar.  If the main class is not in the jar&#39;s manifest,</span>
+<span class="cm">   * then it must be provided on the command line. */</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;RunJar jarFile [mainClass] args...&quot;</span><span class="o">;</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">usage</span><span class="o">);</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="n">firstArg</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="n">String</span> <span class="n">fileName</span> <span class="o">=</span> <span class="n">args</span><span class="o">[</span><span class="n">firstArg</span><span class="o">++];</span>
+    <span class="n">File</span> <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">fileName</span><span class="o">);</span>
+    <span class="n">String</span> <span class="n">mainClassName</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+    <span class="n">JarFile</span> <span class="n">jarFile</span><span class="o">;</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">jarFile</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JarFile</span><span class="o">(</span><span class="n">fileName</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">io</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nf">IOException</span><span class="o">(</span><span class="s">&quot;Error opening job jar: &quot;</span> <span class="o">+</span> <span class="n">fileName</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">initCause</span><span class="o">(</span><span class="n">io</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">// 解析参数，获取主类名称</span>
+    <span class="n">Manifest</span> <span class="n">manifest</span> <span class="o">=</span> <span class="n">jarFile</span><span class="o">.</span><span class="na">getManifest</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">manifest</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">mainClassName</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="na">getMainAttributes</span><span class="o">().</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;Main-Class&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">jarFile</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">mainClassName</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">usage</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="n">mainClassName</span> <span class="o">=</span> <span class="n">args</span><span class="o">[</span><span class="n">firstArg</span><span class="o">++];</span>
+    <span class="o">}</span>
+    <span class="n">mainClassName</span> <span class="o">=</span> <span class="n">mainClassName</span><span class="o">.</span><span class="na">replaceAll</span><span class="o">(</span><span class="s">&quot;/&quot;</span><span class="o">,</span> <span class="s">&quot;.&quot;</span><span class="o">);</span>
+    <span class="c1">// 创建临时目录，用来存放解压 jar 包类文件</span>
+    <span class="n">File</span> <span class="n">tmpDir</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="k">new</span> <span class="n">Configuration</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;hadoop.tmp.dir&quot;</span><span class="o">));</span>
+    <span class="n">tmpDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">tmpDir</span><span class="o">.</span><span class="na">isDirectory</span><span class="o">())</span> <span class="o">{</span> 
+      <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Mkdirs failed to create &quot;</span> <span class="o">+</span> <span class="n">tmpDir</span><span class="o">);</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">final</span> <span class="n">File</span> <span class="n">workDir</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="na">createTempFile</span><span class="o">(</span><span class="s">&quot;hadoop-unjar&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">,</span> <span class="n">tmpDir</span><span class="o">);</span>
+    <span class="n">workDir</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+    <span class="n">workDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">workDir</span><span class="o">.</span><span class="na">isDirectory</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Mkdirs failed to create &quot;</span> <span class="o">+</span> <span class="n">workDir</span><span class="o">);</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 设置虚拟机hook，关闭时删除临时文件</span>
+    <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">().</span><span class="na">addShutdownHook</span><span class="o">(</span><span class="k">new</span> <span class="n">Thread</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+          <span class="k">try</span> <span class="o">{</span>
+            <span class="n">FileUtil</span><span class="o">.</span><span class="na">fullyDelete</span><span class="o">(</span><span class="n">workDir</span><span class="o">);</span>
+          <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">});</span>
+
+    <span class="c1">// 解压</span>
+    <span class="n">unJar</span><span class="o">(</span><span class="n">file</span><span class="o">,</span> <span class="n">workDir</span><span class="o">);</span>
+
+    <span class="c1">// 设置环境变量，ClassPath</span>
+    <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">URL</span><span class="o">&gt;</span> <span class="n">classPath</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">URL</span><span class="o">&gt;();</span>
+    <span class="n">classPath</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">workDir</span><span class="o">+</span><span class="s">&quot;/&quot;</span><span class="o">).</span><span class="na">toURL</span><span class="o">());</span>
+    <span class="n">classPath</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">toURL</span><span class="o">());</span>
+    <span class="n">classPath</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">workDir</span><span class="o">,</span> <span class="s">&quot;classes/&quot;</span><span class="o">).</span><span class="na">toURL</span><span class="o">());</span>
+    <span class="n">File</span><span class="o">[]</span> <span class="n">libs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">workDir</span><span class="o">,</span> <span class="s">&quot;lib&quot;</span><span class="o">).</span><span class="na">listFiles</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">libs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">libs</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+        <span class="n">classPath</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">libs</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">toURL</span><span class="o">());</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="n">ClassLoader</span> <span class="n">loader</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="nf">URLClassLoader</span><span class="o">(</span><span class="n">classPath</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="k">new</span> <span class="n">URL</span><span class="o">[</span><span class="mi">0</span><span class="o">]));</span>
+    <span class="c1">// 加载主类，并利用反射开始运行main方法</span>
+    <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">setContextClassLoader</span><span class="o">(</span><span class="n">loader</span><span class="o">);</span>
+    <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">mainClass</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">mainClassName</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="n">loader</span><span class="o">);</span>
+    <span class="n">Method</span> <span class="n">main</span> <span class="o">=</span> <span class="n">mainClass</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;main&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Class</span><span class="o">[]</span> <span class="o">{</span>
+      <span class="n">Array</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="mi">0</span><span class="o">).</span><span class="na">getClass</span><span class="o">()</span>
+    <span class="o">});</span>
+    <span class="n">String</span><span class="o">[]</span> <span class="n">newArgs</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">args</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">firstArg</span><span class="o">,</span> <span class="n">args</span><span class="o">.</span><span class="na">length</span><span class="o">).</span><span class="na">toArray</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">[</span><span class="mi">0</span><span class="o">]);</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">main</span><span class="o">.</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[]</span> <span class="o">{</span> <span class="n">newArgs</span> <span class="o">});</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InvocationTargetException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="n">e</span><span class="o">.</span><span class="na">getTargetException</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>而对于用户的 mapred 应用程序，因为他是遵循严格的 map/reduce 接口范式实现的，主方法通过通过 mapred 框架提供的 Job API，设置好了， 这里需要读者理清你的代码和框架代码是如何合作工作起来的。理解了这一点，可以加深对物理视图，逻辑视图，执行视图，部署视图的理解。</p>
+<p>在代码层面，由于接口和多态的存在，mapred 不用担心具体是何种 mapper/reducer, 只要实现了框架中的 map/reduce 接口(旧API采用的是实现接口，旧API在 <code>org.apache.hadoop.mapred</code> 包中，新API采用的是继承抽象类，新API都在 <code>org.apache.hadoop.mapreduce</code> 包中). 对于mapper/reducer新旧API的兼容, 主要在 MapTask 类中，有一个判断使用新旧API的条件，通过JobConf中的参数 <code>mapred.mapper.new-api</code> 来设置。在 MapTask 的 <code>run</code> 方法中</p>
+<div class="hlcode"><pre>  <span class="k">if</span> <span class="o">(</span><span class="n">useNewApi</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">runNewMapper</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">splitMetaInfo</span><span class="o">,</span> <span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">runOldMapper</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">splitMetaInfo</span><span class="o">,</span> <span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="n">done</span><span class="o">(</span><span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+</pre></div>
+
+
+<p>为什么设计了新API?<br />
+1. 接口具有严格约束，子类必须实现所有方法。抽象类是宽松约束，可提供方法默认实现，子类可选择。因此，抽象类在类衍化方面更具有优势，抽象类具有良好的后向兼容性。当需要为抽象类添加新的方法时，只要新添加的方法提供了默认实现，用户之前的代码就不必修改。<br />
+2. 上下文封装，将变量和函数封装成各种上下文类，使得API具有更好的易用性和扩展性。这种设计在很多系统中都可以看到。首先，函数参数列表经过封装后变得更短，使得函数更易使用;其次，当需要修改或添加某些变量或函数时，只需要修改封装后的上下文，用户代码无需修改，这也保证了后向兼容性，同时具备扩展性。</p>
+<p>MapReduce提供了两个MapRunnable实现， 分别是MapRunner和MultithreadedMapRunner， 其中MapRunner为默认实现。MultithreadedMapRunner实现了一种多线程的MapRunnable。 默认情况下， 每个Mapper启动10个线程， 通常用于非CPU类型的作业以提供吞吐率</p>
+<h1 id="task-tasktracker">Task 在 TaskTracker 中的提交运行时序</h1>
+<p>TaskTracker 主动请求TaskScheduler 分配 Task, 获取分配到的 Tasks 后，TaskTracker 新建 TaskInProgress 数据结构开始控制 Tasks 的实际运行。</p>
+<p>需要注意的是，JobTracker 中有一个 <code>org.apache.hadoop.mapred.TaskInProgress</code> 类和 <code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 类不是同一个。<br />
+TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskInProgress的一个 TaskAttempt 任务， 是TaskInProgress 的一次任务尝试， 该尝试任务 Task(MapTask/ReduceTask) 会装入TaskAction 一起序列化通过RPC 从 JobTracker 流入 TaskTracker, TaskTracker 利用自己的<code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 对 Task 进行重新封装，该内部TIP包含 Task, TaskRunner, TaskLauncher, TaskStatus 是Task真实运行状态和行为控制的数据结构，JobTracker 中的 <code>org.apache.hadoop.mapred.TaskInProgress</code> 只是含有一些运行过程的数据。</p>
+<p>下图是 Tasks 在 TaskTracker 上的运行过程时序图，TaskTracker 启动mapLauncher 和 reduceLauncher 两个TaskLauncher 守候线程，以及MapEventsFetcherThread(获取map task 完成进度)线程等，进入 offerService 主循环。offerService 是 TaskTracker 主循环体，循环发送heartBeat给JobTracker并获取tasks和指令。</p>
+<p><img alt="" src="" /></p>
+<p>TaskTracker 和 TaskLauncher 之间是生产消费者模型，通过 tasksToLaunch(List<TaskTracker.TaskInProgress>)队列进行数据连接，TaskLauncher 循环从队列中取出任务。</p>
+<p>生产消费者模型所采用的方式是 <code>wait/notify</code> 的方式。</p>
+<div class="hlcode"><pre><span class="c1">// 生产者 TaskTracker</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">addToTaskQueue</span><span class="o">(</span><span class="n">LaunchTaskAction</span> <span class="n">action</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">tasksToLaunch</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">TaskInProgress</span> <span class="n">tip</span> <span class="o">=</span> <span class="n">registerTask</span><span class="o">(</span><span class="n">action</span><span class="o">,</span> <span class="k">this</span><span class="o">);</span>
+    <span class="n">tasksToLaunch</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+    <span class="n">tasksToLaunch</span><span class="o">.</span><span class="na">notifyAll</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">private</span> <span class="n">TaskInProgress</span> <span class="nf">registerTask</span><span class="o">(</span><span class="n">LaunchTaskAction</span> <span class="n">action</span><span class="o">,</span> 
+      <span class="n">TaskLauncher</span> <span class="n">launcher</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">Task</span> <span class="n">t</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="na">getTask</span><span class="o">();</span>
+  <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;LaunchTaskAction (registerTask): &quot;</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span>
+            <span class="s">&quot; task&#39;s state:&quot;</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="na">getState</span><span class="o">());</span>
+  <span class="n">TaskInProgress</span> <span class="n">tip</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TaskInProgress</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="k">this</span><span class="o">.</span><span class="na">fConf</span><span class="o">,</span> <span class="n">launcher</span><span class="o">);</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">tasks</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">(),</span> <span class="n">tip</span><span class="o">);</span>
+    <span class="n">runningTasks</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">(),</span> <span class="n">tip</span><span class="o">);</span>
+    <span class="kt">boolean</span> <span class="n">isMap</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="na">isMapTask</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">isMap</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">mapTotal</span><span class="o">++;</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="n">reduceTotal</span><span class="o">++;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">tip</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>消费者代码如下：</p>
+<div class="hlcode"><pre><span class="c1">// 消费者 TaskLauncher</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+  <span class="k">while</span> <span class="o">(!</span><span class="n">Thread</span><span class="o">.</span><span class="na">interrupted</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">TaskInProgress</span> <span class="n">tip</span><span class="o">;</span>
+      <span class="n">Task</span> <span class="n">task</span><span class="o">;</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">tasksToLaunch</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">tasksToLaunch</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+          <span class="n">tasksToLaunch</span><span class="o">.</span><span class="na">wait</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="c1">//get the TIP</span>
+        <span class="n">tip</span> <span class="o">=</span> <span class="n">tasksToLaunch</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTask</span><span class="o">();</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Trying to launch : &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getTask</span><span class="o">().</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span> 
+                  <span class="s">&quot; which needs &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; slots&quot;</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="c1">//wait for free slots to run</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">numFreeSlots</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">boolean</span> <span class="n">canLaunch</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">numFreeSlots</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">())</span> <span class="o">{</span>
+          <span class="c1">//Make sure that there is no kill task action for this task!</span>
+          <span class="c1">//We are not locking tip here, because it would reverse the</span>
+          <span class="c1">//locking order!</span>
+          <span class="c1">//Also, Lock for the tip is not required here! because :</span>
+          <span class="c1">// 1. runState of TaskStatus is volatile</span>
+          <span class="c1">// 2. Any notification is not missed because notification is</span>
+          <span class="c1">// synchronized on numFreeSlots. So, while we are doing the check,</span>
+          <span class="c1">// if the tip is half way through the kill(), we don&#39;t miss</span>
+          <span class="c1">// notification for the following wait().</span>
+          <span class="k">if</span> <span class="o">(!</span><span class="n">tip</span><span class="o">.</span><span class="na">canBeLaunched</span><span class="o">())</span> <span class="o">{</span>
+            <span class="c1">//got killed externally while still in the launcher queue</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Not blocking slots for &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">()</span>
+                <span class="o">+</span> <span class="s">&quot; as it got killed externally. Task&#39;s state is &quot;</span>
+                <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getRunState</span><span class="o">());</span>
+            <span class="n">canLaunch</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="k">break</span><span class="o">;</span>
+          <span class="o">}</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;TaskLauncher : Waiting for &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">()</span> <span class="o">+</span> 
+                    <span class="s">&quot; to launch &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;, currently we have &quot;</span> <span class="o">+</span> 
+                    <span class="n">numFreeSlots</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; free slots&quot;</span><span class="o">);</span>
+          <span class="n">numFreeSlots</span><span class="o">.</span><span class="na">wait</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">canLaunch</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;In TaskLauncher, current free slots : &quot;</span> <span class="o">+</span> <span class="n">numFreeSlots</span><span class="o">.</span><span class="na">get</span><span class="o">()+</span>
+                  <span class="s">&quot; and trying to launch &quot;</span><span class="o">+</span><span class="n">tip</span><span class="o">.</span><span class="na">getTask</span><span class="o">().</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span> 
+                  <span class="s">&quot; which needs &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; slots&quot;</span><span class="o">);</span>
+        <span class="n">numFreeSlots</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">numFreeSlots</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">-</span> <span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">());</span>
+        <span class="k">assert</span> <span class="o">(</span><span class="n">numFreeSlots</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">tip</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//to make sure that there is no kill task action for this</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">tip</span><span class="o">.</span><span class="na">canBeLaunched</span><span class="o">())</span> <span class="o">{</span>
+          <span class="c1">//got killed externally while still in the launcher queue</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Not launching task &quot;</span> <span class="o">+</span> <span class="n">task</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; as it got&quot;</span>
+            <span class="o">+</span> <span class="s">&quot; killed externally. Task&#39;s state is &quot;</span> <span class="o">+</span> <span class="n">tip</span><span class="o">.</span><span class="na">getRunState</span><span class="o">());</span>
+          <span class="n">addFreeSlots</span><span class="o">(</span><span class="n">task</span><span class="o">.</span><span class="na">getNumSlotsRequired</span><span class="o">());</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">tip</span><span class="o">.</span><span class="na">slotTaken</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="c1">//got a free slot. launch the task</span>
+      <span class="n">startNewTask</span><span class="o">(</span><span class="n">tip</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p><code>startNewTask</code> 会启动一个临时线程，用来启动TaskRunner线程，启动TaskRunner以后即退出。</p>
+<p>TaskRunner 线程会调用 <code>launchJvmAndWait</code> 阻塞函数，等待任务完成的通知信号done. TaskRunner 将任务交给 JvmManager 后，就会阻塞在这里。</p>
+<div class="hlcode"><pre><span class="n">jvmManager</span><span class="o">.</span><span class="na">launchJvm</span><span class="o">(...)</span>
+<span class="kd">synchronized</span> <span class="o">(</span><span class="n">lock</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">while</span> <span class="o">(!</span><span class="n">done</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">lock</span><span class="o">.</span><span class="na">wait</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>Task 完成以后通过 TaskUmbilicalProtocol 协议和 TaskTracker 完成通知。这里只看 MapTask 的运行代码，通过调用 <code>MapTask.done --&gt; MapTask.sendDone --&gt; TaskTracker.done(RPC)</code> 来完成通知过程。</p>
+<div class="hlcode"><pre><span class="c1">// MapTask.run()</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">useNewApi</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">runNewMapper</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">splitMetaInfo</span><span class="o">,</span> <span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+  <span class="n">runOldMapper</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">splitMetaInfo</span><span class="o">,</span> <span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="n">done</span><span class="o">(</span><span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+
+
+<span class="c1">// Task.done</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">commitRequired</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="n">retries</span> <span class="o">=</span> <span class="n">MAX_RETRIES</span><span class="o">;</span>
+  <span class="n">setState</span><span class="o">(</span><span class="n">TaskStatus</span><span class="o">.</span><span class="na">State</span><span class="o">.</span><span class="na">COMMIT_PENDING</span><span class="o">);</span>
+  <span class="c1">// say the task tracker that task is commit pending</span>
+  <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">umbilical</span><span class="o">.</span><span class="na">commitPending</span><span class="o">(</span><span class="n">taskId</span><span class="o">,</span> <span class="n">taskStatus</span><span class="o">,</span> <span class="n">jvmContext</span><span class="o">);</span>
+      <span class="k">break</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ie</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(--</span><span class="n">retries</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">67</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="n">commit</span><span class="o">(</span><span class="n">umbilical</span><span class="o">,</span> <span class="n">reporter</span><span class="o">,</span> <span class="n">committer</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="n">taskDone</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<span class="n">reporter</span><span class="o">.</span><span class="na">stopCommunicationThread</span><span class="o">();</span>
+<span class="n">sendLastUpdate</span><span class="o">(</span><span class="n">umbilical</span><span class="o">);</span>
+<span class="c1">//signal the tasktracker that we are done</span>
+<span class="n">sendDone</span><span class="o">(</span><span class="n">umbilical</span><span class="o">);</span>
+
+
+<span class="c1">// Task.sendDone</span>
+<span class="kt">int</span> <span class="n">retries</span> <span class="o">=</span> <span class="n">MAX_RETRIES</span><span class="o">;</span>
+<span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">{</span>
+    <span class="n">umbilical</span><span class="o">.</span><span class="na">done</span><span class="o">(</span><span class="n">getTaskID</span><span class="o">(),</span> <span class="n">jvmContext</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
+  <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ie</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(--</span><span class="n">retries</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="n">ie</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>RPC 协议 TaskUmbilicalProtocol 中的 <code>TaskTracker.done</code> 方法，通知到 TaskRunner.</p>
+<div class="hlcode"><pre><span class="c1">//TaskTracker.done</span>
+<span class="n">validateJVM</span><span class="o">(</span><span class="n">tip</span><span class="o">,</span> <span class="n">jvmContext</span><span class="o">,</span> <span class="n">taskid</span><span class="o">);</span>
+<span class="n">commitResponses</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">taskid</span><span class="o">);</span>
+<span class="n">tip</span><span class="o">.</span><span class="na">reportDone</span><span class="o">();</span>
+<span class="c1">//-----------------------------------------</span>
+<span class="c1">// TaskTracker.TaskInProgress.reportDone()</span>
+<span class="k">this</span><span class="o">.</span><span class="na">taskStatus</span><span class="o">.</span><span class="na">setProgress</span><span class="o">(</span><span class="mf">1.0f</span><span class="o">);</span>
+<span class="k">this</span><span class="o">.</span><span class="na">taskStatus</span><span class="o">.</span><span class="na">setFinishTime</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">());</span>
+<span class="k">this</span><span class="o">.</span><span class="na">done</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+<span class="n">jvmManager</span><span class="o">.</span><span class="na">taskFinished</span><span class="o">(</span><span class="n">runner</span><span class="o">);</span>
+<span class="n">runner</span><span class="o">.</span><span class="na">signalDone</span><span class="o">();</span>
+</pre></div>
+
+
+<p>任务都是丢给 JvmManager 来管理和运行的，JvmManager 分别对MapTask和ReduceTask进行管理，内部实现类似于线程池，每个JVM都通过一个JvmRunner线程来维护。下图是关于任务运行的数据流向图。</p>
+<p><img alt="" src="" /></p>
+<p>任务进度数据先通过每个Task中的 TaskReporter 线程循环上报给 TaskTracker, TaskTracker 再通过 heartBeat 上报给 JobTracker。 </p>
+<p>MapEvents数据的获取则是 TaskTracker 中的 MapEventsFetcherThread 通过 <code>JobTracker.getTaskCompletionEvents</code> 周期性从 JobTracker 获得的。ReduceTask 中的 GetMapEventsThread 线程也会周期性的调用 <code>TaskTracker.getMapCompletionEvents</code> RPC 来强制让 TaskTracker 从 JobTracker 获取Events。</p>
+<p>JvmManager 实现了JVM复用，也就是多个任务可以复用同一个虚拟机。这里注意的是，不同Job的Task是不能复用同一个虚拟机的，当出现新Job的时候，如果正在运行的虚拟机没有运行过该Job的任务，则需要新建虚拟机。<br />
+当且仅当 1. 含有运行该Job任务的虚拟机;2.虚拟机不忙，3. 虚拟机没有把分配给自己该Job的所有Tasks运行完，则复用虚拟机。</p>
+<p>以下两种情况需要杀死虚拟机: 1. 虚拟机运行过该Job的Tasks且全部运行完毕。 2. 当前分配的Task所属Job并不是该虚拟机所属Job。</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">reapJvm</span><span class="o">(</span> 
+    <span class="n">TaskRunner</span> <span class="n">t</span><span class="o">,</span> <span class="n">JvmEnv</span> <span class="n">env</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">getTaskInProgress</span><span class="o">().</span><span class="na">wasKilled</span><span class="o">())</span> <span class="o">{</span>
+    <span class="c1">//the task was killed in-flight</span>
+    <span class="c1">//no need to do the rest of the operations</span>
+    <span class="k">return</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="kt">boolean</span> <span class="n">spawnNewJvm</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+  <span class="n">JobID</span> <span class="n">jobId</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="na">getTask</span><span class="o">().</span><span class="na">getJobID</span><span class="o">();</span>
+  <span class="c1">//Check whether there is a free slot to start a new JVM.</span>
+  <span class="c1">//,or, Kill a (idle) JVM and launch a new one</span>
+  <span class="c1">//When this method is called, we *must* </span>
+  <span class="c1">// (1) spawn a new JVM (if we are below the max) </span>
+  <span class="c1">// (2) find an idle JVM (that belongs to the same job), or,</span>
+  <span class="c1">// (3) kill an idle JVM (from a different job) </span>
+  <span class="c1">// (the order of return is in the order above)</span>
+  <span class="kt">int</span> <span class="n">numJvmsSpawned</span> <span class="o">=</span> <span class="n">jvmIdToRunner</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+  <span class="n">JvmRunner</span> <span class="n">runnerToKill</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">numJvmsSpawned</span> <span class="o">&gt;=</span> <span class="n">maxJvms</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">//go through the list of JVMs for all jobs.</span>
+    <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">JVMId</span><span class="o">,</span> <span class="n">JvmRunner</span><span class="o">&gt;&gt;</span> <span class="n">jvmIter</span> <span class="o">=</span> 
+      <span class="n">jvmIdToRunner</span><span class="o">.</span><span class="na">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span>
+
+    <span class="k">while</span> <span class="o">(</span><span class="n">jvmIter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">JvmRunner</span> <span class="n">jvmRunner</span> <span class="o">=</span> <span class="n">jvmIter</span><span class="o">.</span><span class="na">next</span><span class="o">().</span><span class="na">getValue</span><span class="o">();</span>
+      <span class="n">JobID</span> <span class="n">jId</span> <span class="o">=</span> <span class="n">jvmRunner</span><span class="o">.</span><span class="na">jvmId</span><span class="o">.</span><span class="na">getJobId</span><span class="o">();</span>
+      <span class="c1">//look for a free JVM for this job; if one exists then just break</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">jId</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">jobId</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">jvmRunner</span><span class="o">.</span><span class="na">isBusy</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">jvmRunner</span><span class="o">.</span><span class="na">ranAll</span><span class="o">()){</span>
+        <span class="n">setRunningTaskForJvm</span><span class="o">(</span><span class="n">jvmRunner</span><span class="o">.</span><span class="na">jvmId</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span> <span class="c1">//reserve the JVM</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;No new JVM spawned for jobId/taskid: &quot;</span> <span class="o">+</span> 
+                  <span class="n">jobId</span><span class="o">+</span><span class="s">&quot;/&quot;</span><span class="o">+</span><span class="n">t</span><span class="o">.</span><span class="na">getTask</span><span class="o">().</span><span class="na">getTaskID</span><span class="o">()</span> <span class="o">+</span>
+                  <span class="s">&quot;. Attempting to reuse: &quot;</span> <span class="o">+</span> <span class="n">jvmRunner</span><span class="o">.</span><span class="na">jvmId</span><span class="o">);</span>
+        <span class="k">return</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="c1">//Cases when a JVM is killed: </span>
+      <span class="c1">// (1) the JVM under consideration belongs to the same job </span>
+      <span class="c1">//     (passed in the argument). In this case, kill only when</span>
+      <span class="c1">//     the JVM ran all the tasks it was scheduled to run (in terms</span>
+      <span class="c1">//     of count).</span>
+      <span class="c1">// (2) the JVM under consideration belongs to a different job and is</span>
+      <span class="c1">//     currently not busy</span>
+      <span class="c1">//But in both the above cases, we see if we can assign the current</span>
+      <span class="c1">//task to an idle JVM (hence we continue the loop even on a match)</span>
+      <span class="k">if</span> <span class="o">((</span><span class="n">jId</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">jobId</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">jvmRunner</span><span class="o">.</span><span class="na">ranAll</span><span class="o">())</span> <span class="o">||</span>
+          <span class="o">(!</span><span class="n">jId</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">jobId</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">jvmRunner</span><span class="o">.</span><span class="na">isBusy</span><span class="o">()))</span> <span class="o">{</span>
+        <span class="n">runnerToKill</span> <span class="o">=</span> <span class="n">jvmRunner</span><span class="o">;</span>
+        <span class="n">spawnNewJvm</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">spawnNewJvm</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="k">if</span> <span class="o">(</span><span class="n">spawnNewJvm</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">runnerToKill</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">killJvmRunner</span><span class="o">(</span><span class="n">runnerToKill</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">spawnNewJvm</span><span class="o">(</span><span class="n">jobId</span><span class="o">,</span> <span class="n">env</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1 id="task">Task</h1>
+<p>JVM 能够复用运行多个Task，其实是因为 JVM 入口类 Child 是通过循环从 TaskTracker 获取Task的，这是 JVM 能够复用的原因。</p>
+<div class="hlcode"><pre><span class="c1">// Child.main</span>
+<span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">......</span>
+  <span class="n">JvmTask</span> <span class="n">myTask</span> <span class="o">=</span> <span class="n">umbilical</span><span class="o">.</span><span class="na">getTask</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+  <span class="o">......</span>
+  <span class="kd">final</span> <span class="n">Task</span> <span class="n">taskFinal</span> <span class="o">=</span> <span class="n">task</span><span class="o">;</span>
+  <span class="n">childUGI</span><span class="o">.</span><span class="na">doAs</span><span class="o">(</span><span class="k">new</span> <span class="n">PrivilegedExceptionAction</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;()</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">run</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="c1">// use job-specified working directory</span>
+        <span class="n">FileSystem</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">job</span><span class="o">).</span><span class="na">setWorkingDirectory</span><span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">getWorkingDirectory</span><span class="o">());</span>
+        <span class="n">taskFinal</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">umbilical</span><span class="o">);</span>        <span class="c1">// run the task</span>
+      <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+      <span class="o">}</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">});</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2 id="reducetask">ReduceTask</h2>
+<p>ReduceTask 和 MapTask 在JVM中的运行的时机其实是没有先后顺序的，可能ReduceTask先进入JVM运行。这是由调度器来决定的，默认调度器是在 Job 的MapTask 完成一定数目后才开始调度ReduceTask。也就是说，当设置的不是所有的MapTask完成以后再调度ReduceTask的话，ReduceTask 就可能在某些MapTask 之前先进入JVM运行起来。</p>
+<p>框架代码中 ReduceTask类 的 <code>run</code> 方法分成三个阶段，copy，sort，reduce，其中的 copy 就是 shuffle 阶段。MapTask 和 ReduceTask 的协调工作（Reduce需要等待MapTask完成才能运行）并不是在虚拟机层面的控制（所有MapTask任务运行完才启动ReduceTask虚拟机来运行ReduceTask，这里对于虚拟机而言，任务类型对虚拟机控制代码JVMManager是透明的,不管是什么任务，虚拟机有空闲就会直接获取并运行），而是由 ReduceTask 类自己控制完成，其实就是 ReduceTask 会有一个在虚拟机等待的过程，而不是在虚拟机子进程外面等待数据拷贝完成，然后进入虚拟机就直接处理数据计算。</p>
+<div class="hlcode"><pre><span class="c1">// ReduceTask.run</span>
+<span class="kt">boolean</span> <span class="n">isLocal</span> <span class="o">=</span> <span class="s">&quot;local&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">job</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;mapred.job.tracker&quot;</span><span class="o">,</span> <span class="s">&quot;local&quot;</span><span class="o">));</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">isLocal</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">reduceCopier</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReduceCopier</span><span class="o">(</span><span class="n">umbilical</span><span class="o">,</span> <span class="n">job</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">reduceCopier</span><span class="o">.</span><span class="na">fetchOutputs</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">reduceCopier</span><span class="o">.</span><span class="na">mergeThrowable</span> <span class="k">instanceof</span> <span class="n">FSError</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="o">(</span><span class="n">FSError</span><span class="o">)</span><span class="n">reduceCopier</span><span class="o">.</span><span class="na">mergeThrowable</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">IOException</span><span class="o">(</span><span class="s">&quot;Task: &quot;</span> <span class="o">+</span> <span class="n">getTaskID</span><span class="o">()</span> <span class="o">+</span> 
+        <span class="s">&quot; - The reduce copier failed&quot;</span><span class="o">,</span> <span class="n">reduceCopier</span><span class="o">.</span><span class="na">mergeThrowable</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="n">copyPhase</span><span class="o">.</span><span class="na">complete</span><span class="o">();</span>                         <span class="c1">// copy is already complete</span>
+<span class="n">setPhase</span><span class="o">(</span><span class="n">TaskStatus</span><span class="o">.</span><span class="na">Phase</span><span class="o">.</span><span class="na">SORT</span><span class="o">);</span>
+<span class="n">statusUpdate</span><span class="o">(</span><span class="n">umbilical</span><span class="o">);</span>
+
+<span class="kd">final</span> <span class="n">FileSystem</span> <span class="n">rfs</span> <span class="o">=</span> <span class="n">FileSystem</span><span class="o">.</span><span class="na">getLocal</span><span class="o">(</span><span class="n">job</span><span class="o">).</span><span class="na">getRaw</span><span class="o">();</span>
+<span class="n">RawKeyValueIterator</span> <span class="n">rIter</span> <span class="o">=</span> <span class="n">isLocal</span>
+  <span class="o">?</span> <span class="n">Merger</span><span class="o">.</span><span class="na">merge</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">rfs</span><span class="o">,</span> <span class="n">job</span><span class="o">.</span><span class="na">getMapOutputKeyClass</span><span class="o">(),</span>
+      <span class="n">job</span><span class="o">.</span><span class="na">getMapOutputValueClass</span><span class="o">(),</span> <span class="n">codec</span><span class="o">,</span> <span class="n">getMapFiles</span><span class="o">(</span><span class="n">rfs</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span>
+      <span class="o">!</span><span class="n">conf</span><span class="o">.</span><span class="na">getKeepFailedTaskFiles</span><span class="o">(),</span> <span class="n">job</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">&quot;io.sort.factor&quot;</span><span class="o">,</span> <span class="mi">100</span><span class="o">),</span>
+      <span class="k">new</span> <span class="nf">Path</span><span class="o">(</span><span class="n">getTaskID</span><span class="o">().</span><span class="na">toString</span><span class="o">()),</span> <span class="n">job</span><span class="o">.</span><span class="na">getOutputKeyComparator</span><span class="o">(),</span>
+      <span class="n">reporter</span><span class="o">,</span> <span class="n">spilledRecordsCounter</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+  <span class="o">:</span> <span class="n">reduceCopier</span><span class="o">.</span><span class="na">createKVIterator</span><span class="o">(</span><span class="n">job</span><span class="o">,</span> <span class="n">rfs</span><span class="o">,</span> <span class="n">reporter</span><span class="o">);</span>
+
+<span class="c1">// free up the data structures</span>
+<span class="n">mapOutputFilesOnDisk</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+
+<span class="n">sortPhase</span><span class="o">.</span><span class="na">complete</span><span class="o">();</span>                         <span class="c1">// sort is complete</span>
+<span class="n">setPhase</span><span class="o">(</span><span class="n">TaskStatus</span><span class="o">.</span><span class="na">Phase</span><span class="o">.</span><span class="na">REDUCE</span><span class="o">);</span> 
+<span class="n">statusUpdate</span><span class="o">(</span><span class="n">umbilical</span><span class="o">);</span>
+<span class="n">Class</span> <span class="n">keyClass</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="na">getMapOutputKeyClass</span><span class="o">();</span>
+<span class="n">Class</span> <span class="n">valueClass</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="na">getMapOutputValueClass</span><span class="o">();</span>
+<span class="n">RawComparator</span> <span class="n">comparator</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="na">getOutputValueGroupingComparator</span><span class="o">();</span>
+</pre></div>
+
+
+<p>ReduceTask 虽然在JVM中运行起来了，但是 <code>reduceCopier.fetchOutputs()</code> 是一个阻塞同步函数，该函数会因为 <code>copiedMapOutputs.size() &lt; numMaps</code> 而阻塞，循环等待直到所有map输出文件拷贝完成。</p>
+<p>也就是说，如果MapTask耗时很多的话JVM有限的情况下，在运行ReduceTask的JVM可能会出现都在阻塞的现象，造成新提交的MapTask无法使用JVM运行。</p>
+<p>TaskTracker 并没有通过细粒度控制 MapTask和ReduceTask的执行关系，而是直接扔给JVMManager去执行，ReduceTask对MapTask的依赖关系，还可以将ReduceTask中关于等待MapTask的代码抽离出来，通过单独控制先调度MapTask执行，当所有MapTask的输出文件都下载准备好以后，再调度ReduceTask 去执行。 Hadoop 则采用的是由 ReduceTask 自己来维护这种依赖关系，每个ReduceTask只要知道自己需要等待哪些MapTask就行了，这样更加简单明确一些。如果单独抽离出来，则需要维护所有ReduceTask和MapTask的依赖关系，并且需要在父进程中下载和准备数据，这样虽然能够更好的利用资源，不会让虚拟机出现空等Map的过程，但是也会对父进程造成压力，同时代码不够简单明确。</p>
+<h3 id="shuffle">shuffle 阶段分析</h3>
+<p>ReduceTask 通过 ReduceCopier 来负责做reduce前的数据准备。ReduceCopier 中有两组生产者消费者模型，并行的下载MapOutput数据和合并数据。<br />
+第一组是 GetMapEventsThread 和 MapOutputCopier， 通过元数据消费数据 scheduledCopies 来进行协作。第二组是 MapOutputCopier 和 InMemFSMergeThread/LocalFSMerger, 分别通过ShuffleRamManager.dataAvailable 和 mapOutputFilesOnDisk 协调控制MapOutput数据的生产消费。shuffle过程如下图所示:</p>
+<p><img alt="" src="" /></p>
+<h4 id="getmapeventsthread-mapoutputcopier">GetMapEventsThread 和 MapOutputCopier</h4>
+<p>MapOutputCopier 是消费者，Reduce Task同时启动<code>mapred.reduce.parallel.copies</code>（ 默认是5） 个数据拷贝线程MapOutputCopier。 该线程从scheduledCopies列表中获取Map Task数据输出描述对象， 并利用HTTP Get从对应的TaskTracker远程拷贝数据， 如果数据分片大小超过一定阈值， 则将数据临时写到工作目录下， 否则直接保存到内存中。 不管是保存到内存中还是磁盘上， MapOutputCopier均会保存一个MapOutput对象描述数据的元信息。 如果数据被保存到内存中， 则将该对象添加到列表mapOutputsFilesInMemory中， 否则将该对象保存到列<br />
+表mapOutputFilesOnDisk中。</p>
+<p>GetMapEventsThread线程周期性通过RPC从TaskTracker获取已完成Map Task列表， 并保存到映射表mapLocations（保存了TaskTracker Host与已完成任务列表的映射关系） 中。 为防止出现网络热点， Reduce Task通过对所有TaskTracker Host进行“混洗”操作以打乱数据拷贝顺序， 并将调整后的Map Task输出数据位置保存到scheduledCopies列表中。</p>
+<p>TaskTracker自己通过其 MapEventsFetcherThread 线程从 JobTracker 周期性获得MapEvents。当Task主动调用RPC <code>TaskTracker.getMapCompletionEvents</code> 的时候，TaskTracker会强制唤醒查询JobTracker获取MapEvents.</p>
+<div class="hlcode"><pre><span class="c1">// MapEventsFetcherThread run loop</span>
+<span class="k">while</span> <span class="o">(</span><span class="n">running</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">{</span>
+    <span class="n">List</span> <span class="o">&lt;</span><span class="n">FetchStatus</span><span class="o">&gt;</span> <span class="n">fList</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">runningJobs</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">while</span> <span class="o">(((</span><span class="n">fList</span> <span class="o">=</span> <span class="n">reducesInShuffle</span><span class="o">()).</span><span class="na">size</span><span class="o">())</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">runningJobs</span><span class="o">.</span><span class="na">wait</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">// now fetch all the map task events for all the reduce tasks</span>
+    <span class="c1">// possibly belonging to different jobs</span>
+    <span class="kt">boolean</span> <span class="n">fetchAgain</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span> <span class="c1">//flag signifying whether we want to fetch</span>
+                                <span class="c1">//immediately again.</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">FetchStatus</span> <span class="n">f</span> <span class="o">:</span> <span class="n">fList</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">long</span> <span class="n">currentTime</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+      <span class="c1">//the method below will return true when we have not </span>
+      <span class="c1">//fetched all available events yet</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="na">fetchMapCompletionEvents</span><span class="o">(</span><span class="n">currentTime</span><span class="o">))</span> <span class="o">{</span>
+         <span class="n">fetchAgain</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="k">if</span> <span class="o">(!</span><span class="n">running</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">waitingOn</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(!</span><span class="n">fetchAgain</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">waitingOn</span><span class="o">.</span><span class="na">wait</span><span class="o">(</span><span class="n">heartbeatInterval</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// FetchStatus.fetchMapCompletionEvents</span>
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">fetchMapCompletionEvents</span><span class="o">(</span><span class="kt">long</span> <span class="n">currTime</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="o">.....</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">fromEventId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">currFromEventId</span> <span class="o">=</span> <span class="n">fromEventId</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">List</span> <span class="o">&lt;</span><span class="n">TaskCompletionEvent</span><span class="o">&gt;</span> <span class="n">recentMapEvents</span> <span class="o">=</span> 
+      <span class="n">queryJobTracker</span><span class="o">(</span><span class="n">fromEventId</span><span class="o">,</span> <span class="n">jobId</span><span class="o">,</span> <span class="n">jobClient</span><span class="o">);</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">allMapEvents</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">allMapEvents</span><span class="o">.</span><span class="na">addAll</span><span class="o">(</span><span class="n">recentMapEvents</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">lastFetchTime</span> <span class="o">=</span> <span class="n">currTime</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">fromEventId</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">-</span> <span class="n">currFromEventId</span> <span class="o">&gt;=</span> <span class="n">probe_sample_size</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">//return true when we have fetched the full payload, indicating</span>
+      <span class="c1">//that we should fetch again immediately (there might be more to</span>
+      <span class="c1">//fetch</span>
+      <span class="n">fetchAgain</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="n">fetchAgain</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+  <span class="o">......</span>
+<span class="o">}</span>
+
+
+<span class="c1">// TaskTracker.queryJobTracker</span>
+
+<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">TaskCompletionEvent</span><span class="o">&gt;</span> <span class="nf">queryJobTracker</span><span class="o">(</span><span class="n">IntWritable</span> <span class="n">fromEventId</span><span class="o">,</span>
+                                                  <span class="n">JobID</span> <span class="n">jobId</span><span class="o">,</span>
+                                                  <span class="n">InterTrackerProtocol</span> <span class="n">jobClient</span><span class="o">)</span>
+  <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+
+  <span class="n">TaskCompletionEvent</span> <span class="n">t</span><span class="o">[]</span> <span class="o">=</span> <span class="n">jobClient</span><span class="o">.</span><span class="na">getTaskCompletionEvents</span><span class="o">(</span>
+                                                              <span class="n">jobId</span><span class="o">,</span>
+                                                              <span class="n">fromEventId</span><span class="o">.</span><span class="na">get</span><span class="o">(),</span>
+                                                              <span class="n">probe_sample_size</span><span class="o">);</span>
+  <span class="c1">//we are interested in map task completion events only. So store</span>
+  <span class="c1">//only those</span>
+  <span class="n">List</span> <span class="o">&lt;</span><span class="n">TaskCompletionEvent</span><span class="o">&gt;</span> <span class="n">recentMapEvents</span> <span class="o">=</span> 
+    <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">TaskCompletionEvent</span><span class="o">&gt;();</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">t</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">t</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">isMap</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">recentMapEvents</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">t</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="n">fromEventId</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">fromEventId</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+  <span class="k">return</span> <span class="n">recentMapEvents</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>ReduceTask 通过生产者线程 GetMapEventsThread 中的RPC调用 <code>umbilical.getMapCompletionEvents</code> 从TaskTracker获取已完成MapTask的完成事件，获取已经完成的MapTask的数据输出位置，为消费者 MapOutputCopier发出消费信号。 为防止出现网络热点， Reduce Task通过对所有TaskTracker Host进行“混洗”操作以打乱数据拷贝顺序， 并将调整后的Map Task输出数据位置保存到scheduledCopies列表中。</p>
+<div class="hlcode"><pre><span class="c1">// 生产者</span>
+<span class="n">MapTaskCompletionEventsUpdate</span> <span class="n">update</span> <span class="o">=</span> 
+          <span class="n">umbilical</span><span class="o">.</span><span class="na">getMapCompletionEvents</span><span class="o">(</span><span class="n">reduceTask</span><span class="o">.</span><span class="na">getJobID</span><span class="o">(),</span> 
+                                           <span class="n">fromEventId</span><span class="o">.</span><span class="na">get</span><span class="o">(),</span> 
+                                           <span class="n">MAX_EVENTS_TO_FETCH</span><span class="o">,</span>
+                                           <span class="n">reduceTask</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">(),</span> <span class="n">jvmContext</span><span class="o">);</span>
+<span class="n">TaskCompletionEvent</span> <span class="n">events</span><span class="o">[]</span> <span class="o">=</span> <span class="n">update</span><span class="o">.</span><span class="na">getMapTaskCompletionEvents</span><span class="o">();</span>
+<span class="o">......</span>
+<span class="k">for</span> <span class="o">(</span><span class="n">TaskCompletionEvent</span> <span class="n">event</span> <span class="o">:</span> <span class="n">events</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">switch</span> <span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getTaskStatus</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nl">SUCCEEDED:</span>
+    <span class="o">{</span>
+      <span class="n">URI</span> <span class="n">u</span> <span class="o">=</span> <span class="n">URI</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getTaskTrackerHttp</span><span class="o">());</span>
+      <span class="n">String</span> <span class="n">host</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="na">getHost</span><span class="o">();</span>
+      <span class="n">TaskAttemptID</span> <span class="n">taskId</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="na">getTaskAttemptId</span><span class="o">();</span>
+      <span class="n">URL</span> <span class="n">mapOutputLocation</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getTaskTrackerHttp</span><span class="o">()</span> <span class="o">+</span> 
+                              <span class="s">&quot;/mapOutput?job=&quot;</span> <span class="o">+</span> <span class="n">taskId</span><span class="o">.</span><span class="na">getJobID</span><span class="o">()</span> <span class="o">+</span>
+                              <span class="s">&quot;&amp;map=&quot;</span> <span class="o">+</span> <span class="n">taskId</span> <span class="o">+</span> 
+                              <span class="s">&quot;&amp;reduce=&quot;</span> <span class="o">+</span> <span class="n">getPartition</span><span class="o">());</span>
+      <span class="n">List</span><span class="o">&lt;</span><span class="n">MapOutputLocation</span><span class="o">&gt;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">mapLocations</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">host</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">loc</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="n">Collections</span><span class="o">.</span><span class="na">synchronizedList</span>
+          <span class="o">(</span><span class="k">new</span> <span class="n">LinkedList</span><span class="o">&lt;</span><span class="n">MapOutputLocation</span><span class="o">&gt;());</span>
+        <span class="n">mapLocations</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">loc</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="n">loc</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">MapOutputLocation</span><span class="o">(</span><span class="n">taskId</span><span class="o">,</span> <span class="n">host</span><span class="o">,</span> <span class="n">mapOutputLocation</span><span class="o">));</span>
+      <span class="n">numNewMaps</span> <span class="o">++;</span>
+    <span class="o">}</span>
+<span class="o">......</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// TaskTracker.getMapCompletionEvents --&gt; FetchStatus.getMapEvents</span>
+<span class="kd">public</span> <span class="n">TaskCompletionEvent</span><span class="o">[]</span> <span class="nf">getMapEvents</span><span class="o">(</span><span class="kt">int</span> <span class="n">fromId</span><span class="o">,</span> <span class="kt">int</span> <span class="n">max</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">allMapEvents</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">allMapEvents</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="n">fromId</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">int</span> <span class="n">actualMax</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">max</span><span class="o">,</span> <span class="o">(</span><span class="n">allMapEvents</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="n">fromId</span><span class="o">));</span>
+      <span class="n">List</span> <span class="o">&lt;</span><span class="n">TaskCompletionEvent</span><span class="o">&gt;</span> <span class="n">eventSublist</span> <span class="o">=</span> 
+        <span class="n">allMapEvents</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">fromId</span><span class="o">,</span> <span class="n">actualMax</span> <span class="o">+</span> <span class="n">fromId</span><span class="o">);</span>
+      <span class="n">mapEvents</span> <span class="o">=</span> <span class="n">eventSublist</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="n">mapEvents</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="c1">// Notify Fetcher thread. </span>
+      <span class="n">notifyFetcher</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">notifyFetcher</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">waitingOn</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">waitingOn</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c1">// 消费者 </span>
+<span class="k">while</span> <span class="p">(</span><span class="n">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="p">......</span>
+  <span class="n">MapOutputLocation</span> <span class="n">loc</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+  <span class="n">long</span> <span class="n">size</span> <span class="o">=</span> <span class="o">-</span><span class="mh">1</span><span class="p">;</span>
+  <span class="n">synchronized</span> <span class="p">(</span><span class="n">scheduledCopies</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">scheduledCopies</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+      <span class="n">scheduledCopies</span><span class="p">.</span><span class="k">wait</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">loc</span> <span class="o">=</span> <span class="n">scheduledCopies</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="mh">0</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="p">......</span>
+  <span class="n">shuffleClientMetrics</span><span class="p">.</span><span class="n">threadBusy</span><span class="p">();</span>
+  <span class="n">start</span><span class="p">(</span><span class="n">loc</span><span class="p">);</span>
+  <span class="n">size</span> <span class="o">=</span> <span class="n">copyOutput</span><span class="p">(</span><span class="n">loc</span><span class="p">);</span>
+  <span class="n">shuffleClientMetrics</span><span class="p">.</span><span class="n">successFetch</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h4 id="mapoutputcopier-inmemfsmergethreadlocalfsmerger">MapOutputCopier 和 InMemFSMergeThread/LocalFSMerger</h4>
+<p>第二组是 MapOutputCopier 生产者 和 InMemFSMergeThread/LocalFSMerger 消费者, 分别通过ShuffleRamManager.dataAvailable 和 mapOutputFilesOnDisk 协调控制MapOutput数据的生产消费。</p>
+<p>生产者给 InMemFSMergeThread 和 LocalFSMerger 发送信号</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kt">long</span> <span class="nf">copyOutput</span><span class="o">(</span><span class="n">MapOutputLocation</span> <span class="n">loc</span>
+                              <span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+  <span class="o">......</span>
+  <span class="c1">// Copy the map output</span>
+  <span class="n">MapOutput</span> <span class="n">mapOutput</span> <span class="o">=</span> <span class="n">getMapOutput</span><span class="o">(</span><span class="n">loc</span><span class="o">,</span> <span class="n">tmpMapOutput</span><span class="o">,</span>
+                                      <span class="n">reduceId</span><span class="o">.</span><span class="na">getTaskID</span><span class="o">().</span><span class="na">getId</span><span class="o">());</span>
+
+    <span class="c1">// Process map-output</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mapOutput</span><span class="o">.</span><span class="na">inMemory</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// Save it in the synchronized list of map-outputs</span>
+      <span class="n">mapOutputsFilesInMemory</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">mapOutput</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="o">......</span>
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">mapOutputFilesOnDisk</span><span class="o">)</span> <span class="o">{</span>        
+        <span class="n">addToMapOutputFilesOnDisk</span><span class="o">(</span><span class="n">localFileSys</span><span class="o">.</span><span class="na">getFileStatus</span><span class="o">(</span><span class="n">filename</span><span class="o">));</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="kd">private</span> <span class="n">MapOutput</span> <span class="nf">getMapOutput</span><span class="o">(</span><span class="n">MapOutputLocation</span> <span class="n">mapOutputLoc</span><span class="o">,</span> 
+                                     <span class="n">Path</span> <span class="n">filename</span><span class="o">,</span> <span class="kt">int</span> <span class="n">reduce</span><span class="o">){</span>
+  <span class="o">......</span>
+  <span class="kt">boolean</span> <span class="n">shuffleInMemory</span> <span class="o">=</span> <span class="n">ramManager</span><span class="o">.</span><span class="na">canFitInMemory</span><span class="o">(</span><span class="n">decompressedLength</span><span class="o">);</span> 
+  <span class="c1">// Shuffle</span>
+  <span class="n">MapOutput</span> <span class="n">mapOutput</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">shuffleInMemory</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">mapOutput</span> <span class="o">=</span> <span class="n">shuffleInMemory</span><span class="o">(</span><span class="n">mapOutputLoc</span><span class="o">,</span> <span class="n">connection</span><span class="o">,</span> <span class="n">input</span><span class="o">,</span>
+                                <span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="n">decompressedLength</span><span class="o">,</span>
+                                <span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="n">compressedLength</span><span class="o">);</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">mapOutput</span> <span class="o">=</span> <span class="n">shuffleToDisk</span><span class="o">(</span><span class="n">mapOutputLoc</span><span class="o">,</span> <span class="n">input</span><span class="o">,</span> <span class="n">filename</span><span class="o">,</span> 
+        <span class="n">compressedLength</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">private</span> <span class="n">MapOutput</span> <span class="nf">shuffleInMemory</span><span class="o">(</span><span class="n">MapOutputLocation</span> <span class="n">mapOutputLoc</span><span class="o">,</span>
+                                        <span class="n">URLConnection</span> <span class="n">connection</span><span class="o">,</span> 
+                                        <span class="n">InputStream</span> <span class="n">input</span><span class="o">,</span>
+                                        <span class="kt">int</span> <span class="n">mapOutputLength</span><span class="o">,</span>
+                                        <span class="kt">int</span> <span class="n">compressedLength</span><span class="o">)</span>
+      <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+  <span class="c1">// Reserve ram for the map-output</span>
+  <span class="kt">boolean</span> <span class="n">createdNow</span> <span class="o">=</span> <span class="n">ramManager</span><span class="o">.</span><span class="na">reserve</span><span class="o">(</span><span class="n">mapOutputLength</span><span class="o">,</span> <span class="n">input</span><span class="o">);</span>
+<span class="o">......</span>
+  <span class="c1">// Inform the ram-manager</span>
+  <span class="n">ramManager</span><span class="o">.</span><span class="na">closeInMemoryFile</span><span class="o">(</span><span class="n">mapOutputLength</span><span class="o">);</span>
+  <span class="n">ramManager</span><span class="o">.</span><span class="na">unreserve</span><span class="o">(</span><span class="n">mapOutputLength</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2 id="taskreporter-progress">TaskReporter 和 Progress</h2>
+<p>在任务运行过程中， 为了能够让JobTracker获取任务执行进度Progress， 各个任务会创建一个进度汇报线程Reporter， 只要任务处理一条新数据， 该线程将通过RPC告知TaskTracker， 并由TaskTracker通过心跳（心跳中带有TaskStatus数据）进一步告诉JobTracker。</p>
+<div class="hlcode"><pre><span class="c1">// TaskReporter 线程</span>
+ <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAX_RETRIES</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">remainingRetries</span> <span class="o">=</span> <span class="n">MAX_RETRIES</span><span class="o">;</span>
+  <span class="c1">// get current flag value and reset it as well</span>
+  <span class="kt">boolean</span> <span class="n">sendProgress</span> <span class="o">=</span> <span class="n">resetProgressFlag</span><span class="o">();</span>
+  <span class="k">while</span> <span class="o">(!</span><span class="n">taskDone</span><span class="o">.</span><span class="na">get</span><span class="o">())</span> <span class="o">{</span>
+    <span class="kd">synchronized</span><span class="o">(</span><span class="n">lock</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">done</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">......</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">sendProgress</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// we need to send progress update</span>
+      <span class="n">updateCounters</span><span class="o">();</span>
+      <span class="n">taskStatus</span><span class="o">.</span><span class="na">statusUpdate</span><span class="o">(</span><span class="n">taskProgress</span><span class="o">.</span><span class="na">get</span><span class="o">(),</span>
+                              <span class="n">taskProgress</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> 
+                              <span class="n">counters</span><span class="o">);</span>
+      <span class="n">taskFound</span> <span class="o">=</span> <span class="n">umbilical</span><span class="o">.</span><span class="na">statusUpdate</span><span class="o">(</span><span class="n">taskId</span><span class="o">,</span> <span class="n">taskStatus</span><span class="o">,</span> <span class="n">jvmContext</span><span class="o">);</span>
+      <span class="n">taskStatus</span><span class="o">.</span><span class="na">clearStatus</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">else</span> <span class="o">{</span>
+      <span class="c1">// send ping </span>
+      <span class="n">taskFound</span> <span class="o">=</span> <span class="n">umbilical</span><span class="o">.</span><span class="na">ping</span><span class="o">(</span><span class="n">taskId</span><span class="o">,</span> <span class="n">jvmContext</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">....</span>
+  <span class="o">}</span>
+  <span class="c1">//Notify that we are done with the work</span>
+  <span class="n">resetDoneFlag</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>任务执行进度信息被封装到类Progress中， 且每个Progress实例以树的形式存在。 Hadoop采用了简单的线性模型计算每个阶段的进度值： 如果一个大阶段可被分解成若干个子阶段， 则可将大阶段看作一棵树的父节点， 而子阶段可看作父节点对应的子节点， 且大阶段的进度值可被均摊到各个子阶段中； 如果一个阶段不可再分解， 则该阶段进度值可表示成已读取数据量占总数据量的比例。<br />
+对于Map Task而言， 它作为一个大阶段不可再分解， 为了简便， 我们直接将已读取数据量占总数据量的比例作为任务当前执行进度值。<br />
+对于Reduce Task而言， 我们可将其分解成三个阶段： Shuffle、 Sort和Reduce， 每个阶段占任务总进度的1/3。 考虑到在Shuffle阶段， Reduce Task需从M（M为Map Task数目） 个Map Task上读取片数据， 因此， 可被分解成M个阶段， 每个阶段占Shuffle进度的1/M， 具体如图8-5所示。</p>
+<p><img alt="" src="" /></p>
+<p>任务进度由Progress类实现，该类递归定义了一个Progress，过程是一个树形结构，一个父过程可以分解成多个子过程，进而继续分解，每一个节点维护的是当前过程含有的子过程列表，当前运行第到几个子阶段，当前过程每个子过程进度比例（平均数），当前过程的父过程，当前进度。</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Progress</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">String</span> <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">float</span> <span class="n">progress</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">currentPhase</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Progress</span><span class="o">&gt;</span> <span class="n">phases</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Progress</span><span class="o">&gt;();</span>
+  <span class="kd">private</span> <span class="n">Progress</span> <span class="n">parent</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">float</span> <span class="n">progressPerPhase</span><span class="o">;</span>
+
+  <span class="cm">/** Creates a new root node. */</span>
+  <span class="kd">public</span> <span class="nf">Progress</span><span class="o">()</span> <span class="o">{}</span>
+
+  <span class="cm">/** Adds a named node to the tree. */</span>
+  <span class="kd">public</span> <span class="n">Progress</span> <span class="nf">addPhase</span><span class="o">(</span><span class="n">String</span> <span class="n">status</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">Progress</span> <span class="n">phase</span> <span class="o">=</span> <span class="n">addPhase</span><span class="o">();</span>
+    <span class="n">phase</span><span class="o">.</span><span class="na">setStatus</span><span class="o">(</span><span class="n">status</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">phase</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Adds a node to the tree. */</span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">Progress</span> <span class="nf">addPhase</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">Progress</span> <span class="n">phase</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Progress</span><span class="o">();</span>
+    <span class="n">phases</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">phase</span><span class="o">);</span>
+    <span class="n">phase</span><span class="o">.</span><span class="na">parent</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+    <span class="n">progressPerPhase</span> <span class="o">=</span> <span class="mf">1.0f</span> <span class="o">/</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span><span class="n">phases</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="k">return</span> <span class="n">phase</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Called during execution to move to the next phase at this level in the</span>
+<span class="cm">   * tree. */</span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">startNextPhase</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">currentPhase</span><span class="o">++;</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Returns the current sub-node executing. */</span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">Progress</span> <span class="nf">phase</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">phases</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">currentPhase</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Completes this node, moving the parent node to its next child. */</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">complete</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// we have to traverse up to our parent, so be careful about locking.</span>
+    <span class="n">Progress</span> <span class="n">myParent</span><span class="o">;</span>
+    <span class="kd">synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">progress</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="o">;</span>
+      <span class="n">myParent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">myParent</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// this will synchronize on the parent, so we make sure we release</span>
+      <span class="c1">// our lock before getting the parent&#39;s, since we&#39;re traversing </span>
+      <span class="c1">// against the normal traversal direction used by get() or toString().</span>
+      <span class="c1">// We don&#39;t need transactional semantics, so we&#39;re OK doing this. </span>
+      <span class="n">myParent</span><span class="o">.</span><span class="na">startNextPhase</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Called during execution on a leaf node to set its progress. */</span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">set</span><span class="o">(</span><span class="kt">float</span> <span class="n">progress</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">progress</span> <span class="o">=</span> <span class="n">progress</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Returns the overall progress of the root. */</span>
+  <span class="c1">// this method probably does not need to be synchronized as getINternal() is synchronized </span>
+  <span class="c1">// and the node&#39;s parent never changes. Still, it doesn&#39;t hurt. </span>
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">float</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">Progress</span> <span class="n">node</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+    <span class="k">while</span> <span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">parent</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>                 <span class="c1">// find the root</span>
+      <span class="n">node</span> <span class="o">=</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="na">getInternal</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="cm">/** Computes progress in this node. */</span>
+  <span class="kd">private</span> <span class="kd">synchronized</span> <span class="kt">float</span> <span class="nf">getInternal</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">phaseCount</span> <span class="o">=</span> <span class="n">phases</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">phaseCount</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">float</span> <span class="n">subProgress</span> <span class="o">=</span>
+        <span class="n">currentPhase</span> <span class="o">&lt;</span> <span class="n">phaseCount</span> <span class="o">?</span> <span class="n">phase</span><span class="o">().</span><span class="na">getInternal</span><span class="o">()</span> <span class="o">:</span> <span class="mf">0.0f</span><span class="o">;</span>
+      <span class="k">return</span> <span class="n">progressPerPhase</span><span class="o">*(</span><span class="n">currentPhase</span> <span class="o">+</span> <span class="n">subProgress</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="n">progress</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">setStatus</span><span class="o">(</span><span class="n">String</span> <span class="n">status</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">status</span> <span class="o">=</span> <span class="n">status</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">StringBuffer</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuffer</span><span class="o">();</span>
+    <span class="n">toString</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">toString</span><span class="o">(</span><span class="n">StringBuffer</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">buffer</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">status</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">phases</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">currentPhase</span> <span class="o">&lt;</span> <span class="n">phases</span><span class="o">.</span><span class="na">size</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">buffer</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="s">&quot; &gt; &quot;</span><span class="o">);</span>
+      <span class="n">phase</span><span class="o">().</span><span class="na">toString</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+
+<p>计算当前过程的运行进度的算法:</p>
+<div class="hlcode"><pre>     <span class="cm">/** Computes progress in this node. */</span>
+  <span class="kd">private</span> <span class="kd">synchronized</span> <span class="kt">float</span> <span class="nf">getInternal</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">phaseCount</span> <span class="o">=</span> <span class="n">phases</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">phaseCount</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kt">float</span> <span class="n">subProgress</span> <span class="o">=</span>
+        <span class="n">currentPhase</span> <span class="o">&lt;</span> <span class="n">phaseCount</span> <span class="o">?</span> <span class="n">phase</span><span class="o">().</span><span class="na">getInternal</span><span class="o">()</span> <span class="o">:</span> <span class="mf">0.0f</span><span class="o">;</span>
+      <span class="k">return</span> <span class="n">progressPerPhase</span><span class="o">*(</span><span class="n">currentPhase</span> <span class="o">+</span> <span class="n">subProgress</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="n">progress</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-02-07 11:46 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'mapred-v1-source',
+  title: 'mapred-v1-source',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
