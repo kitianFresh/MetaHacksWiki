@@ -20,7 +20,7 @@ date: 2019-02-02 15:32
 
 调度器调度的时候，并不是主动行为，而是每一个节点 `TaskTracker` 通过心跳的方式从 `JobTracker` 拿到任务列表，而 `JobTracker` 则利用调度器的 `assignTasks` 方法进行调度。也就是说调度器每次只处理一个 `TaskTracker` 的任务调度请求，他负责从队列中取出作业，再将作业的任务分配给可以接受的 `TaskTracker`，下图是作业提交到执行的过程。
 
-<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobSubmitDataFlowProcess.jpg" style="width:700px;height:500px;">
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobSubmitDataFlowProcess.jpg" style="width:1000px;height:500px;">
 <caption><center> JobSubmitDataFlowProcess </center></caption></div>
 
 
@@ -29,7 +29,7 @@ date: 2019-02-02 15:32
 
 `TaskScheduler` 和 `JobTracker` 之间其实是通过观察者模式来实现的，如图 JobTracker-TaskScheduler-观察者模式 所示，`JobTracker` 作为被观察者，其实真正的观察者是 `JobInProgressListener` , `TaskScheduler` 只是利用了注册在 `JobTracker` 中的 `JobInProgressListener` 来获取作业队列。在默认调度器中，队列其实是由`JobQueueJobInProgressListener.jobQueue` 数据结构来维护，他其实是 `TreeMap`，key 是 `JobSchedulingInfo`, 通过 开始时间 排序。
 
-<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobQueueTaskScheduler-Observer.jpg" style="width:700px;height:500px;">
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobQueueTaskScheduler-Observer.jpg" style="width:1000px;height:500px;">
 <caption><center> JobQueueTaskScheduler-Observer </center></caption></div>
 
 Job 的添加/删除 `JobTracker` 都会第一时间通知观察者，`addJob` 就是通知观察者有新 Job 加入的函数，观察者会触发相应的动作。
@@ -321,7 +321,7 @@ Hadoop根据输入数据与实际分配的计算资源之间的距离将任务�
 # org.apache.hadoop.mapred.JobInProgress
 这里的步骤6 是利用数据本地性策略的关键，首先创建该 `Map<Node, List<TaskInProgress>>` 的缓存map对象，该对象中包含 每个节点可以运行的任务列表。缓存利用了网络拓扑结构，Hadoop 利用 `org.apache.hadoop.net.NetworkTopology` 将整个集群抽象成树形网络拓扑结构，其中 host, rack/switch/router, datacenter 都是抽象成节点 Node. Hadoop 只能感知到交换机这一层。如图 是构建该缓存的过程，`maxLevel`控制着缓存的级别，第2层就是交换机这一层，第0层即使node-local, 第1层就是rack-local, 如果允许 off-switch, 则再利用缓存查询的时候，可以直接遍历到该层来获取Tasks。
 
-<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/HadoopNetwokTopologyNodeCache.jpg" style="width:700px;height:500px;">
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/HadoopNetwokTopologyNodeCache.jpg" style="width:1000px;height:500px;">
 <caption><center> hadoopNetworkTopologyNodeCache </center></caption></div>
 
 ```java
