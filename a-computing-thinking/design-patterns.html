@@ -1,0 +1,308 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>design-patterns - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#a-computing-thinking">a-computing-thinking</a>&nbsp;»&nbsp;design-patterns</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">design-patterns</div>
+<div id="content">
+  <p>多态的特性在于你必须遵循某些接口和规范，对于符合规范的语法，继承父类或者实现接口这种具有父子关系的类，编译器才允许多态运行。对于静态强类型的语言，比如Java，Java在编译的时候就会进行严格的类型检查。</p>
+<p>另外，多态虽然非常方便，并且可以减少代码量，将公共部分抽象出来。但那是为了利用这种特性，必须要求类去实现特定的接口，是一种不必要的代码耦合，这是一种糟糕的设计。从Spring和其他容器框架中吸取的教训之一是，为了提供通用功能，不能将自己绑定到特定的类型层次结构。 您应该能够只编写POJO并让框架解决如何处理它们，而不是拥有扩展抽象类或实现一堆接口的类。 在Spring中，我们使用注释，约定或XML映射文件来告诉框架如何理解特定POJO正在尝试做什么。 这样做的优点是，你不用绑定任何东西运行再Spring容器中。</p>
+<p>但是对于动态语言 Python 来说，这是不需要的, Python 是动态类型的。不需要特定的类型层次结构也可以实现多态。如果两个方法拥有同样的签名signature, 这意味着他们可能在做同一件事情。这个概念叫 Duck Typing (鸭子类型). 不用确定 IS-A 的关系，而是 Like-A 的关系。</p>
+<blockquote>
+<p>rather than determining whether something IS-A duck, we just care that it WALKS-like-a duck and QUACKS-like-a duck.</p>
+</blockquote>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Duck</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">quack</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&quot;a loud Quaaaaaaaaaaaaack!&quot;</span>
+  <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&quot;waddle&quot;</span>
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">quack</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&quot;a person making a quacking sound.&quot;</span>
+  <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&quot;walk&quot;</span>
+
+<span class="k">def</span> <span class="nf">tellAStoryAbout</span><span class="p">(</span><span class="n">something</span><span class="p">):</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">&quot;One day while walking in the forest I heard &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="o">.</span><span class="n">quack</span><span class="p">())</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">&quot;Intrigued, I turned round to see a dark shape &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="o">.</span><span class="n">walk</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot; off into the bushes.&quot;</span><span class="p">)</span>
+
+<span class="n">tellAStoryAbout</span><span class="p">(</span><span class="n">Duck</span><span class="p">())</span>
+<span class="n">tellAStoryAbout</span><span class="p">(</span><span class="n">Person</span><span class="p">())</span>
+</pre></div>
+
+
+<p>在 Golang 中没有继承的概念，类的层次结构不需要显式申明，只需要实现相同的接口函数就意味着他们拥有相同的父亲。Golang 的接口使用起来非常方便，如果你想让某个类看起来像是某个父类的孩子，你只要实现该接口就行了。</p>
+<blockquote>
+<p>When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck.</p>
+</blockquote>
+<div class="hlcode"><pre><span class="n">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="s">&quot;fmt&quot;</span>
+
+<span class="n">type</span> <span class="n">Something</span> <span class="n">interface</span> <span class="p">{</span>
+  <span class="n">Quack</span><span class="p">()</span> <span class="n">string</span>
+  <span class="n">Walk</span><span class="p">()</span> <span class="n">string</span>
+<span class="p">}</span>
+
+<span class="n">type</span> <span class="n">Duck</span> <span class="k">struct</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">d</span> <span class="n">Duck</span><span class="p">)</span> <span class="n">Quack</span><span class="p">()</span> <span class="n">string</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s">&quot;a loud Quaaaaaaaaaaaaack!&quot;</span>
+<span class="p">}</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">d</span> <span class="n">Duck</span><span class="p">)</span> <span class="n">Walk</span><span class="p">()</span> <span class="n">string</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s">&quot;waddle&quot;</span>
+<span class="p">}</span>
+
+<span class="n">type</span> <span class="n">Person</span> <span class="k">struct</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">p</span> <span class="n">Person</span><span class="p">)</span> <span class="n">Quack</span><span class="p">()</span> <span class="n">string</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s">&quot;a person making a quacking sound.&quot;</span>
+<span class="p">}</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">p</span> <span class="n">Person</span><span class="p">)</span> <span class="n">Walk</span><span class="p">()</span> <span class="n">string</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s">&quot;walk&quot;</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">tellAStoryAbout</span><span class="p">(</span><span class="n">something</span> <span class="n">Something</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s">&quot;One day while walking in the forest I heard &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="p">.</span><span class="n">Quack</span><span class="p">())</span>
+  <span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s">&quot;Intrigued, I turned round to see a dark shape &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="p">.</span><span class="n">Walk</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot; off into the bushes.&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">duck</span> <span class="o">:=</span> <span class="n">Duck</span><span class="p">{}</span>
+  <span class="n">person</span> <span class="o">:=</span> <span class="n">Person</span><span class="p">{}</span>
+  <span class="n">tellAStoryAbout</span><span class="p">(</span><span class="n">duck</span><span class="p">)</span>
+  <span class="n">tellAStoryAbout</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>对于 Java 这种强类型语言，提供鸭子类型的支持不会像Python这么直接。当然利用反射机制，我们可以直接调用任何类的方法，但是这么做的话就不那么优雅了。我们可以使用动态代理来代理某个需要代理的鸭子类型的类，这样那些鸭子类型的类只要是含有接口方法实现，我们就可以检查到并使用代理类代替鸭子类型的类来执行方法调用。</p>
+<div class="hlcode"><pre><span class="kn">package</span> <span class="n">advance</span><span class="o">.</span><span class="na">reflection</span><span class="o">;</span>
+
+<span class="kd">interface</span> <span class="nc">Something</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="nf">quack</span><span class="o">();</span>
+    <span class="n">String</span> <span class="nf">walk</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Duck</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">quack</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">&quot;a loud Quaaaaaaaaaaaaack!&quot;</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">walk</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">&quot;waddle&quot;</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Person</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">quack</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">&quot;a person making a quacking sound.&quot;</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">walk</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">&quot;walk&quot;</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DuckTypeTest</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">tellAStoryAbout</span><span class="o">(</span><span class="n">Object</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Something</span> <span class="n">something</span> <span class="o">=</span> <span class="n">DuckType</span><span class="o">.</span><span class="na">coerce</span><span class="o">(</span><span class="n">object</span><span class="o">).</span><span class="na">to</span><span class="o">(</span><span class="n">Something</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;One day while walking in the forest I heard &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="o">.</span><span class="na">quack</span><span class="o">());</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Intrigued, I turned round to see a dark shape &quot;</span> <span class="o">+</span> <span class="n">something</span><span class="o">.</span><span class="na">walk</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; off into the bushes.&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Duck</span> <span class="n">duck</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Duck</span><span class="o">();</span>
+        <span class="n">Person</span> <span class="n">person</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="o">();</span>
+        <span class="n">tellAStoryAbout</span><span class="o">(</span><span class="n">duck</span><span class="o">);</span>
+        <span class="n">tellAStoryAbout</span><span class="o">(</span><span class="n">person</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>以下代码可以在Java中实现鸭子类型：</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DuckType</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Object</span> <span class="n">objectToCoerce</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nf">DuckType</span><span class="o">(</span><span class="n">Object</span> <span class="n">objectToCoerce</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">objectToCoerce</span> <span class="o">=</span> <span class="n">objectToCoerce</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">class</span> <span class="nc">CoercedProxy</span> <span class="kd">implements</span> <span class="n">InvocationHandler</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="n">Object</span> <span class="nf">invoke</span><span class="o">(</span><span class="n">Object</span> <span class="n">proxy</span><span class="o">,</span> <span class="n">Method</span> <span class="n">method</span><span class="o">,</span> <span class="n">Object</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+                <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+            <span class="n">Method</span> <span class="n">delegateMethod</span> <span class="o">=</span> <span class="n">findMethodBySignature</span><span class="o">(</span><span class="n">method</span><span class="o">);</span>
+            <span class="k">assert</span> <span class="n">delegateMethod</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span> <span class="n">delegateMethod</span><span class="o">.</span><span class="na">invoke</span><span class="o">(</span><span class="n">DuckType</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">objectToCoerce</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Specify the duck typed object to cast/coerce.</span>
+<span class="cm">     * @param object the object to coerce.</span>
+<span class="cm">     * @return</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">DuckType</span> <span class="nf">coerce</span><span class="o">(</span><span class="n">Object</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">DuckType</span><span class="o">(</span><span class="n">object</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">    * Coerce the Duck Typed object to the given interface providing it</span>
+<span class="cm">    * implements all the necessary methods.</span>
+<span class="cm">     * @param &lt;T&gt;</span>
+<span class="cm">    *</span>
+<span class="cm">    * @param </span>
+<span class="cm">    * @param iface</span>
+<span class="cm">    * @return an instance of the given interface that wraps the duck typed</span>
+<span class="cm">    *         class</span>
+<span class="cm">    * @throws ClassCastException if the object being coerced does not implement</span>
+<span class="cm">    *             all the methods in the given interface.</span>
+<span class="cm">    */</span>
+    <span class="kd">public</span> <span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">T</span> <span class="n">to</span><span class="o">(</span><span class="n">Class</span> <span class="n">iface</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">assert</span> <span class="n">iface</span><span class="o">.</span><span class="na">isInterface</span><span class="o">()</span> <span class="o">:</span> <span class="s">&quot;Cannot coerce object to a class, must be an interface&quot;</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">isA</span><span class="o">(</span><span class="n">iface</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="o">(</span><span class="n">T</span><span class="o">)</span> <span class="n">iface</span><span class="o">.</span><span class="na">cast</span><span class="o">(</span><span class="n">objectToCoerce</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">quacksLikeA</span><span class="o">(</span><span class="n">iface</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">generateProxy</span><span class="o">(</span><span class="n">iface</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ClassCastException</span><span class="o">(</span><span class="s">&quot;Could not coerce object of type &quot;</span> 
+                        <span class="o">+</span> <span class="n">objectToCoerce</span><span class="o">.</span><span class="na">getClass</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; to &quot;</span> <span class="o">+</span> <span class="n">iface</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isA</span><span class="o">(</span><span class="n">Class</span> <span class="n">iface</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">objectToCoerce</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">isInstance</span><span class="o">(</span><span class="n">iface</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">    * Determine whether the duck typed object can be used with</span>
+<span class="cm">    * the given interface.</span>
+<span class="cm">    *</span>
+<span class="cm">    * @param  Type of the interface to check.</span>
+<span class="cm">    * @param iface Interface class to check</span>
+<span class="cm">    * @return true if the object will support all the methods in the</span>
+<span class="cm">    * interface, false otherwise.</span>
+<span class="cm">    */</span>
+
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">quacksLikeA</span><span class="o">(</span><span class="n">Class</span> <span class="n">iface</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">Method</span> <span class="n">method</span> <span class="o">:</span> <span class="n">iface</span><span class="o">.</span><span class="na">getMethods</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">findMethodBySignature</span><span class="o">(</span><span class="n">method</span><span class="o">)</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">Method</span> <span class="nf">findMethodBySignature</span><span class="o">(</span><span class="n">Method</span> <span class="n">method</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">objectToCoerce</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getMethod</span><span class="o">(</span><span class="n">method</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span> <span class="n">method</span><span class="o">.</span><span class="na">getParameterTypes</span><span class="o">());</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NoSuchMethodException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&quot;unchecked&quot;</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">T</span> <span class="n">generateProxy</span><span class="o">(</span><span class="n">Class</span> <span class="n">iface</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">T</span><span class="o">)</span> <span class="n">Proxy</span><span class="o">.</span><span class="na">newProxyInstance</span><span class="o">(</span><span class="n">iface</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">(),</span>
+                    <span class="k">new</span> <span class="n">Class</span><span class="o">[]</span> <span class="o">{</span><span class="n">iface</span><span class="o">},</span> <span class="k">new</span> <span class="n">CoercedProxy</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>-<a href="http://txt.fliglio.com/2015/04/di-duck-typing-and-clean-code-in-go/">Dependency Injection, Duck Typing, and Clean Code in Go</a></p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-02-18 16:57 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'design-patterns',
+  title: 'design-patterns',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

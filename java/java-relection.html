@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>java-relection - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#java">java</a>&nbsp;»&nbsp;java-relection</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">java-relection</div>
+<div id="content">
+  <h1 id="_1">反射</h1>
+<p>静态强类型语言来说，基本上都由</p>
+<p>任何语言编写代码的时候，可能都会遇到一种需求，就是希望看到某个类或者结构数据到底长什么样，比如获取类名称，字段名称，方法名称，这些信息都属于代码层面的信息了，也叫元信息。而操作元信息来编写代码的过程被称为元编程。由于任何语言的代码都会先交给编译器或者解释器，因此这个任务可以让编译器或者解释器来完成，比如java编译器，JVM, Python解释器，Go语言运行时环境这些。</p>
+<p>在 Java 中实现元编程就靠反射机制了。这是 Java 虚拟机提供的一套接口。因为 Java 的代码编译成字节码后，都是交给 JVM 解释执行的，JVM 能够了解运行中的 Java 代码的一切信息。</p>
+<h2 id="inspect-classes">inspect classes</h2>
+<p><code>java.lang.Class</code> 类是一切类的封装和抽象，因此一切都是从这个类开始的，获得一个 Class 的实例对象有两种方式，一个是编译时，一个是运行时。</p>
+<p>编译时的用法，其实就是你的这个类（字节码）在编译的时候就存在且可访问的。</p>
+<div class="hlcode"><pre><span class="n">Class</span> <span class="n">myObjectClass</span> <span class="o">=</span> <span class="n">MyObject</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+</pre></div>
+
+
+<p>运行时的用法，就是你可能就不知道类名，或者这个类在编译的时候可能都还没有，必须在运行时才确定。</p>
+<div class="hlcode"><pre><span class="n">String</span> <span class="n">className</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">myMapper</span><span class="err">&#39;</span><span class="o">;</span>
+<span class="n">Class</span> <span class="n">klass</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+</pre></div>
+
+
+<p>在获取类对象 Class 以后，可以通过相关函数获取到类的各种元信息。包括 类名， 修饰符，包信息，超类，接口，构造函数，方法，字段，注解信息，范型信息, 模块信息(JAVA 9引入)等。</p>
+<h3 id="_2">获取类里的范型信息</h3>
+<div class="hlcode"><pre><span class="c1">// return generic type</span>
+<span class="n">Method</span> <span class="n">method</span> <span class="o">=</span> <span class="n">Klass</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;getPhones&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+<span class="n">Type</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="na">getGenericReturnType</span><span class="o">();</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="k">instanceof</span> <span class="n">ParameterizedType</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">ParameterizedType</span> <span class="n">type</span> <span class="o">=</span> <span class="o">(</span><span class="n">ParameterizedType</span><span class="o">)</span> <span class="n">returnType</span><span class="o">;</span>
+    <span class="n">Type</span><span class="o">[]</span> <span class="n">typeArguments</span> <span class="o">=</span> <span class="n">type</span><span class="o">.</span><span class="na">getActualTypeArguments</span><span class="o">();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">Type</span> <span class="n">typeArgument</span> <span class="o">:</span> <span class="n">typeArguments</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Class</span> <span class="n">typeArgClass</span> <span class="o">=</span> <span class="o">(</span><span class="n">Class</span><span class="o">)</span> <span class="n">typeArgument</span><span class="o">;</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;typeArgClass = &quot;</span> <span class="o">+</span> <span class="n">typeArgClass</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// argument generic type</span>
+<span class="n">method</span> <span class="o">=</span> <span class="n">Klass</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;setPhones&quot;</span><span class="o">,</span> <span class="n">List</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">Type</span><span class="o">[]</span> <span class="n">genericParameterTypes</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="na">getGenericParameterTypes</span><span class="o">();</span>
+<span class="k">for</span> <span class="o">(</span><span class="n">Type</span> <span class="n">genericParameterType</span> <span class="o">:</span> <span class="n">genericParameterTypes</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">genericParameterType</span> <span class="k">instanceof</span> <span class="n">ParameterizedType</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ParameterizedType</span> <span class="n">aType</span> <span class="o">=</span> <span class="o">(</span><span class="n">ParameterizedType</span><span class="o">)</span> <span class="n">genericParameterType</span><span class="o">;</span>
+        <span class="n">Type</span><span class="o">[]</span> <span class="n">parameterArgTypes</span> <span class="o">=</span> <span class="n">aType</span><span class="o">.</span><span class="na">getActualTypeArguments</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">Type</span> <span class="n">parameterArgType</span> <span class="o">:</span> <span class="n">parameterArgTypes</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">Class</span> <span class="n">parameterArgClass</span> <span class="o">=</span> <span class="o">(</span><span class="n">Class</span><span class="o">)</span> <span class="n">parameterArgType</span><span class="o">;</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;parameterArgClass = &quot;</span> <span class="o">+</span> <span class="n">parameterArgClass</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// field generic type</span>
+<span class="n">Field</span> <span class="n">field</span> <span class="o">=</span> <span class="n">Klass</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getField</span><span class="o">(</span><span class="s">&quot;phones&quot;</span><span class="o">);</span>
+<span class="n">Type</span> <span class="n">genericFieldType</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="na">getGenericType</span><span class="o">();</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">genericFieldType</span> <span class="k">instanceof</span> <span class="n">ParameterizedType</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">ParameterizedType</span> <span class="n">aType</span> <span class="o">=</span> <span class="o">(</span><span class="n">ParameterizedType</span><span class="o">)</span> <span class="n">genericFieldType</span><span class="o">;</span>
+    <span class="n">Type</span><span class="o">[]</span> <span class="n">fieldArgTypes</span> <span class="o">=</span> <span class="n">aType</span><span class="o">.</span><span class="na">getActualTypeArguments</span><span class="o">();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">Type</span> <span class="n">fieldArgType</span> <span class="o">:</span> <span class="n">fieldArgTypes</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Class</span> <span class="n">fieldArgClass</span> <span class="o">=</span> <span class="o">(</span><span class="n">Class</span><span class="o">)</span> <span class="n">fieldArgType</span><span class="o">;</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;fieldArgClass = &quot;</span> <span class="o">+</span> <span class="n">fieldArgClass</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h3 id="_3">获取数组的类对象</h3>
+<div class="hlcode"><pre><span class="o">{</span>
+<span class="cm">/*</span>
+<span class="cm">         * int[] intArray = (int[]) Array.newInstance(int.class, 3);</span>
+<span class="cm">         * </span>
+<span class="cm">         * Array.set(intArray, 0, 123); Array.set(intArray, 1, 456); Array.set(intArray,</span>
+<span class="cm">         * 2, 789);</span>
+<span class="cm">         * </span>
+<span class="cm">         * intArray[0] = 1;</span>
+<span class="cm">         * </span>
+<span class="cm">         * System.out.println(&quot;intArray[0] = &quot; + Array.get(intArray, 0));</span>
+<span class="cm">         * System.out.println(&quot;intArray[1] = &quot; + Array.get(intArray, 1));</span>
+<span class="cm">         * System.out.println(&quot;intArray[2] = &quot; + Array.get(intArray, 2));</span>
+<span class="cm">         */</span>
+
+<span class="c1">//      Class stringArrayClass = String[].class;</span>
+        <span class="c1">// 运行时获取 int[] 数组，注意是 [I, I 在虚拟机中表示 int,</span>
+        <span class="n">Class</span> <span class="n">intArray</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&quot;[I&quot;</span><span class="o">);</span>
+        <span class="n">Class</span> <span class="n">stringArrayClass</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&quot;[Ljava.lang.String;&quot;</span><span class="o">);</span>
+
+        <span class="c1">// 通用的获取任何元素类型数组类的方法</span>
+        <span class="n">String</span> <span class="n">theClassName</span> <span class="o">=</span> <span class="n">intArray</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+        <span class="n">Class</span> <span class="n">theClass</span> <span class="o">=</span> <span class="n">getClass</span><span class="o">(</span><span class="n">theClassName</span><span class="o">);</span>
+        <span class="n">Class</span> <span class="n">typeArrayClass</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">theClass</span><span class="o">,</span> <span class="mi">0</span><span class="o">).</span><span class="na">getClass</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;is array: &quot;</span> <span class="o">+</span> <span class="n">typeArrayClass</span><span class="o">.</span><span class="na">isArray</span><span class="o">());</span>
+
+        <span class="c1">// 获取数组元素类  ComponentType of an array</span>
+        <span class="n">Class</span> <span class="n">stringArrayComponentType</span> <span class="o">=</span> <span class="n">stringArrayClass</span><span class="o">.</span><span class="na">getComponentType</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">stringArrayComponentType</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Class</span> <span class="nf">getClass</span><span class="o">(</span><span class="n">String</span> <span class="n">className</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;className: &quot;</span> <span class="o">+</span> <span class="n">className</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="s">&quot;int&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">className</span><span class="o">))</span>
+            <span class="k">return</span> <span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="s">&quot;long&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">className</span><span class="o">))</span>
+            <span class="k">return</span> <span class="kt">long</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></div>
+
+
+<h2 id="class-loading-reloading">class loading &amp; reloading</h2>
+<p>Java 类加载机制遵循一个层级结构，一个创建一个类加载器必须告知它的父类加载器，子加载器加载一个类之前先会委托父加载器加载，只有父加载器无法加载时候，子加载器才进行加载。加载步骤:<br />
+1. 检查类是否已经加载。<br />
+2. 如果未被加载，委托父加载器加载。<br />
+3. 如果父加载器无法加载，则尝试自己加载。</p>
+<h3 id="_4">动态类加载</h3>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainClass</span> <span class="o">{</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+
+    <span class="n">ClassLoader</span> <span class="n">classLoader</span> <span class="o">=</span> <span class="n">MainClass</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">();</span>
+
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="n">Class</span> <span class="n">aClass</span> <span class="o">=</span> <span class="n">classLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="s">&quot;com.jenkov.MyClass&quot;</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;aClass.getName() = &quot;</span> <span class="o">+</span> <span class="n">aClass</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+
+<h3 id="_5">动态 类重加载</h3>
+<p>运行时加载一个类, 重新加载一个类必须实现自己的classloader, 因为Java 内置的类加载器加载一个类都会检查类是否已经加载过。</p>
+<h3 id="_6">设计类重加载代码</h3>
+<p>Java中每一个类被加载后都通过全类名fully qualified name(包+类名) 和类加载实例来区分。同一个类，A加载器和B加载器加载出来的就是不一样的。</p>
+<div class="hlcode"><pre><span class="n">MyObject</span> <span class="n">object</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyObject</span><span class="o">)</span>
+    <span class="n">myClassReloadingFactory</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="s">&quot;com.jenkov.MyObject&quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<p>如果以上代码每次使用不同的类加载器加载MyObject，就无法进行强制(cast)转换了. 因此，良好的设计应该采用接口或者超类来引用被加载的类的实例.</p>
+<div class="hlcode"><pre><span class="n">MyObjectInterface</span> <span class="n">object</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyObjectInterface</span><span class="o">)</span>
+<span class="n">myClassReloadingFactory</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="s">&quot;com.jenkov.MyObject&quot;</span><span class="o">);</span>
+
+<span class="n">MyObjectSuperclass</span> <span class="n">object</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyObjectSuperclass</span><span class="o">)</span>
+<span class="n">myClassReloadingFactory</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="s">&quot;com.jenkov.MyObject&quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<h3 id="appendix">appendix</h3>
+<div class="hlcode"><pre><span class="kn">package</span> <span class="n">advance</span><span class="o">.</span><span class="na">reflection</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="kd">interface</span> <span class="nc">Interface</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">print</span><span class="o">();</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Klass</span> <span class="kd">implements</span> <span class="n">Interface</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">phones</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Klass</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="s">&quot;tt&quot;</span><span class="o">,</span> <span class="mi">77</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">Klass</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">Klass</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">phones</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">phones</span> <span class="o">=</span> <span class="n">phones</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">getPhones</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">phones</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPhones</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">phones</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">phones</span> <span class="o">=</span> <span class="n">phones</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">id</span> <span class="o">+</span> <span class="s">&quot;: &quot;</span> <span class="o">+</span> <span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-02-18 16:55 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'java-relection',
+  title: 'java-relection',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
