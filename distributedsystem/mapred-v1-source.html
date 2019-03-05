@@ -302,7 +302,9 @@
 <p>需要注意的是，JobTracker 中有一个 <code>org.apache.hadoop.mapred.TaskInProgress</code> 类和 <code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 类不是同一个。<br />
 TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskInProgress的一个 TaskAttempt 任务， 是TaskInProgress 的一次任务尝试， 该尝试任务 Task(MapTask/ReduceTask) 会装入TaskAction 一起序列化通过RPC 从 JobTracker 流入 TaskTracker, TaskTracker 利用自己的<code>org.apache.hadoop.mapred.TaskTracker.TaskInProgress</code> 对 Task 进行重新封装，该内部TIP包含 Task, TaskRunner, TaskLauncher, TaskStatus 是Task真实运行状态和行为控制的数据结构，JobTracker 中的 <code>org.apache.hadoop.mapred.TaskInProgress</code> 只是含有一些运行过程的数据。</p>
 <p>下图是 Tasks 在 TaskTracker 上的运行过程时序图，TaskTracker 启动mapLauncher 和 reduceLauncher 两个TaskLauncher 守候线程，以及MapEventsFetcherThread(获取map task 完成进度)线程等，进入 offerService 主循环。offerService 是 TaskTracker 主循环体，循环发送heartBeat给JobTracker并获取tasks和指令。</p>
-<p><img alt="" src="" /></p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/TaskSubmit.jpg" style="width:700px;height:500px;">
+<caption><center> TaskSubmit </center></caption></div>
+
 <p>TaskTracker 和 TaskLauncher 之间是生产消费者模型，通过 tasksToLaunch(List<TaskTracker.TaskInProgress>)队列进行数据连接，TaskLauncher 循环从队列中取出任务。</p>
 <p>生产消费者模型所采用的方式是 <code>wait/notify</code> 的方式。</p>
 <div class="hlcode"><pre><span class="c1">// 生产者 TaskTracker</span>
@@ -479,7 +481,9 @@ TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskIn
 
 
 <p>任务都是丢给 JvmManager 来管理和运行的，JvmManager 分别对MapTask和ReduceTask进行管理，内部实现类似于线程池，每个JVM都通过一个JvmRunner线程来维护。下图是关于任务运行的数据流向图。</p>
-<p><img alt="" src="" /></p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/JVMReap.jpg" style="width:700px;height:500px;">
+<caption><center> JVMReap </center></caption></div>
+
 <p>任务进度数据先通过每个Task中的 TaskReporter 线程循环上报给 TaskTracker, TaskTracker 再通过 heartBeat 上报给 JobTracker。 </p>
 <p>MapEvents数据的获取则是 TaskTracker 中的 MapEventsFetcherThread 通过 <code>JobTracker.getTaskCompletionEvents</code> 周期性从 JobTracker 获得的。ReduceTask 中的 GetMapEventsThread 线程也会周期性的调用 <code>TaskTracker.getMapCompletionEvents</code> RPC 来强制让 TaskTracker 从 JobTracker 获取Events。</p>
 <p>JvmManager 实现了JVM复用，也就是多个任务可以复用同一个虚拟机。这里注意的是，不同Job的Task是不能复用同一个虚拟机的，当出现新Job的时候，如果正在运行的虚拟机没有运行过该Job的任务，则需要新建虚拟机。<br />
@@ -618,7 +622,9 @@ TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskIn
 <h3 id="shuffle">shuffle 阶段分析</h3>
 <p>ReduceTask 通过 ReduceCopier 来负责做reduce前的数据准备。ReduceCopier 中有两组生产者消费者模型，并行的下载MapOutput数据和合并数据。<br />
 第一组是 GetMapEventsThread 和 MapOutputCopier， 通过元数据消费数据 scheduledCopies 来进行协作。第二组是 MapOutputCopier 和 InMemFSMergeThread/LocalFSMerger, 分别通过ShuffleRamManager.dataAvailable 和 mapOutputFilesOnDisk 协调控制MapOutput数据的生产消费。shuffle过程如下图所示:</p>
-<p><img alt="" src="" /></p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/MapRedShuffle.png" style="width:700px;height:500px;">
+<caption><center> MapRedShuffle </center></caption></div>
+
 <h4 id="getmapeventsthread-mapoutputcopier">GetMapEventsThread 和 MapOutputCopier</h4>
 <p>MapOutputCopier 是消费者，Reduce Task同时启动<code>mapred.reduce.parallel.copies</code>（ 默认是5） 个数据拷贝线程MapOutputCopier。 该线程从scheduledCopies列表中获取Map Task数据输出描述对象， 并利用HTTP Get从对应的TaskTracker远程拷贝数据， 如果数据分片大小超过一定阈值， 则将数据临时写到工作目录下， 否则直接保存到内存中。 不管是保存到内存中还是磁盘上， MapOutputCopier均会保存一个MapOutput对象描述数据的元信息。 如果数据被保存到内存中， 则将该对象添加到列表mapOutputsFilesInMemory中， 否则将该对象保存到列<br />
 表mapOutputFilesOnDisk中。</p>
@@ -870,7 +876,9 @@ TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskIn
 <p>任务执行进度信息被封装到类Progress中， 且每个Progress实例以树的形式存在。 Hadoop采用了简单的线性模型计算每个阶段的进度值： 如果一个大阶段可被分解成若干个子阶段， 则可将大阶段看作一棵树的父节点， 而子阶段可看作父节点对应的子节点， 且大阶段的进度值可被均摊到各个子阶段中； 如果一个阶段不可再分解， 则该阶段进度值可表示成已读取数据量占总数据量的比例。<br />
 对于Map Task而言， 它作为一个大阶段不可再分解， 为了简便， 我们直接将已读取数据量占总数据量的比例作为任务当前执行进度值。<br />
 对于Reduce Task而言， 我们可将其分解成三个阶段： Shuffle、 Sort和Reduce， 每个阶段占任务总进度的1/3。 考虑到在Shuffle阶段， Reduce Task需从M（M为Map Task数目） 个Map Task上读取片数据， 因此， 可被分解成M个阶段， 每个阶段占Shuffle进度的1/M， 具体如图8-5所示。</p>
-<p><img alt="" src="" /></p>
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/ReduceTaskProgressTree.png" style="width:700px;height:500px;">
+<caption><center> ReduceTaskProgressTree </center></caption></div>
+
 <p>任务进度由Progress类实现，该类递归定义了一个Progress，过程是一个树形结构，一个父过程可以分解成多个子过程，进而继续分解，每一个节点维护的是当前过程含有的子过程列表，当前运行第到几个子阶段，当前过程每个子过程进度比例（平均数），当前过程的父过程，当前进度。</p>
 <div class="hlcode"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Progress</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="n">String</span> <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">;</span>

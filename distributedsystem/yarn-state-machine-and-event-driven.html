@@ -1,0 +1,619 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>yarn-state-machine-and-event-driven - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;yarn-state-machine-and-event-driven</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">yarn-state-machine-and-event-driven</div>
+<div id="content">
+  <h1 id="event-driven-state-machine">Event-Driven State Machine</h1>
+<p>Yarn 整个框架代码都建立在状态机和事件驱动的模型之上，</p>
+<h2 id="finite-state-machine">Finite State Machine</h2>
+<p><img alt="Finite-State Machines: Theory and Implementation" src="https://gamedevelopment.tutsplus.com/tutorials/finite-state-machines-theory-and-implementation--gamedev-11867" /></p>
+<h2 id="event-driven-system">Event-Driven System</h2>
+<p>处理请Ⅾ 会作为事件进入系统， 由中央异步调度器（ AsyncDispatcher） 负责传递给相应事件调度器（ Event Handler）。 该事件调度器可能将该事件转发另外一个事件调度器， 也可能交给一个带有有限状态机的事件处理器，其处理结果也以事件的形式输出给中央异步调度器。 而新的事件会再次被中央异步调度器转发给下一个事件调度器，直到处理完成。</p>
+<h1 id="yarn-event-driven">Yarn Event-Driven</h1>
+<p>YARN 采用了基于事件驱动的并发模型，该模型能够大大增强并发性，提供系统性能。Yarn 的事件驱动模型如下图所示:</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnEventDrivenStateMachine.png" style="width:700px;height:500px;">
+<caption><center> YarnEventDrivenStateMachine </center></caption></div>
+
+<p>在 YARN 中， 所有核心服务都是要使用中央异步调度器， 包括 ResourceManager、NodeManager、 MRAppMaster(MapReduce 应用程序的ApplicationMaster)等， 它们维护了事先注册的事件与事件处理器， 并根据接收的事件类型驱动服务的运行。</p>
+<p>Yarn 的事件库位于 <code>org.apache.hadoop.yarn.event</code> 包下面。是整个Yarn的模板库，对外提供 抽象模板类 <code>AbstractEvent&lt;TYPE extends Enum&lt;TYPE&gt;&gt;</code>， 用户通过该抽象类实现自己的事件类(事件类型类是枚举类型), 另一个接口模板 <code>EventHandler&lt;T extends Event&gt;</code>，用户通过该接口实现自己的事件处理器， 接口 <code>Dispatcher</code>，该库下面自己实现了一个 <code>AsyncDispatcher</code> 可以直接使用。以下是事件库的类图结构：</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnEventUML.jpg" style="width:700px;height:500px;">
+<caption><center> YarnEventUML </center></caption></div>
+
+<p>当使用 YARN 事件库时， 通常先要定义一个中央异步调度器 AsyncDispatcher，负责事件的处理与转发， 然后根据实际业务定义一系列Event 和 EventHandler， 并注册到中央异步调度器中以实现事件统一管理和调度。 以 MRAppMaster为例，它内部包含一个中央异步调度器 AsyncDispatcher， 并注册TaskAttemptEvent/TaskAttemptImpl、 TaskEvent/TaskImpl、 JobEvent/JobImpl 等一系列事件 / 事件处理器，由中央异步调度器统一管理和调度。</p>
+<p>使用Yarn库也很简单，比如 <code>org.apache.hadoop.yarn.server.resourcemanager.rmapp</code> 包下实现的就是 状态机 RMApp 的事件模型。</p>
+<div class="hlcode"><pre><span class="c1">// 定义状态机处理器接口 RMApp</span>
+<span class="n">public</span> <span class="k">interface</span> <span class="n">RMApp</span> <span class="k">extends</span> <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">RMAppEvent</span><span class="o">&gt;</span>
+
+<span class="c1">// 定义RMAppEvent 事件</span>
+<span class="n">public</span> <span class="k">class</span> <span class="n">RMAppEvent</span> <span class="k">extends</span> <span class="n">AbstractEvent</span><span class="o">&lt;</span><span class="n">RMAppEventType</span><span class="o">&gt;</span>
+
+<span class="n">public</span> <span class="k">enum</span> <span class="n">RMAppEventType</span> <span class="p">{</span>
+  <span class="c1">// Source: ClientRMService</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>我们来分析一下事件分发器 <code>AsynchDispatcher</code> 的实现。事件的处理都是通过分发器分发出去来处理的，分发器会把所有的事件和对应的处理器注册进来，当接收到相应的事件以后，就交给对应的处理器执行，事件产生和执行是异步的关系。那么如何使用该事件分发器呢？ </p>
+<ol>
+<li>需要注册事件类型类和该类型类对应的处理器。</li>
+<li>产生事件后，通过 <code>AsyncDispatcher.getEventHandler()</code> 方法拿到一个 <code>GenericEventHandler</code> 实例，调用该实例的 <code>handle</code> 方法，即可将事件放入 <code>AsyncDispatcher</code> 进行分发处理。<code>AsyncDispatcher.getEventHandler().handle(Event);</code> 这是事件放入的地方。</li>
+</ol>
+<p><code>AsyncDispatcher</code> 的设计也是采用生产者-消费者模型，这里的消费者是内部的 <code>eventHandlingThread</code> 单线程，生产者是内部的 <code>GenericEventHandler</code>， 也就是上文所说的事件放入的入口，当然这里并不是真实的生产者，只是生产者的代理入口。下图是 <code>AsyncDispatcher</code> 的生产消费模型。</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnAsyncDispatcher.jpg" style="width:700px;height:500px;">
+<caption><center> YarnAsyncDispatcher </center></caption></div>
+
+<h2 id="_1">服务停止</h2>
+<p><code>AsyncDispatcher</code> 在 Yarn 中也属于服务，服务关闭的时候，需要考虑是否清理正在排队的任务或者资源，<code>drainEventsOnStop</code> 是用来设置在服务停止的时候，是否将队列中的事件处理完毕再关闭。 如果设置为 true，那么就需要阻塞还在继续发生的事件进入队列 <code>blockNewEvents</code>，同时使用同步信号 <code>waitForDrained</code> 等待队列中剩余的事件被处理完成。这里需要注意的一点是，队列中的事件处理不一定能够顺利完成，这是不确定的，万一一直处理不完，则一直无法停止服务了，甚至导致无法退出服务进程。因此需要设置超时时间 <code>DISPATCHER_DRAIN_EVENTS_TIMEOUT</code>，如果等待事件过长，还是强制退出服务。</p>
+<div class="hlcode"><pre><span class="kd">class</span> <span class="nc">GenericEventHandler</span> <span class="kd">implements</span> <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">Event</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">blockNewEvents</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="n">drained</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+      <span class="cm">/* all this method does is enqueue all the events onto the queue */</span>
+      <span class="kt">int</span> <span class="n">qSize</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">qSize</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">qSize</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span>
+          <span class="o">&amp;&amp;</span> <span class="n">lastEventQueueSizeLogged</span> <span class="o">!=</span> <span class="n">qSize</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">lastEventQueueSizeLogged</span> <span class="o">=</span> <span class="n">qSize</span><span class="o">;</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Size of event-queue is &quot;</span> <span class="o">+</span> <span class="n">qSize</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="kt">int</span> <span class="n">remCapacity</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">remainingCapacity</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">remCapacity</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Very low remaining capacity in the event-queue: &quot;</span>
+            <span class="o">+</span> <span class="n">remCapacity</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="n">eventQueue</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">stopped</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;AsyncDispatcher thread interrupted&quot;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// Need to reset drained flag to true if event queue is empty,</span>
+        <span class="c1">// otherwise dispatcher will hang on stop.</span>
+        <span class="n">drained</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">();</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">YarnRuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">serviceStop</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">drainEventsOnStop</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">blockNewEvents</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;AsyncDispatcher is draining to stop, igonring any new events.&quot;</span><span class="o">);</span>
+      <span class="kt">long</span> <span class="n">endTime</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">+</span> <span class="n">getConfig</span><span class="o">()</span>
+          <span class="o">.</span><span class="na">getLong</span><span class="o">(</span><span class="n">YarnConfiguration</span><span class="o">.</span><span class="na">DISPATCHER_DRAIN_EVENTS_TIMEOUT</span><span class="o">,</span>
+              <span class="n">YarnConfiguration</span><span class="o">.</span><span class="na">DEFAULT_DISPATCHER_DRAIN_EVENTS_TIMEOUT</span><span class="o">);</span>
+
+      <span class="kd">synchronized</span> <span class="o">(</span><span class="n">waitForDrained</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">while</span> <span class="o">(!</span><span class="n">drained</span> <span class="o">&amp;&amp;</span> <span class="n">eventHandlingThread</span> <span class="o">!=</span> <span class="kc">null</span>
+            <span class="o">&amp;&amp;</span> <span class="n">eventHandlingThread</span><span class="o">.</span><span class="na">isAlive</span><span class="o">()</span>
+            <span class="o">&amp;&amp;</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">endTime</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">waitForDrained</span><span class="o">.</span><span class="na">wait</span><span class="o">(</span><span class="mi">1000</span><span class="o">);</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Waiting for AsyncDispatcher to drain. Thread state is :&quot;</span> <span class="o">+</span>
+              <span class="n">eventHandlingThread</span><span class="o">.</span><span class="na">getState</span><span class="o">());</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">stopped</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">eventHandlingThread</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">eventHandlingThread</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="n">eventHandlingThread</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">ie</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Interrupted Exception while stopping&quot;</span><span class="o">,</span> <span class="n">ie</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// stop all the components</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">serviceStop</span><span class="o">();</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<h1 id="yarn-state-machine">Yarn State Machine</h1>
+<p>Yarn 采用工厂模式和范型，也是一个模板类库，对外提供了一个底层的状态机工厂模版 <code>StateMachineFactory&lt;OPERAND, STATE extends Enum&lt;STATE&gt;,EVENTTYPE extends Enum&lt;EVENTTYPE&gt;, EVENT&gt;</code>，代码位于 <code>org.apache.hadoop.yarn.state</code> 包之下，对外提供了两个需要由用户实现的接口 <code>SingleArcTransition</code>和<code>MultipleArcTransition</code>, <code>StateMachine</code> 会通过调用这两个接口的实现类的 <code>transition</code> 方法，实现内部状态转移。 值得注意的是， <code>StateMachine</code> 接口也不是由用户实现的，而是定义在 <code>StateMachineFactory</code> 内部的一个内部类 <code>InternalStateMachine</code> 实现。用户仅仅需要实现 <code>SingleArcTransition</code>和<code>MultipleArcTransition</code> 两个接口。状态机的状态还是由 <code>StateMachineFactory#InternalStateMachine</code> 来维护。</p>
+<p>下图是Yarn 状态机库的类图关系：</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnStateMachineUML.jpg" style="width:700px;height:500px;">
+<caption><center> YarnStateMachineUML </center></caption></div>
+
+<p><code>SingleArcTransition</code>和<code>MultipleArcTransition</code> 以及 <code>StateMachine</code> 都是接口类，定义在 <code>StateMachineFactory</code> 外部，其他的各种类和接口都是定义在 <code>StateMachineFactory</code> 内部的。</p>
+<p><code>SingleInternalArc</code> 和  <code>MultipleInternalArc</code> 这两个实现 <code>Transition</code> 接口的类，内部组合了一个成员 <code>hook</code>，这个就是用户要具体实现的 <code>SingleArcTransition</code> 和 <code>MultipleArcTransition</code> 类。然后 这俩种 <code>Transition</code> 又被组合进入 <code>ApplicableSingleOrMultipleTransition</code> 这个实现 <code>ApplicableTransition</code> 接口的类，接着 <code>ApplicableTransition</code> 又被组合到了 <code>TransitionListNode</code> 内部，而 <code>TransitionListNode</code> 是一个链表结构。 最后和 <code>StateMachineFactory</code> 发生直接联系的是 <code>TransitionListNode</code>，他是 <code>StateMachineFactory</code> 的一个成员。除了该成员，<code>StateMachineFactory</code> 还有 <code>Map&lt;STATE, Map&lt;EVENTTYPE, Transition&lt;OPERAND, STATE, EVENTTYPE, EVENT&gt;&gt;&gt; stateMachineTable</code> 表和一个布尔变量 <code>optimized</code>.</p>
+<p>可以看到这个嵌套组合关系非常奇葩，目前我还不懂为啥要写成这样。。。对大致的类的引用关系有了解以后，再来看看这些状态机库都是怎么使用的。</p>
+<p>Yarn 中实现了各种各样的具体的状态机，比如 RMApp，RMAppAttempt, RMNode, RMContainer, 具体类型的状态机需要根据事件作出处理，所以状态机一般都是继承了 EventHandler 的事件处理器，根据多用组合，少用继承的设计原则，这些具体类型的状态机（处理器）并不需要继承 StateMachine， 只是将 StateMachine 当作成员使用即可，这样每种状态机内部都会生成自己的 StateMachine 对象，注册完各种 Transition 以后，事件的处理和状态的转移代码全部都是复用 yarn 实现的状态机代码。</p>
+<p>以 RMAppImpl 为例，先看构造状态机代码：</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="n">RMAppImpl</span><span class="o">,</span>
+                                           <span class="n">RMAppState</span><span class="o">,</span>
+                                           <span class="n">RMAppEventType</span><span class="o">,</span>
+                                           <span class="n">RMAppEvent</span><span class="o">&gt;</span> <span class="n">stateMachineFactory</span>
+                               <span class="o">=</span> <span class="k">new</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="n">RMAppImpl</span><span class="o">,</span>
+                                           <span class="n">RMAppState</span><span class="o">,</span>
+                                           <span class="n">RMAppEventType</span><span class="o">,</span>
+                                           <span class="n">RMAppEvent</span><span class="o">&gt;(</span><span class="n">RMAppState</span><span class="o">.</span><span class="na">NEW</span><span class="o">)</span>
+
+
+     <span class="c1">// Transitions from NEW state</span>
+    <span class="o">.</span><span class="na">addTransition</span><span class="o">(</span><span class="n">RMAppState</span><span class="o">.</span><span class="na">NEW</span><span class="o">,</span> <span class="n">RMAppState</span><span class="o">.</span><span class="na">NEW</span><span class="o">,</span>
+        <span class="n">RMAppEventType</span><span class="o">.</span><span class="na">NODE_UPDATE</span><span class="o">,</span> <span class="k">new</span> <span class="n">RMAppNodeUpdateTransition</span><span class="o">())</span>
+    <span class="o">.</span><span class="na">addTransition</span><span class="o">(</span><span class="n">RMAppState</span><span class="o">.</span><span class="na">NEW</span><span class="o">,</span> <span class="n">RMAppState</span><span class="o">.</span><span class="na">NEW_SAVING</span><span class="o">,</span>
+        <span class="n">RMAppEventType</span><span class="o">.</span><span class="na">START</span><span class="o">,</span> <span class="k">new</span> <span class="n">RMAppNewlySavingTransition</span><span class="o">())</span>
+    <span class="o">.....</span><span class="c1">// 有很多转移加入</span>
+    <span class="o">.</span><span class="na">installTopology</span><span class="o">();</span>
+
+<span class="kd">private</span> <span class="kd">final</span> <span class="n">StateMachine</span><span class="o">&lt;</span><span class="n">RMAppState</span><span class="o">,</span> <span class="n">RMAppEventType</span><span class="o">,</span> <span class="n">RMAppEvent</span><span class="o">&gt;</span>
+                                                                 <span class="n">stateMachine</span><span class="o">;</span>
+<span class="k">this</span><span class="o">.</span><span class="na">stateMachine</span> <span class="o">=</span> <span class="n">stateMachineFactory</span><span class="o">.</span><span class="na">make</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</pre></div>
+
+
+<p>首先调用 StateMachineFactory 的唯一的公开构造函数，做些初始化工作，比如初始状态。然后就开始调用 addTransition 了，这里的 addTransition 有多个重载。<code>addTransition</code> 采用是 builder pattern 也就是链式调用法(简单的说是每次调用对象方法后返回对象自己)。但是这里的链式调用每次返回的都是新的工厂而不是原来的工厂。这个设计也很奇葩。。我目前的水平确实看不懂。。。根据状态转移图可以把转移分成 单弧 和 多弧的，hook 可以为空.</p>
+<ol>
+<li>单个终态，单个事件类型，无 hook 动作.</li>
+<li>单个终态，多个事件类型，无 hook 动作.</li>
+<li>单个终态，多个事件类型. SingleArcTransition.</li>
+<li>单个终态，单个事件类型，SingleArcTransition.</li>
+<li>多个终态，单个事件类型，MultiArcTransition.</li>
+</ol>
+<div class="hlcode"><pre><span class="c1">//1.</span>
+  <span class="n">public</span> <span class="n">StateMachineFactory</span>
+             <span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+          <span class="n">addTransition</span><span class="p">(</span><span class="no">STATE</span> <span class="n">preState</span><span class="p">,</span> <span class="no">STATE</span> <span class="n">postState</span><span class="p">,</span> <span class="no">EVENTTYPE</span> <span class="n">eventType</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">addTransition</span><span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">postState</span><span class="p">,</span> <span class="n">eventType</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="c1">//2.</span>
+  <span class="n">public</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span> <span class="n">addTransition</span><span class="p">(</span>
+      <span class="no">STATE</span> <span class="n">preState</span><span class="p">,</span> <span class="no">STATE</span> <span class="n">postState</span><span class="p">,</span> <span class="n">Set</span><span class="o">&lt;</span><span class="no">EVENTTYPE</span><span class="o">&gt;</span> <span class="n">eventTypes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">addTransition</span><span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">postState</span><span class="p">,</span> <span class="n">eventTypes</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="c1">//3.</span>
+  <span class="n">public</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span> <span class="n">addTransition</span><span class="p">(</span>
+      <span class="no">STATE</span> <span class="n">preState</span><span class="p">,</span> <span class="no">STATE</span> <span class="n">postState</span><span class="p">,</span> <span class="n">Set</span><span class="o">&lt;</span><span class="no">EVENTTYPE</span><span class="o">&gt;</span> <span class="n">eventTypes</span><span class="p">,</span>
+      <span class="n">SingleArcTransition</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span> <span class="n">hook</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="no">EVENTTYPE</span> <span class="k">event</span> <span class="o">:</span> <span class="n">eventTypes</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">factory</span> <span class="o">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">addTransition</span><span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">postState</span><span class="p">,</span> <span class="k">event</span><span class="p">,</span> <span class="n">hook</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span><span class="p">.</span><span class="n">addTransition</span><span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">postState</span><span class="p">,</span> <span class="k">event</span><span class="p">,</span> <span class="n">hook</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">factory</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="c1">//4.</span>
+  <span class="n">public</span> <span class="n">StateMachineFactory</span>
+             <span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+          <span class="n">addTransition</span><span class="p">(</span><span class="no">STATE</span> <span class="n">preState</span><span class="p">,</span> <span class="no">STATE</span> <span class="n">postState</span><span class="p">,</span>
+                        <span class="no">EVENTTYPE</span> <span class="n">eventType</span><span class="p">,</span>
+                        <span class="n">SingleArcTransition</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span> <span class="n">hook</span><span class="p">){</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+        <span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="k">new</span> <span class="n">ApplicableSingleOrMultipleTransition</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+           <span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">eventType</span><span class="p">,</span> <span class="k">new</span> <span class="n">SingleInternalArc</span><span class="p">(</span><span class="n">postState</span><span class="p">,</span> <span class="n">hook</span><span class="p">)));</span>
+  <span class="p">}</span>
+<span class="c1">//5.</span>
+  <span class="n">public</span> <span class="n">StateMachineFactory</span>
+             <span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+          <span class="n">addTransition</span><span class="p">(</span><span class="no">STATE</span> <span class="n">preState</span><span class="p">,</span> <span class="n">Set</span><span class="o">&lt;</span><span class="no">STATE</span><span class="o">&gt;</span> <span class="n">postStates</span><span class="p">,</span>
+                        <span class="no">EVENTTYPE</span> <span class="n">eventType</span><span class="p">,</span>
+                        <span class="n">MultipleArcTransition</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">EVENT</span><span class="p">,</span> <span class="no">STATE</span><span class="o">&gt;</span> <span class="n">hook</span><span class="p">){</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+        <span class="p">(</span><span class="k">this</span><span class="p">,</span>
+         <span class="k">new</span> <span class="n">ApplicableSingleOrMultipleTransition</span><span class="o">&lt;</span><span class="no">OPERAND</span><span class="p">,</span> <span class="no">STATE</span><span class="p">,</span> <span class="no">EVENTTYPE</span><span class="p">,</span> <span class="no">EVENT</span><span class="o">&gt;</span>
+           <span class="p">(</span><span class="n">preState</span><span class="p">,</span> <span class="n">eventType</span><span class="p">,</span> <span class="k">new</span> <span class="n">MultipleInternalArc</span><span class="p">(</span><span class="n">postStates</span><span class="p">,</span> <span class="n">hook</span><span class="p">)));</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>这里可以看到前面说的几个类的组合关系，嵌套了四层，TransitionsListNode --&gt; ApplicableTransition --&gt; Transition --&gt; hook。<br />
+还可以看到，这里都使用了私有构造函数。 这个函数其实是采用头插法逆序建立了一个链表。后面加入的 Transition 通过 next 指针连接 前面加入的 Transition。</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="nf">StateMachineFactory</span>
+      <span class="o">(</span><span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">that</span><span class="o">,</span>
+       <span class="n">ApplicableTransition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">defaultInitialState</span> <span class="o">=</span> <span class="n">that</span><span class="o">.</span><span class="na">defaultInitialState</span><span class="o">;</span>
+    <span class="c1">// 头插法建立链表</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">transitionsListNode</span> 
+        <span class="o">=</span> <span class="k">new</span> <span class="n">TransitionsListNode</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="n">that</span><span class="o">.</span><span class="na">transitionsListNode</span><span class="o">);</span>
+
+    <span class="k">this</span><span class="o">.</span><span class="na">optimized</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">stateMachineTable</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+ <span class="o">}</span>
+</pre></div>
+
+
+<p>下图是链表建立过程:</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnStateMachineTransitionListNode.jpg" style="width:700px;height:500px;">
+<caption><center> YarnStateMachineTransitionListNode </center></caption></div>
+
+<p>通过链式调用 <code>addTransition</code>, 最后会构成一个 TransitionsListNode 的链表, 最后又通过 函数 <code>installTopology</code> 返回了一个新工厂。这里调用了 StateMachineFactory 的另一个私有构造函数. </p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="nf">StateMachineFactory</span>
+      <span class="o">(</span><span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">that</span><span class="o">,</span>
+       <span class="kt">boolean</span> <span class="n">optimized</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">defaultInitialState</span> <span class="o">=</span> <span class="n">that</span><span class="o">.</span><span class="na">defaultInitialState</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">transitionsListNode</span> <span class="o">=</span> <span class="n">that</span><span class="o">.</span><span class="na">transitionsListNode</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">optimized</span> <span class="o">=</span> <span class="n">optimized</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">optimized</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">makeStateMachineTable</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="n">stateMachineTable</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="n">StateMachineFactory</span>
+             <span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span>
+          <span class="n">installTopology</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">StateMachineFactory</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;(</span><span class="k">this</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>可以看到，这里通过设置是否优化，会对这个新工厂建立 <code>stateMachineTable</code>. 这个表就是状态转移表，是一个hash表。以下是建表的代码：</p>
+<div class="hlcode"><pre><span class="k">private</span> <span class="nf">void</span> <span class="nx">makeStateMachineTable</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nb">Stack</span><span class="o">&lt;</span><span class="nx">ApplicableTransition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;</span> <span class="n">stack</span> <span class="o">=</span>
+      <span class="nb">new</span> <span class="nb">Stack</span><span class="o">&lt;</span><span class="nx">ApplicableTransition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+
+    <span class="kt">Map</span><span class="o">&lt;</span><span class="nx">STATE</span><span class="p">,</span> <span class="kt">Map</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;&gt;</span>
+      <span class="n">prototype</span> <span class="o">=</span> <span class="nb">new</span> <span class="nx">HashMap</span><span class="o">&lt;</span><span class="nx">STATE</span><span class="p">,</span> <span class="kt">Map</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;&gt;</span><span class="p">();</span>
+
+    <span class="nx">prototype.put</span><span class="p">(</span><span class="nx">defaultInitialState</span><span class="p">,</span> <span class="kt">null</span><span class="p">);</span>
+
+    <span class="c1">// I use EnumMap here because it&#39;ll be faster and denser.  I would</span>
+    <span class="c1">//  expect most of the states to have at least one transition.</span>
+    <span class="n">stateMachineTable</span>
+       <span class="o">=</span> <span class="nb">new</span> <span class="nx">EnumMap</span><span class="o">&lt;</span><span class="nx">STATE</span><span class="p">,</span> <span class="kt">Map</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="p">,</span>
+                           <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="nx">prototype</span><span class="p">);</span>
+
+    <span class="c1">// 链表是头插法逆序的，使用栈保持建表插入顺序和 addTransition 顺序一致</span>
+    <span class="nb">for</span> <span class="p">(</span><span class="nx">TransitionsListNode</span> <span class="n">cursor</span> <span class="o">=</span> <span class="nx">transitionsListNode</span><span class="p">;</span>
+         <span class="nx">cursor</span> <span class="o">!=</span> <span class="kt">null</span><span class="p">;</span>
+         <span class="n">cursor</span> <span class="o">=</span> <span class="nx">cursor.next</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">stack.push</span><span class="p">(</span><span class="nx">cursor.transition</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="nx">stack.isEmpty</span><span class="p">())</span> <span class="p">{</span>
+      <span class="nx">stack.pop</span><span class="p">()</span><span class="bp">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">this</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">static</span> <span class="k">private</span> <span class="nf">class</span> <span class="nx">ApplicableSingleOrMultipleTransition</span>
+             <span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span> <span class="nx">extends</span> <span class="nx">Enum</span><span class="o">&lt;</span><span class="nx">STATE</span><span class="o">&gt;</span><span class="p">,</span>
+              <span class="nx">EVENTTYPE</span> <span class="nx">extends</span> <span class="nx">Enum</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="o">&gt;</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;</span>
+          <span class="nx">implements</span> <span class="nx">ApplicableTransition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nx">final</span> <span class="nx">STATE</span> <span class="nx">preState</span><span class="p">;</span>
+    <span class="nx">final</span> <span class="nx">EVENTTYPE</span> <span class="nx">eventType</span><span class="p">;</span>
+    <span class="nx">final</span> <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;</span> <span class="nx">transition</span><span class="p">;</span>
+
+    <span class="nx">ApplicableSingleOrMultipleTransition</span>
+        <span class="p">(</span><span class="nx">STATE</span> <span class="nx">preState</span><span class="p">,</span> <span class="nx">EVENTTYPE</span> <span class="nx">eventType</span><span class="p">,</span>
+         <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;</span> <span class="nx">transition</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">this.preState</span> <span class="o">=</span> <span class="nx">preState</span><span class="p">;</span>
+      <span class="n">this.eventType</span> <span class="o">=</span> <span class="nx">eventType</span><span class="p">;</span>
+      <span class="n">this.transition</span> <span class="o">=</span> <span class="nx">transition</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="p">@</span><span class="nx">Override</span>
+    <span class="k">public</span> <span class="nf">void</span> <span class="nx">apply</span>
+             <span class="p">(</span><span class="nx">StateMachineFactory</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;</span> <span class="nb">subject</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">Map</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;</span> <span class="n">transitionMap</span>
+        <span class="o">=</span> <span class="nx">subject.stateMachineTable.get</span><span class="p">(</span><span class="nx">preState</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">transitionMap</span> <span class="o">==</span> <span class="kt">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// I use HashMap here because I would expect most EVENTTYPE&#39;s to not</span>
+        <span class="c1">//  apply out of a particular state, so FSM sizes would be </span>
+        <span class="c1">//  quadratic if I use EnumMap&#39;s here as I do at the top level.</span>
+        <span class="n">transitionMap</span> <span class="o">=</span> <span class="nb">new</span> <span class="nx">HashMap</span><span class="o">&lt;</span><span class="nx">EVENTTYPE</span><span class="p">,</span>
+          <span class="nx">Transition</span><span class="o">&lt;</span><span class="nx">OPERAND</span><span class="p">,</span> <span class="nx">STATE</span><span class="p">,</span> <span class="nx">EVENTTYPE</span><span class="p">,</span> <span class="nx">EVENT</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+        <span class="nx">subject.stateMachineTable.put</span><span class="p">(</span><span class="nx">preState</span><span class="p">,</span> <span class="nx">transitionMap</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">transitionMap.put</span><span class="p">(</span><span class="nx">eventType</span><span class="p">,</span> <span class="nx">transition</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>链表是头插法逆序的，建立Hash表的过程中，借助栈保持元素插入顺序和 addTransition 顺序一致。下图是 Hash 表的内部结构:</p>
+<div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnStateMachineTable.jpg" style="width:700px;height:500px;">
+<caption><center> YarnStateMachineTable </center></caption></div>
+
+<p>这里<code>stateMachineTable</code>采用的是 <code>EnumMap</code>. 注意是外层的 Map 是 <code>EnumMap</code>. 因为 key 是 <code>preState</code> 是 State 枚举类型，状态数目固定。适合采用 <code>EnumMap</code> 加速。但是 value 是一个真实的 <code>HashMap</code>, 因为value <code>transitionMap</code> 中的 key 是 EventType 枚举类型，但是状态表并不是状态和事件类型的迪卡尔集。比如，RMAppState 有 11 种， RMAppEventType 有 15 种，并不意味着转移表是 11 * 15， 因为事件类型往往只和特定的某个状态有关系，而不是和所有状态有关系。采用 HashMap 做value 反而节省空间。</p>
+<p>Java 中的 <code>EnumMap</code> 的 key 是枚举类型，这样看来他的key是固定数目的，内部直接用数组实现了, 因为 key 的数目定了，每个枚举元素对应一个数组索引。 这个有点像 Python 中 <code>__slots__</code> 的用法，Python 对象的属性其实是动态的，被存放在一个词典对象里面，如果对象的字段不变的化，其实可以进行 slots 限定，这样 Python 对象就不会创建词典，而是限定该对象只含有 slots 中的属性，不可以再动态添加其他的属性了。这样可以减少对象内存消耗且更加快速。</p>
+<p>最后，具体的状态机一般会调用 make 获取一个 StateMachine. 这是 StateMachineFactory 内部的一个 InternalStateMachine. 此后，具体的事件处理器就可以使用该状态机了。</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="n">StateMachine</span><span class="o">&lt;</span><span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">make</span><span class="o">(</span><span class="n">OPERAND</span> <span class="n">operand</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">InternalStateMachine</span><span class="o">(</span><span class="n">operand</span><span class="o">,</span> <span class="n">defaultInitialState</span><span class="o">);</span>
+<span class="o">}</span> 
+</pre></div>
+
+
+<p>比如 RMAppImpl 中的 <code>handle</code> 函数，直接调用 <code>StateMachine.doTransition</code> 即可。其他具体类型状态机实现也是如此。</p>
+<div class="hlcode"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">RMAppEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="k">this</span><span class="o">.</span><span class="na">writeLock</span><span class="o">.</span><span class="na">lock</span><span class="o">();</span>
+
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">ApplicationId</span> <span class="n">appID</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="na">getApplicationId</span><span class="o">();</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&quot;Processing event for &quot;</span> <span class="o">+</span> <span class="n">appID</span> <span class="o">+</span> <span class="s">&quot; of type &quot;</span>
+          <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">());</span>
+      <span class="kd">final</span> <span class="n">RMAppState</span> <span class="n">oldState</span> <span class="o">=</span> <span class="n">getState</span><span class="o">();</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="cm">/* keep the master in sync with the state machine */</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">stateMachine</span><span class="o">.</span><span class="na">doTransition</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">(),</span> <span class="n">event</span><span class="o">);</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InvalidStateTransitonException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Can&#39;t handle this event at current state&quot;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+        <span class="cm">/* TODO fail the application on the failed transition */</span>
+      <span class="o">}</span>
+
+      <span class="k">if</span> <span class="o">(</span><span class="n">oldState</span> <span class="o">!=</span> <span class="n">getState</span><span class="o">())</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="n">appID</span> <span class="o">+</span> <span class="s">&quot; State change from &quot;</span> <span class="o">+</span> <span class="n">oldState</span> <span class="o">+</span> <span class="s">&quot; to &quot;</span>
+            <span class="o">+</span> <span class="n">getState</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; on event=&quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">());</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">writeLock</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>InternalStateMachine 调用了 StateMchineFactory 的 doTransition 方法，因为只有工厂才存有 状态机表。</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="kd">class</span> <span class="nc">InternalStateMachine</span>
+        <span class="kd">implements</span> <span class="n">StateMachine</span><span class="o">&lt;</span><span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">OPERAND</span> <span class="n">operand</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">STATE</span> <span class="n">currentState</span><span class="o">;</span>
+
+    <span class="n">InternalStateMachine</span><span class="o">(</span><span class="n">OPERAND</span> <span class="n">operand</span><span class="o">,</span> <span class="n">STATE</span> <span class="n">initialState</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">operand</span> <span class="o">=</span> <span class="n">operand</span><span class="o">;</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">currentState</span> <span class="o">=</span> <span class="n">initialState</span><span class="o">;</span>
+      <span class="k">if</span> <span class="o">(!</span><span class="n">optimized</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">maybeMakeStateMachineTable</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">STATE</span> <span class="nf">getCurrentState</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="n">currentState</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">STATE</span> <span class="nf">doTransition</span><span class="o">(</span><span class="n">EVENTTYPE</span> <span class="n">eventType</span><span class="o">,</span> <span class="n">EVENT</span> <span class="n">event</span><span class="o">)</span>
+         <span class="kd">throws</span> <span class="n">InvalidStateTransitonException</span>  <span class="o">{</span>
+      <span class="n">currentState</span> <span class="o">=</span> <span class="n">StateMachineFactory</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">doTransition</span>
+          <span class="o">(</span><span class="n">operand</span><span class="o">,</span> <span class="n">currentState</span><span class="o">,</span> <span class="n">eventType</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+      <span class="k">return</span> <span class="n">currentState</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+ <span class="err">```</span>
+
+ <span class="err">`</span><span class="n">StateMachineFactory</span><span class="err">`</span> <span class="err">通过传入的参数，直接查表即可找到对应的</span> <span class="err">`</span><span class="n">Transition</span><span class="err">`</span><span class="o">.</span> <span class="err">注意这个</span> <span class="err">`</span><span class="n">Transition</span><span class="err">`</span> <span class="err">是</span> <span class="err">`</span><span class="n">SingleInternalArc</span><span class="err">`</span> <span class="err">或者</span> <span class="err">`</span><span class="n">MultipleInternalArc</span><span class="err">`</span><span class="o">.</span> <span class="err">他们会调用</span> <span class="err">`</span><span class="n">hook</span><span class="o">.</span><span class="na">Transition</span><span class="err">`</span><span class="o">.</span>
+
+ <span class="err">```</span><span class="n">Java</span>
+ <span class="kd">private</span> <span class="n">STATE</span> <span class="nf">doTransition</span>
+           <span class="o">(</span><span class="n">OPERAND</span> <span class="n">operand</span><span class="o">,</span> <span class="n">STATE</span> <span class="n">oldState</span><span class="o">,</span> <span class="n">EVENTTYPE</span> <span class="n">eventType</span><span class="o">,</span> <span class="n">EVENT</span> <span class="n">event</span><span class="o">)</span>
+      <span class="kd">throws</span> <span class="n">InvalidStateTransitonException</span> <span class="o">{</span>
+    <span class="c1">// We can assume that stateMachineTable is non-null because we call</span>
+    <span class="c1">//  maybeMakeStateMachineTable() when we build an InnerStateMachine ,</span>
+    <span class="c1">//  and this code only gets called from inside a working InnerStateMachine .</span>
+    <span class="n">Map</span><span class="o">&lt;</span><span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">Transition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;&gt;</span> <span class="n">transitionMap</span>
+      <span class="o">=</span> <span class="n">stateMachineTable</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">oldState</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">transitionMap</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Transition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">transition</span>
+          <span class="o">=</span> <span class="n">transitionMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">eventType</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">transition</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">transition</span><span class="o">.</span><span class="na">doTransition</span><span class="o">(</span><span class="n">operand</span><span class="o">,</span> <span class="n">oldState</span><span class="o">,</span> <span class="n">event</span><span class="o">,</span> <span class="n">eventType</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidStateTransitonException</span><span class="o">(</span><span class="n">oldState</span><span class="o">,</span> <span class="n">eventType</span><span class="o">);</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>对于 <code>SingleInternalArc</code> 来说，只要 hook 不是空，直接调用即可。 对于 <code>MultipleInternalArc</code> 还需要对得到的 postState 进行验证。这里的 hook 就是用户实现的 <code>SingleArcTransition</code> 和 <code>MultipleArcTransition</code> 了。</p>
+<div class="hlcode"><pre> <span class="kd">private</span> <span class="kd">class</span> <span class="nc">SingleInternalArc</span>
+                    <span class="kd">implements</span> <span class="n">Transition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="n">STATE</span> <span class="n">postState</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">SingleArcTransition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">hook</span><span class="o">;</span> <span class="c1">// transition hook</span>
+
+    <span class="n">SingleInternalArc</span><span class="o">(</span><span class="n">STATE</span> <span class="n">postState</span><span class="o">,</span>
+        <span class="n">SingleArcTransition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="n">hook</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">postState</span> <span class="o">=</span> <span class="n">postState</span><span class="o">;</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">hook</span> <span class="o">=</span> <span class="n">hook</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">STATE</span> <span class="nf">doTransition</span><span class="o">(</span><span class="n">OPERAND</span> <span class="n">operand</span><span class="o">,</span> <span class="n">STATE</span> <span class="n">oldState</span><span class="o">,</span>
+                              <span class="n">EVENT</span> <span class="n">event</span><span class="o">,</span> <span class="n">EVENTTYPE</span> <span class="n">eventType</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">hook</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">hook</span><span class="o">.</span><span class="na">transition</span><span class="o">(</span><span class="n">operand</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="k">return</span> <span class="n">postState</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">class</span> <span class="nc">MultipleInternalArc</span>
+              <span class="kd">implements</span> <span class="n">Transition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;{</span>
+
+    <span class="c1">// Fields</span>
+    <span class="kd">private</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">STATE</span><span class="o">&gt;</span> <span class="n">validPostStates</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">MultipleArcTransition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">,</span> <span class="n">STATE</span><span class="o">&gt;</span> <span class="n">hook</span><span class="o">;</span>  <span class="c1">// transition hook</span>
+
+    <span class="n">MultipleInternalArc</span><span class="o">(</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">STATE</span><span class="o">&gt;</span> <span class="n">postStates</span><span class="o">,</span>
+                   <span class="n">MultipleArcTransition</span><span class="o">&lt;</span><span class="n">OPERAND</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">,</span> <span class="n">STATE</span><span class="o">&gt;</span> <span class="n">hook</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">validPostStates</span> <span class="o">=</span> <span class="n">postStates</span><span class="o">;</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">hook</span> <span class="o">=</span> <span class="n">hook</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">STATE</span> <span class="nf">doTransition</span><span class="o">(</span><span class="n">OPERAND</span> <span class="n">operand</span><span class="o">,</span> <span class="n">STATE</span> <span class="n">oldState</span><span class="o">,</span>
+                              <span class="n">EVENT</span> <span class="n">event</span><span class="o">,</span> <span class="n">EVENTTYPE</span> <span class="n">eventType</span><span class="o">)</span>
+        <span class="kd">throws</span> <span class="n">InvalidStateTransitonException</span> <span class="o">{</span>
+      <span class="n">STATE</span> <span class="n">postState</span> <span class="o">=</span> <span class="n">hook</span><span class="o">.</span><span class="na">transition</span><span class="o">(</span><span class="n">operand</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+
+      <span class="k">if</span> <span class="o">(!</span><span class="n">validPostStates</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">postState</span><span class="o">))</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidStateTransitonException</span><span class="o">(</span><span class="n">oldState</span><span class="o">,</span> <span class="n">eventType</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="k">return</span> <span class="n">postState</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>operand 就是我们需要操作的具体的状态机，比如 RMApp。下面是一个具体的 hook， <code>RMAppTransition</code>，比如 <code>RMAppNodeUpdateTransition</code>, 当 <code>RMAppNodeUpdateEvent</code> 事件发生，就会触发相应的状态转移。</p>
+<div class="hlcode"><pre><span class="n">private</span> <span class="k">static</span> <span class="n">class</span> <span class="n">RMAppTransition</span> <span class="n">implements</span>
+      <span class="n">SingleArcTransition</span><span class="o">&lt;</span><span class="n">RMAppImpl</span><span class="p">,</span> <span class="n">RMAppEvent</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">public</span> <span class="kt">void</span> <span class="n">transition</span><span class="p">(</span><span class="n">RMAppImpl</span> <span class="n">app</span><span class="p">,</span> <span class="n">RMAppEvent</span> <span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">};</span>
+
+  <span class="p">}</span>
+
+  <span class="n">private</span> <span class="k">static</span> <span class="n">final</span> <span class="n">class</span> <span class="n">RMAppNodeUpdateTransition</span> <span class="n">extends</span> <span class="n">RMAppTransition</span> <span class="p">{</span>
+    <span class="n">public</span> <span class="kt">void</span> <span class="n">transition</span><span class="p">(</span><span class="n">RMAppImpl</span> <span class="n">app</span><span class="p">,</span> <span class="n">RMAppEvent</span> <span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">RMAppNodeUpdateEvent</span> <span class="n">nodeUpdateEvent</span> <span class="o">=</span> <span class="p">(</span><span class="n">RMAppNodeUpdateEvent</span><span class="p">)</span> <span class="n">event</span><span class="p">;</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">processNodeUpdate</span><span class="p">(</span><span class="n">nodeUpdateEvent</span><span class="p">.</span><span class="n">getUpdateType</span><span class="p">(),</span>
+          <span class="n">nodeUpdateEvent</span><span class="p">.</span><span class="n">getNode</span><span class="p">());</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>Yarn 还提供了可视化状态机的工具类，<code>VisualizeStateMachine</code>， 通过反射机制，拿到状态机类的 <code>stateMachineFactory</code> 实例，然后调用 <code>StateMachineFactory.generateStateGraph()</code>方法构造一个状态机图，让后通过 <code>Graph.save()</code> 将图保存为 gz 格式。通过 linux graphviz 工具可以生成图片。</p>
+<div class="hlcode"><pre> <span class="kd">public</span> <span class="kd">static</span> <span class="n">Graph</span> <span class="nf">getGraphFromClasses</span><span class="o">(</span><span class="n">String</span> <span class="n">graphName</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">classes</span><span class="o">)</span>
+      <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">Graph</span> <span class="n">ret</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">classes</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">ret</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Graph</span><span class="o">(</span><span class="n">graphName</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">className</span> <span class="o">:</span> <span class="n">classes</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Class</span> <span class="n">clz</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+      <span class="n">Field</span> <span class="n">factoryField</span> <span class="o">=</span> <span class="n">clz</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;stateMachineFactory&quot;</span><span class="o">);</span>
+      <span class="n">factoryField</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+      <span class="n">StateMachineFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="o">(</span><span class="n">StateMachineFactory</span><span class="o">)</span> <span class="n">factoryField</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">classes</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="na">generateStateGraph</span><span class="o">(</span><span class="n">graphName</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="n">String</span> <span class="n">gname</span> <span class="o">=</span> <span class="n">clz</span><span class="o">.</span><span class="na">getSimpleName</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">gname</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span><span class="s">&quot;Impl&quot;</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">gname</span> <span class="o">=</span> <span class="n">gname</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">gname</span><span class="o">.</span><span class="na">length</span><span class="o">()-</span><span class="mi">4</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="n">ret</span><span class="o">.</span><span class="na">addSubGraph</span><span class="o">(</span><span class="n">factory</span><span class="o">.</span><span class="na">generateStateGraph</span><span class="o">(</span><span class="n">gname</span><span class="o">));</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&quot;Usage: %s &lt;GraphName&gt; &lt;class[,class[,...]]&gt; &lt;OutputFile&gt;%n&quot;</span><span class="o">,</span>
+          <span class="n">VisualizeStateMachine</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">String</span> <span class="o">[]</span> <span class="n">classes</span> <span class="o">=</span> <span class="n">args</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;,&quot;</span><span class="o">);</span>
+    <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">validClasses</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">c</span> <span class="o">:</span> <span class="n">classes</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">String</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">trim</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">vc</span><span class="o">.</span><span class="na">length</span><span class="o">()&gt;</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">validClasses</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">vc</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">Graph</span> <span class="n">g</span> <span class="o">=</span> <span class="n">getGraphFromClasses</span><span class="o">(</span><span class="n">args</span><span class="o">[</span><span class="mi">0</span><span class="o">],</span> <span class="n">validClasses</span><span class="o">);</span>
+    <span class="n">g</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">args</span><span class="o">[</span><span class="mi">2</span><span class="o">]);</span>
+  <span class="o">}</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-03-02 13:49 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'yarn-state-machine-and-event-driven',
+  title: 'yarn-state-machine-and-event-driven',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
