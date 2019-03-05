@@ -18,13 +18,13 @@ date: 2019-02-02 15:32
 
 第一代 mapred 提供了一个默认的调度器，`org.apache.hadoop.mapred.JobQueueTaskScheduler`，也是一个FIFO作业调度器，实现非常简单。
 
-调度器调度的时候，并不是主动行为，而是每一个节点 `TaskTracker` 通过心跳的方式从 `JobTracker` 拿到任务列表，而 `JobTracker` 则利用调度器的 `assignTasks` 方法进行调度。也就是说调度器每次只处理一个 `TaskTracker` 的任务调度请求，他负责从队列中取出作业，再将作业的任务分配给可以接受的 `TaskTracker`，下图是作业提交到执行的过程。
+调度器调度的时候，并不是主动行为，而是每一个节点 `TaskTracker` 通过心跳的方式从 `JobTracker` 拿到任务列表，而 `JobTracker` 则利用调度器的 `assignTasks` 方法进行调度。也就是说调度器每次只处理一个 `TaskTracker` 的任务调度请求，他负责遍历队列中的作业，寻找作业中合适的任务分配给 `TaskTracker`，下图是作业提交到执行的过程。
 
 <div align="center"><img src="/static/images/DistributedSystem/mapred-v1-scheduler/JobSubmitDataFlowProcess.jpg" style="width:1000px;height:500px;">
 <caption><center> JobSubmitDataFlowProcess </center></caption></div>
 
 
-是节点向 `JobTracker` 申请 `Task`，而不是任务被提交后就可以立即由调度器进行调度分配，Hadoop 采用这种模式，我认为主要是因为第一，离线任务都属于耗时任务，任务提交后排队延迟相对于任务本身的时间忽略不计, 而像公有云虚拟机调度，是希望调度能够立即响应出分配策略的，因此采用了主控制器主动分配给某个Host节点，而不是由Host节点主动通过心跳包拉取可分配的任务; 第二， `JobTracker` 和 `TaskTracker` 之间是通过 RPC 协议通讯的，这里 `JobTracker` 对于 `TaskTracker` 来说，扮演的其实是服务器的角色。`JobTracker` 不会去主动调用 `TaskTracker` 的方法。
+是节点向 `JobTracker` 申请 `Task`，而不是任务被提交后就可以立即由调度器进行调度分配，Hadoop 采用这种模式，我认为主要是因为第一，离线任务都属于耗时任务，任务提交后排队延迟和调度时间相对于任务本身执行时间忽略不计, 而像公有云虚拟机调度，是希望调度能够立即响应出分配策略的，因此采用了主控制器主动分配给某个Host节点，而不是由Host节点主动通过心跳包拉取可分配的任务(创建虚拟机，相对来说创建虚拟机是比较快的，基本在几分钟左右，容器则更快，几十秒即可); 第二， `JobTracker` 和 `TaskTracker` 之间是通过 RPC 协议通讯的，这里 `JobTracker` 对于 `TaskTracker` 来说，扮演的其实是服务器的角色。`JobTracker` 不会去主动调用 `TaskTracker`。
 
 
 `TaskScheduler` 和 `JobTracker` 之间其实是通过观察者模式来实现的，如图 JobTracker-TaskScheduler-观察者模式 所示，`JobTracker` 作为被观察者，其实真正的观察者是 `JobInProgressListener` , `TaskScheduler` 只是利用了注册在 `JobTracker` 中的 `JobInProgressListener` 来获取作业队列。在默认调度器中，队列其实是由`JobQueueJobInProgressListener.jobQueue` 数据结构来维护，他其实是 `TreeMap`，key 是 `JobSchedulingInfo`, 通过 开始时间 排序。
@@ -106,6 +106,8 @@ int availableMapSlots = trackerCurrentMapCapacity - trackerRunningMaps;
 @Override
   public synchronized List<Task> assignTasks(TaskTracker taskTracker)
       throws IOException {
+    // 这里整个集群数据 ClusterStatus 的获取其实并不是实时的，上一个TaskTracker调用 `assignTasks` 以后，
+    /// 可能 TaskTracker 的资源减少了，但是 ClusterStatus还未及时更新数据
     TaskTrackerStatus taskTrackerStatus = taskTracker.getStatus(); 
     ClusterStatus clusterStatus = taskTrackerManager.getClusterStatus();
     final int numTaskTrackers = clusterStatus.getTaskTrackers();
@@ -131,7 +133,7 @@ int availableMapSlots = trackerCurrentMapCapacity - trackerRunningMaps;
     //
     int remainingReduceLoad = 0;
     int remainingMapLoad = 0;
-    synchronized (jobQueue) {
+    synchronized (jobQueue) { // jobQueue 枷锁，防止读取和写入的并发操作
       for (JobInProgress job : jobQueue) {
         if (job.getStatus().getRunState() == JobStatus.RUNNING) {
           remainingMapLoad += (job.desiredMaps() - job.finishedMaps());
@@ -184,7 +186,7 @@ int availableMapSlots = trackerCurrentMapCapacity - trackerRunningMaps;
     int numNonLocalMaps = 0;
     scheduleMaps:
     for (int i=0; i < availableMapSlots; ++i) {
-      synchronized (jobQueue) {
+      synchronized (jobQueue) { 
         for (JobInProgress job : jobQueue) {
           if (job.getStatus().getRunState() != JobStatus.RUNNING) {
             continue;
@@ -871,4 +873,7 @@ public synchronized boolean scheduleReduces() {
 }
 ```
 
+## 调度数据更新的并发
+调度器对整个集群资源数据的掌握情况是 `TaskTracker` 不断的通过心跳发来的，对集群资源数据的更改需要枷锁和同步，另外，每次调用 `assignTasks` 也是需要枷锁的，保证并发的 `TaskTracker` 任务分配最终是串行的。但是由于这是一个分布式系统，某个 `TaskTracker` 资源数据的变化无法立即反映到 `JobTracker` 和 `TaskScheduler`， 因为这些数据其实是靠心跳来传输的，可能存在不一致。但是这种数据不一致性并不会导致致命错误，他和银行转账不一样。是可容忍的。
 
+不像是基于数据库的应用，当前 `TaskTracker` 分配到任务以后，就可以立即减少数据库中它的资源数量，另一个 `TaskTracker` 在调用 `assignTasks` 的时候就可以立即获得真实的集群资源使用情况，而不是有延迟的或者虚假的，保证数据更新的一致性。

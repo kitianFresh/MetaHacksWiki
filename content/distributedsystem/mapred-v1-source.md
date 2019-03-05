@@ -257,7 +257,8 @@ TaskTracker 中的形成的一个 TIP 实体，其实只是 JobTracker 中TaskIn
 
 下图是 Tasks 在 TaskTracker 上的运行过程时序图，TaskTracker 启动mapLauncher 和 reduceLauncher 两个TaskLauncher 守候线程，以及MapEventsFetcherThread(获取map task 完成进度)线程等，进入 offerService 主循环。offerService 是 TaskTracker 主循环体，循环发送heartBeat给JobTracker并获取tasks和指令。
 
-![]()
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/TaskSubmit.jpg" style="width:700px;height:500px;">
+<caption><center> TaskSubmit </center></caption></div>
 
 TaskTracker 和 TaskLauncher 之间是生产消费者模型，通过 tasksToLaunch(List<TaskTracker.TaskInProgress>)队列进行数据连接，TaskLauncher 循环从队列中取出任务。
 
@@ -441,7 +442,8 @@ runner.signalDone();
 
 任务都是丢给 JvmManager 来管理和运行的，JvmManager 分别对MapTask和ReduceTask进行管理，内部实现类似于线程池，每个JVM都通过一个JvmRunner线程来维护。下图是关于任务运行的数据流向图。
 
-![]()
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/JVMReap.jpg" style="width:700px;height:500px;">
+<caption><center> JVMReap </center></caption></div>
 
 任务进度数据先通过每个Task中的 TaskReporter 线程循环上报给 TaskTracker, TaskTracker 再通过 heartBeat 上报给 JobTracker。 
 
@@ -596,7 +598,9 @@ TaskTracker 并没有通过细粒度控制 MapTask和ReduceTask的执行关系�
 ReduceTask 通过 ReduceCopier 来负责做reduce前的数据准备。ReduceCopier 中有两组生产者消费者模型，并行的下载MapOutput数据和合并数据。
 第一组是 GetMapEventsThread 和 MapOutputCopier， 通过元数据消费数据 scheduledCopies 来进行协作。第二组是 MapOutputCopier 和 InMemFSMergeThread/LocalFSMerger, 分别通过ShuffleRamManager.dataAvailable 和 mapOutputFilesOnDisk 协调控制MapOutput数据的生产消费。shuffle过程如下图所示:
 
-![]()
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/MapRedShuffle.png" style="width:700px;height:500px;">
+<caption><center> MapRedShuffle </center></caption></div>
+
 
 
 #### GetMapEventsThread 和 MapOutputCopier
@@ -855,7 +859,8 @@ private MapOutput shuffleInMemory(MapOutputLocation mapOutputLoc,
 对于Map Task而言， 它作为一个大阶段不可再分解， 为了简便， 我们直接将已读取数据量占总数据量的比例作为任务当前执行进度值。
 对于Reduce Task而言， 我们可将其分解成三个阶段： Shuffle、 Sort和Reduce， 每个阶段占任务总进度的1/3。 考虑到在Shuffle阶段， Reduce Task需从M（M为Map Task数目） 个Map Task上读取片数据， 因此， 可被分解成M个阶段， 每个阶段占Shuffle进度的1/M， 具体如图8-5所示。
 
-![]()
+<div align="center"><img src="/static/images/DistributedSystem/mapred-v1-source/ReduceTaskProgressTree.png" style="width:700px;height:500px;">
+<caption><center> ReduceTaskProgressTree </center></caption></div>
 
 任务进度由Progress类实现，该类递归定义了一个Progress，过程是一个树形结构，一个父过程可以分解成多个子过程，进而继续分解，每一个节点维护的是当前过程含有的子过程列表，当前运行第到几个子阶段，当前过程每个子过程进度比例（平均数），当前过程的父过程，当前进度。
 
