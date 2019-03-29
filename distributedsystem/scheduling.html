@@ -1,0 +1,500 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>scheduling - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#distributedsystem">distributedsystem</a>&nbsp;»&nbsp;scheduling</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">scheduling</div>
+<div id="content">
+  <h1 id="_1">资源数据同步</h1>
+<p>目前集群资源数据的管理和同步，Hadoop 从开始到 Yarn 基本都采用的是 Master-Slave-Heartbeat 模式，数据存储在 Master 内存中，数据更新并不一定是及时实时的，比如某个 Slave 上的container运行完毕，这个时候不是立即通知 Master，而是通过心跳来通知的。</p>
+<p>集群数据资源的表示，在Master内部需要通过容器结构来维护所有的Slave资源数据信息，在Yarn中才通过 RMNode 结构来表示每个 NodeManager，RMContainer 来表示每个 NodeManager 上的 Container. </p>
+<p>ApplicationMasterProtocol#allocate, 这个函数取名叫<code>分配</code>，同时负责获取和释放容器资源。</p>
+<h1 id="drf">DRF 算法</h1>
+<h1 id="yarn-fairscheduler">Yarn FairScheduler</h1>
+<h2 id="fairscheduler">FairScheduler</h2>
+<ol>
+<li>资源公平共享， 支持应用按照 FIFO, Fair, DRF 策略调度。</li>
+<li>支持资源抢占， 调度器有一个update线程定期检查是否进行资源抢占，当某个队列中有剩余资源时，调度器会将这些资源共享给其他队列，当该队列中有新的应用程序提交时，调度器要为它收回资源。同时为了尽可能降低不必要的资源浪费，调度器采用 先等待再强制回收 的策略，即如果等待一段时间后尚有资源未归还，则会进行资源抢占，从那些超额使用的队列中杀死一部分任务，进而释放资源。</li>
+<li>负载均衡, 提供一个基于任务数目的负载均衡机制，尽可能将系统中的任务均匀分配到各个节点上。且用户可以设计自己的负载均衡。</li>
+<li>调度策略配置灵活，每个队列可单独配置调度策略， FIFO, Fair, DRF</li>
+<li>提高小应用的相应时间。采用max-min 公平算法，小作业可快速获取资源并运行完成。</li>
+</ol>
+<p>FairScheduler</p>
+<div class="hlcode"><pre><span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">attemptScheduling</span><span class="o">(</span><span class="n">FSSchedulerNode</span> <span class="n">node</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// 检查当前调度器是否可用</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">rmContext</span><span class="o">.</span><span class="na">isWorkPreservingRecoveryEnabled</span><span class="o">()</span>
+        <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">rmContext</span><span class="o">.</span><span class="na">isSchedulerReadyForAllocatingContainers</span><span class="o">())</span> <span class="o">{</span>
+      <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">final</span> <span class="n">NodeId</span> <span class="n">nodeID</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">getNodeID</span><span class="o">();</span>
+    <span class="c1">// Node 可能刚刚被移出了</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">nodes</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">nodeID</span><span class="o">))</span> <span class="o">{</span>
+      <span class="c1">// The node might have just been removed while this thread was waiting</span>
+      <span class="c1">// on the synchronized lock before it entered this synchronized method</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Skipping scheduling as the node &quot;</span> <span class="o">+</span> <span class="n">nodeID</span> <span class="o">+</span>
+          <span class="s">&quot; has been removed&quot;</span><span class="o">);</span>
+      <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Assign new containers...</span>
+    <span class="c1">// 1. Check for reserved applications</span>
+    <span class="c1">// 2. Schedule if there are no reservations</span>
+    <span class="c1">// Yarn开启了资源保留机制，首先检查该节点是否为某个APP保留资源，如果是，则直接选择该APP分配容器</span>
+    <span class="n">FSAppAttempt</span> <span class="n">reservedAppSchedulable</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">getReservedAppSchedulable</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">reservedAppSchedulable</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Priority</span> <span class="n">reservedPriority</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">getReservedContainer</span><span class="o">().</span><span class="na">getReservedPriority</span><span class="o">();</span>
+      <span class="n">FSQueue</span> <span class="n">queue</span> <span class="o">=</span> <span class="n">reservedAppSchedulable</span><span class="o">.</span><span class="na">getQueue</span><span class="o">();</span>
+      <span class="c1">// 如果Node保留的资源还是无法满足APP所在的queue，则释放资源在该Node的预留机制，然后重新选择APP调度</span>
+      <span class="k">if</span> <span class="o">(!</span><span class="n">reservedAppSchedulable</span><span class="o">.</span><span class="na">hasContainerForNode</span><span class="o">(</span><span class="n">reservedPriority</span><span class="o">,</span> <span class="n">node</span><span class="o">)</span>
+          <span class="o">||</span> <span class="o">!</span><span class="n">fitsInMaxShare</span><span class="o">(</span><span class="n">queue</span><span class="o">,</span>
+          <span class="n">node</span><span class="o">.</span><span class="na">getReservedContainer</span><span class="o">().</span><span class="na">getReservedResource</span><span class="o">()))</span> <span class="o">{</span>
+        <span class="c1">// Don&#39;t hold the reservation if app can no longer use it</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Releasing reservation that cannot be satisfied for application &quot;</span>
+            <span class="o">+</span> <span class="n">reservedAppSchedulable</span><span class="o">.</span><span class="na">getApplicationAttemptId</span><span class="o">()</span>
+            <span class="o">+</span> <span class="s">&quot; on node &quot;</span> <span class="o">+</span> <span class="n">node</span><span class="o">);</span>
+        <span class="n">reservedAppSchedulable</span><span class="o">.</span><span class="na">unreserve</span><span class="o">(</span><span class="n">reservedPriority</span><span class="o">,</span> <span class="n">node</span><span class="o">);</span>
+        <span class="n">reservedAppSchedulable</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+      <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="c1">// Reservation exists; try to fulfill the reservation</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">LOG</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&quot;Trying to fulfill reservation for application &quot;</span>
+              <span class="o">+</span> <span class="n">reservedAppSchedulable</span><span class="o">.</span><span class="na">getApplicationAttemptId</span><span class="o">()</span>
+              <span class="o">+</span> <span class="s">&quot; on node: &quot;</span> <span class="o">+</span> <span class="n">node</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// 预留资源已经可以满足APP的需求，直接分配容器</span>
+        <span class="n">node</span><span class="o">.</span><span class="na">getReservedAppSchedulable</span><span class="o">().</span><span class="na">assignReservedContainer</span><span class="o">(</span><span class="n">node</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">reservedAppSchedulable</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// No reservation, schedule at queue which is farthest below fair share</span>
+      <span class="kt">int</span> <span class="n">assignedContainers</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+      <span class="k">while</span> <span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">getReservedContainer</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">boolean</span> <span class="n">assignedContainer</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">queueMgr</span><span class="o">.</span><span class="na">getRootQueue</span><span class="o">().</span><span class="na">assignContainer</span><span class="o">(</span><span class="n">node</span><span class="o">).</span><span class="na">equals</span><span class="o">(</span>
+            <span class="n">Resources</span><span class="o">.</span><span class="na">none</span><span class="o">()))</span> <span class="o">{</span>
+          <span class="n">assignedContainers</span><span class="o">++;</span>
+          <span class="n">assignedContainer</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">assignedContainer</span><span class="o">)</span> <span class="o">{</span> <span class="k">break</span><span class="o">;</span> <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">assignMultiple</span><span class="o">)</span> <span class="o">{</span> <span class="k">break</span><span class="o">;</span> <span class="o">}</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">assignedContainers</span> <span class="o">&gt;=</span> <span class="n">maxAssign</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">maxAssign</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span> <span class="k">break</span><span class="o">;</span> <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">updateRootQueueMetrics</span><span class="o">();</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>FSAppAteempt</p>
+<div class="hlcode"><pre><span class="kd">private</span> <span class="n">Resource</span> <span class="nf">assignContainer</span><span class="o">(</span><span class="n">FSSchedulerNode</span> <span class="n">node</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">reserved</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">LOG</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">LOG</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&quot;Node offered to app: &quot;</span> <span class="o">+</span> <span class="n">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; reserved: &quot;</span> <span class="o">+</span> <span class="n">reserved</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="n">Collection</span><span class="o">&lt;</span><span class="n">Priority</span><span class="o">&gt;</span> <span class="n">prioritiesToTry</span> <span class="o">=</span> <span class="o">(</span><span class="n">reserved</span><span class="o">)</span> <span class="o">?</span>
+        <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">getReservedContainer</span><span class="o">().</span><span class="na">getReservedPriority</span><span class="o">())</span> <span class="o">:</span>
+        <span class="n">getPriorities</span><span class="o">();</span>
+
+    <span class="c1">// For each priority, see if we can schedule a node local, rack local</span>
+    <span class="c1">// or off-switch request. Rack of off-switch requests may be delayed</span>
+    <span class="c1">// (not scheduled) in order to promote better locality.</span>
+    <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">for</span> <span class="o">(</span><span class="n">Priority</span> <span class="n">priority</span> <span class="o">:</span> <span class="n">prioritiesToTry</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">getTotalRequiredResources</span><span class="o">(</span><span class="n">priority</span><span class="o">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">||</span>
+            <span class="o">!</span><span class="n">hasContainerForNode</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span> <span class="n">node</span><span class="o">))</span> <span class="o">{</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">addSchedulingOpportunity</span><span class="o">(</span><span class="n">priority</span><span class="o">);</span>
+
+        <span class="c1">// Check the AM resource usage for the leaf queue</span>
+        <span class="c1">// 有可能App所在的队列已经无法使用更多的资源了，不予以分配</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">getLiveContainers</span><span class="o">().</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">getUnmanagedAM</span><span class="o">())</span> <span class="o">{</span>
+          <span class="k">if</span> <span class="o">(!</span><span class="n">getQueue</span><span class="o">().</span><span class="na">canRunAppAM</span><span class="o">(</span><span class="n">getAMResource</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">Resources</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="n">ResourceRequest</span> <span class="n">rackLocalRequest</span> <span class="o">=</span> <span class="n">getResourceRequest</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">getRackName</span><span class="o">());</span>
+        <span class="n">ResourceRequest</span> <span class="n">localRequest</span> <span class="o">=</span> <span class="n">getResourceRequest</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">getNodeName</span><span class="o">());</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">localRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">localRequest</span><span class="o">.</span><span class="na">getRelaxLocality</span><span class="o">())</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Relax locality off is not supported on local request: &quot;</span>
+              <span class="o">+</span> <span class="n">localRequest</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="n">NodeType</span> <span class="n">allowedLocality</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">scheduler</span><span class="o">.</span><span class="na">isContinuousSchedulingEnabled</span><span class="o">())</span> <span class="o">{</span>
+          <span class="n">allowedLocality</span> <span class="o">=</span> <span class="n">getAllowedLocalityLevelByTime</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getNodeLocalityDelayMs</span><span class="o">(),</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getRackLocalityDelayMs</span><span class="o">(),</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getClock</span><span class="o">().</span><span class="na">getTime</span><span class="o">());</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+          <span class="n">allowedLocality</span> <span class="o">=</span> <span class="n">getAllowedLocalityLevel</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getNumClusterNodes</span><span class="o">(),</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getNodeLocalityThreshold</span><span class="o">(),</span>
+              <span class="n">scheduler</span><span class="o">.</span><span class="na">getRackLocalityThreshold</span><span class="o">());</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">rackLocalRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">rackLocalRequest</span><span class="o">.</span><span class="na">getNumContainers</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">localRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">localRequest</span><span class="o">.</span><span class="na">getNumContainers</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">return</span> <span class="nf">assignContainer</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">localRequest</span><span class="o">,</span>
+              <span class="n">NodeType</span><span class="o">.</span><span class="na">NODE_LOCAL</span><span class="o">,</span> <span class="n">reserved</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">rackLocalRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">rackLocalRequest</span><span class="o">.</span><span class="na">getRelaxLocality</span><span class="o">())</span> <span class="o">{</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">rackLocalRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">rackLocalRequest</span><span class="o">.</span><span class="na">getNumContainers</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">allowedLocality</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">NodeType</span><span class="o">.</span><span class="na">RACK_LOCAL</span><span class="o">)</span> <span class="o">||</span>
+            <span class="n">allowedLocality</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">NodeType</span><span class="o">.</span><span class="na">OFF_SWITCH</span><span class="o">)))</span> <span class="o">{</span>
+          <span class="k">return</span> <span class="nf">assignContainer</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">rackLocalRequest</span><span class="o">,</span>
+              <span class="n">NodeType</span><span class="o">.</span><span class="na">RACK_LOCAL</span><span class="o">,</span> <span class="n">reserved</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="n">ResourceRequest</span> <span class="n">offSwitchRequest</span> <span class="o">=</span>
+            <span class="n">getResourceRequest</span><span class="o">(</span><span class="n">priority</span><span class="o">,</span> <span class="n">ResourceRequest</span><span class="o">.</span><span class="na">ANY</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">offSwitchRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">offSwitchRequest</span><span class="o">.</span><span class="na">getRelaxLocality</span><span class="o">())</span> <span class="o">{</span>
+          <span class="k">continue</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">offSwitchRequest</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span>
+            <span class="n">offSwitchRequest</span><span class="o">.</span><span class="na">getNumContainers</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">if</span> <span class="o">(!</span><span class="n">hasNodeOrRackLocalRequests</span><span class="o">(</span><span class="n">priority</span><span class="o">)</span> <span class="o">||</span>
+              <span class="n">allowedLocality</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">NodeType</span><span class="o">.</span><span class="na">OFF_SWITCH</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">assignContainer</span><span class="o">(</span>
+                <span class="n">node</span><span class="o">,</span> <span class="n">offSwitchRequest</span><span class="o">,</span> <span class="n">NodeType</span><span class="o">.</span><span class="na">OFF_SWITCH</span><span class="o">,</span> <span class="n">reserved</span><span class="o">);</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">Resources</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<p>FSAppAteempt</p>
+<div class="hlcode"><pre><span class="k">private</span> <span class="nf">Resource</span> <span class="nx">assignContainer</span><span class="p">(</span>
+    <span class="nx">FSSchedulerNode</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">ResourceRequest</span> <span class="nx">request</span><span class="p">,</span> <span class="nb">NodeType</span> <span class="k">type</span><span class="p">,</span>
+    <span class="nb">boolean</span> <span class="nx">reserved</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// How much does this request need?</span>
+    <span class="nx">Resource</span> <span class="n">capability</span> <span class="o">=</span> <span class="nx">request.getCapability</span><span class="p">();</span>
+
+    <span class="c1">// How much does the node have?</span>
+    <span class="nx">Resource</span> <span class="n">available</span> <span class="o">=</span> <span class="nx">node.getAvailableResource</span><span class="p">();</span>
+
+    <span class="c1">// 新建一个可序列化记录Contaniner</span>
+    <span class="nx">Container</span> <span class="n">container</span> <span class="o">=</span> <span class="kt">null</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">reserved</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="nx">node.getReservedContainer</span><span class="p">()</span><span class="bp">.</span><span class="nx">getContainer</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="nx">createContainer</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">capability</span><span class="p">,</span> <span class="nx">request.getPriority</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Can we allocate a container on this node?</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">Resources.fitsIn</span><span class="p">(</span><span class="nx">capability</span><span class="p">,</span> <span class="nx">available</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 为该请求创建一个RMContainer容器对象</span>
+        <span class="nx">RMContainer</span> <span class="n">allocatedContainer</span> <span class="o">=</span>
+            <span class="nx">allocate</span><span class="p">(</span><span class="k">type</span><span class="p">,</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">request.getPriority</span><span class="p">(),</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">container</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">allocatedContainer</span> <span class="o">==</span> <span class="kt">null</span><span class="p">)</span> <span class="p">{</span><span class="c1">//分配不成功</span>
+            <span class="c1">// Did the application need this resource?</span>
+            <span class="c1">// 如果该App在该Node上预留，则释放开始保存的预留资源</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">reserved</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">unreserve</span><span class="p">(</span><span class="nx">request.getPriority</span><span class="p">(),</span> <span class="nx">node</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">Resources.none</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="c1">// 分配成功，则释放开始保存的预留资源</span>
+        <span class="c1">// If we had previously made a reservation, delete it</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">reserved</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">unreserve</span><span class="p">(</span><span class="nx">request.getPriority</span><span class="p">(),</span> <span class="nx">node</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// 对Node的资源进行更新，包括资源量，容器数目，以及添加运行的容器，需要枷锁</span>
+        <span class="nx">node.allocateContainer</span><span class="p">(</span><span class="nx">allocatedContainer</span><span class="p">);</span>
+
+        <span class="c1">// If this container is used to run AM, update the leaf queue&#39;s AM usage</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">getLiveContainers</span><span class="p">()</span><span class="bp">.</span><span class="nb">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">getUnmanagedAM</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nx">getQueue</span><span class="p">()</span><span class="bp">.</span><span class="nx">addAMResourceUsage</span><span class="p">(</span><span class="nx">container.getResource</span><span class="p">());</span>
+            <span class="nx">setAmRunning</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nx">container.getResource</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">FairScheduler.fitsInMaxShare</span><span class="p">(</span><span class="nx">getQueue</span><span class="p">(),</span> <span class="nx">capability</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">Resources.none</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="c1">// 当前该App不适合Node，因此做预留操作</span>
+        <span class="c1">// The desired container won&#39;t fit here, so reserve</span>
+        <span class="nb">reserve</span><span class="p">(</span><span class="nx">request.getPriority</span><span class="p">(),</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">container</span><span class="p">,</span> <span class="nx">reserved</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">FairScheduler.CONTAINER_RESERVED</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="nx">synchronized</span> <span class="k">public</span> <span class="nf">RMContainer</span> <span class="nx">allocate</span><span class="p">(</span><span class="nb">NodeType</span> <span class="k">type</span><span class="p">,</span> <span class="nx">FSSchedulerNode</span> <span class="nx">node</span><span class="p">,</span>
+    <span class="nx">Priority</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">ResourceRequest</span> <span class="nx">request</span><span class="p">,</span>
+    <span class="nx">Container</span> <span class="nx">container</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 更新允许的局部感知粒度</span>
+    <span class="nb">NodeType</span> <span class="n">allowed</span> <span class="o">=</span> <span class="nx">allowedLocalityLevel.get</span><span class="p">(</span><span class="nx">priority</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">allowed</span> <span class="o">!=</span> <span class="kt">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">allowed.equals</span><span class="p">(</span><span class="nx">NodeType.OFF_SWITCH</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+            <span class="p">(</span><span class="k">type</span><span class="bp">.</span><span class="nb">equals</span><span class="p">(</span><span class="nx">NodeType.NODE_LOCAL</span><span class="p">)</span> <span class="o">||</span>
+                <span class="k">type</span><span class="bp">.</span><span class="nb">equals</span><span class="p">(</span><span class="nx">NodeType.RACK_LOCAL</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="nx">this.resetAllowedLocalityLevel</span><span class="p">(</span><span class="nx">priority</span><span class="p">,</span> <span class="k">type</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">allowed.equals</span><span class="p">(</span><span class="nx">NodeType.RACK_LOCAL</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+            <span class="k">type</span><span class="bp">.</span><span class="nb">equals</span><span class="p">(</span><span class="nx">NodeType.NODE_LOCAL</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">this.resetAllowedLocalityLevel</span><span class="p">(</span><span class="nx">priority</span><span class="p">,</span> <span class="k">type</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// 检查资源需求量，因为该需求量可能会被AM通过 allocate 更改</span>
+    <span class="c1">// Required sanity check - AM can call &#39;allocate&#39; to update resource </span>
+    <span class="c1">// request without locking the scheduler, hence we need to check</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">getTotalRequiredResources</span><span class="p">(</span><span class="nx">priority</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">null</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create RMContainer</span>
+    <span class="nx">RMContainer</span> <span class="n">rmContainer</span> <span class="o">=</span> <span class="nb">new</span> <span class="nx">RMContainerImpl</span><span class="p">(</span><span class="nx">container</span><span class="p">,</span> 
+        <span class="nx">getApplicationAttemptId</span><span class="p">(),</span> <span class="nx">node.getNodeID</span><span class="p">(),</span>
+        <span class="nx">appSchedulingInfo.getUser</span><span class="p">(),</span> <span class="nx">rmContext</span><span class="p">);</span>
+
+    <span class="c1">// 该列表中存放的就是已经被调度器调度好的容器，AM会通过 allocate 进行获取; 当然，还有一种情况是启动AM也需要容器，那是通过 RMAppAttempt 的 ScheduleTransition 也会调用 allocate 获取 AM Container。</span>
+    <span class="nx">newlyAllocatedContainers.add</span><span class="p">(</span><span class="nx">rmContainer</span><span class="p">);</span>
+    <span class="nx">liveContainers.put</span><span class="p">(</span><span class="nx">container.getId</span><span class="p">(),</span> <span class="nx">rmContainer</span><span class="p">);</span>    
+
+    <span class="c1">// Update consumption and track allocations</span>
+    <span class="c1">// 跟踪被分配的资源, 并更新该App的资源消耗</span>
+    <span class="nb">List</span><span class="o">&lt;</span><span class="nx">ResourceRequest</span><span class="o">&gt;</span> <span class="n">resourceRequestList</span> <span class="o">=</span> <span class="nx">appSchedulingInfo.allocate</span><span class="p">(</span>
+        <span class="k">type</span><span class="p">,</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">container</span><span class="p">);</span>
+    <span class="nx">Resources.addTo</span><span class="p">(</span><span class="nx">currentConsumption</span><span class="p">,</span> <span class="nx">container.getResource</span><span class="p">());</span>
+
+    <span class="c1">// Update resource requests related to &quot;request&quot; and store in RMContainer</span>
+    <span class="p">((</span><span class="nx">RMContainerImpl</span><span class="p">)</span> <span class="nx">rmContainer</span><span class="p">)</span><span class="bp">.</span><span class="nx">setResourceRequests</span><span class="p">(</span><span class="nx">resourceRequestList</span><span class="p">);</span>
+
+    <span class="c1">// 通知RMContainer 容器新建了</span>
+    <span class="nx">rmContainer.handle</span><span class="p">(</span>
+        <span class="nb">new</span> <span class="nx">RMContainerEvent</span><span class="p">(</span><span class="nx">container.getId</span><span class="p">(),</span> <span class="nx">RMContainerEventType.START</span><span class="p">));</span>
+    <span class="k">return</span> <span class="nx">rmContainer</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">public</span> <span class="nf">Container</span> <span class="nx">createContainer</span><span class="p">(</span>
+      <span class="nx">FSSchedulerNode</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">Resource</span> <span class="nx">capability</span><span class="p">,</span> <span class="nx">Priority</span> <span class="nx">priority</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">NodeId</span> <span class="n">nodeId</span> <span class="o">=</span> <span class="nx">node.getRMNode</span><span class="p">()</span><span class="bp">.</span><span class="nx">getNodeID</span><span class="p">();</span>
+    <span class="nx">ContainerId</span> <span class="n">containerId</span> <span class="o">=</span> <span class="nx">BuilderUtils.newContainerId</span><span class="p">(</span>
+        <span class="nx">getApplicationAttemptId</span><span class="p">(),</span> <span class="nx">getNewContainerId</span><span class="p">());</span>
+
+    <span class="c1">// Create the container， 这里的container是一个可序列化的记录</span>
+    <span class="nx">Container</span> <span class="n">container</span> <span class="o">=</span>
+        <span class="nx">BuilderUtils.newContainer</span><span class="p">(</span><span class="nx">containerId</span><span class="p">,</span> <span class="nx">nodeId</span><span class="p">,</span> <span class="nx">node.getRMNode</span><span class="p">()</span>
+            <span class="bp">.</span><span class="nx">getHttpAddress</span><span class="p">(),</span> <span class="nx">capability</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="kt">null</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">container</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">private</span> <span class="nf">void</span> <span class="nb">reserve</span><span class="p">(</span><span class="nx">Priority</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">FSSchedulerNode</span> <span class="nx">node</span><span class="p">,</span>
+      <span class="nx">Container</span> <span class="nx">container</span><span class="p">,</span> <span class="nb">boolean</span> <span class="nx">alreadyReserved</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">alreadyReserved</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">getMetrics</span><span class="p">()</span><span class="bp">.</span><span class="nx">reserveResource</span><span class="p">(</span><span class="nb">getUser</span><span class="p">(),</span> <span class="nx">container.getResource</span><span class="p">());</span>
+      <span class="nx">RMContainer</span> <span class="n">rmContainer</span> <span class="o">=</span>
+          <span class="nx">super.reserve</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="kt">null</span><span class="p">,</span> <span class="nx">container</span><span class="p">);</span>
+      <span class="nx">node.reserveResource</span><span class="p">(</span><span class="nx">this</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">rmContainer</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">RMContainer</span> <span class="n">rmContainer</span> <span class="o">=</span> <span class="nx">node.getReservedContainer</span><span class="p">();</span>
+      <span class="nx">super.reserve</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">rmContainer</span><span class="p">,</span> <span class="nx">container</span><span class="p">);</span>
+      <span class="nx">node.reserveResource</span><span class="p">(</span><span class="nx">this</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">rmContainer</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Remove the reservation on {@code node} at the given {@link Priority}.</span>
+<span class="cm">   * This dispatches SchedulerNode handlers as well.</span>
+<span class="cm">   */</span>
+  <span class="k">public</span> <span class="nf">void</span> <span class="nx">unreserve</span><span class="p">(</span><span class="nx">Priority</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">FSSchedulerNode</span> <span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">RMContainer</span> <span class="n">rmContainer</span> <span class="o">=</span> <span class="nx">node.getReservedContainer</span><span class="p">();</span>
+    <span class="nx">unreserveInternal</span><span class="p">(</span><span class="nx">priority</span><span class="p">,</span> <span class="nx">node</span><span class="p">);</span>
+    <span class="nx">node.unreserveResource</span><span class="p">(</span><span class="nx">this</span><span class="p">);</span>
+    <span class="nx">getMetrics</span><span class="p">()</span><span class="bp">.</span><span class="nx">unreserveResource</span><span class="p">(</span>
+        <span class="nb">getUser</span><span class="p">(),</span> <span class="nx">rmContainer.getContainer</span><span class="p">()</span><span class="bp">.</span><span class="nx">getResource</span><span class="p">());</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>SchedulerNode</p>
+<div class="hlcode"><pre><span class="n">public</span> <span class="n">synchronized</span> <span class="kt">void</span> <span class="nf">allocateContainer</span><span class="p">(</span><span class="n">RMContainer</span> <span class="n">rmContainer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Container</span> <span class="n">container</span> <span class="o">=</span> <span class="n">rmContainer</span><span class="p">.</span><span class="n">getContainer</span><span class="p">();</span>
+    <span class="n">deductAvailableResource</span><span class="p">(</span><span class="n">container</span><span class="p">.</span><span class="n">getResource</span><span class="p">());</span>
+    <span class="o">++</span><span class="n">numContainers</span><span class="p">;</span>
+
+    <span class="n">launchedContainers</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">container</span><span class="p">.</span><span class="n">getId</span><span class="p">(),</span> <span class="n">rmContainer</span><span class="p">);</span>
+  <span class="p">}</span>
+
+<span class="n">private</span> <span class="n">synchronized</span> <span class="kt">void</span> <span class="nf">deductAvailableResource</span><span class="p">(</span><span class="n">Resource</span> <span class="n">resource</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">resource</span> <span class="o">==</span> <span class="n">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">Resources</span><span class="p">.</span><span class="n">subtractFrom</span><span class="p">(</span><span class="n">availableResource</span><span class="p">,</span> <span class="n">resource</span><span class="p">);</span>
+    <span class="n">Resources</span><span class="p">.</span><span class="n">addTo</span><span class="p">(</span><span class="n">usedResource</span><span class="p">,</span> <span class="n">resource</span><span class="p">);</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>FairScheduler#UpdateThread</p>
+<div class="hlcode"><pre><span class="n">private</span> <span class="n">class</span> <span class="n">UpdateThread</span> <span class="n">extends</span> <span class="n">Thread</span> <span class="p">{</span>
+
+    <span class="err">@</span><span class="n">Override</span>
+    <span class="n">public</span> <span class="kt">void</span> <span class="n">run</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">Thread</span><span class="p">.</span><span class="n">currentThread</span><span class="p">().</span><span class="n">isInterrupted</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">try</span> <span class="p">{</span>
+          <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">updateInterval</span><span class="p">);</span>
+          <span class="kt">long</span> <span class="n">start</span> <span class="o">=</span> <span class="n">getClock</span><span class="p">().</span><span class="n">getTime</span><span class="p">();</span>
+          <span class="n">update</span><span class="p">();</span>
+          <span class="n">preemptTasksIfNecessary</span><span class="p">();</span>
+          <span class="kt">long</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">getClock</span><span class="p">().</span><span class="n">getTime</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">;</span>
+          <span class="n">fsOpDurations</span><span class="p">.</span><span class="n">addUpdateThreadRunDuration</span><span class="p">(</span><span class="n">duration</span><span class="p">);</span>
+        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">InterruptedException</span> <span class="n">ie</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">LOG</span><span class="p">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Update thread interrupted. Exiting.&quot;</span><span class="p">);</span>
+          <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">LOG</span><span class="p">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Exception in fair scheduler UpdateThread&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+  <span class="n">protected</span> <span class="n">synchronized</span> <span class="kt">void</span> <span class="n">update</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">start</span> <span class="o">=</span> <span class="n">getClock</span><span class="p">().</span><span class="n">getTime</span><span class="p">();</span>
+    <span class="n">updateStarvationStats</span><span class="p">();</span> <span class="c1">// Determine if any queues merit preemption</span>
+
+    <span class="n">FSQueue</span> <span class="n">rootQueue</span> <span class="o">=</span> <span class="n">queueMgr</span><span class="p">.</span><span class="n">getRootQueue</span><span class="p">();</span>
+
+    <span class="c1">// Recursively update demands for all queues</span>
+    <span class="n">rootQueue</span><span class="p">.</span><span class="n">updateDemand</span><span class="p">();</span>
+
+    <span class="n">rootQueue</span><span class="p">.</span><span class="n">setFairShare</span><span class="p">(</span><span class="n">clusterResource</span><span class="p">);</span>
+    <span class="c1">// Recursively compute fair shares for all queues</span>
+    <span class="c1">// and update metrics</span>
+    <span class="n">rootQueue</span><span class="p">.</span><span class="n">recomputeShares</span><span class="p">();</span>
+    <span class="n">updateRootQueueMetrics</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">LOG</span><span class="p">.</span><span class="n">isDebugEnabled</span><span class="p">())</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">--</span><span class="n">updatesToSkipForDebug</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">updatesToSkipForDebug</span> <span class="o">=</span> <span class="n">UPDATE_DEBUG_FREQUENCY</span><span class="p">;</span>
+        <span class="n">LOG</span><span class="p">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Cluster Capacity: &quot;</span> <span class="o">+</span> <span class="n">clusterResource</span> <span class="o">+</span>
+            <span class="s">&quot;  Allocations: &quot;</span> <span class="o">+</span> <span class="n">rootMetrics</span><span class="p">.</span><span class="n">getAllocatedResources</span><span class="p">()</span> <span class="o">+</span>
+            <span class="s">&quot;  Availability: &quot;</span> <span class="o">+</span> <span class="n">Resource</span><span class="p">.</span><span class="n">newInstance</span><span class="p">(</span>
+            <span class="n">rootMetrics</span><span class="p">.</span><span class="n">getAvailableMB</span><span class="p">(),</span>
+            <span class="n">rootMetrics</span><span class="p">.</span><span class="n">getAvailableVirtualCores</span><span class="p">())</span> <span class="o">+</span>
+            <span class="s">&quot;  Demand: &quot;</span> <span class="o">+</span> <span class="n">rootQueue</span><span class="p">.</span><span class="n">getDemand</span><span class="p">());</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kt">long</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">getClock</span><span class="p">().</span><span class="n">getTime</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">;</span>
+    <span class="n">fsOpDurations</span><span class="p">.</span><span class="n">addUpdateCallDuration</span><span class="p">(</span><span class="n">duration</span><span class="p">);</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-03-11 18:25 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'scheduling',
+  title: 'scheduling',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

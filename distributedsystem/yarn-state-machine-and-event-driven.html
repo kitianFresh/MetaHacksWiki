@@ -95,11 +95,253 @@
 <li>需要注册事件类型类和该类型类对应的处理器。</li>
 <li>产生事件后，通过 <code>AsyncDispatcher.getEventHandler()</code> 方法拿到一个 <code>GenericEventHandler</code> 实例，调用该实例的 <code>handle</code> 方法，即可将事件放入 <code>AsyncDispatcher</code> 进行分发处理。<code>AsyncDispatcher.getEventHandler().handle(Event);</code> 这是事件放入的地方。</li>
 </ol>
+<h2 id="_1">事件处理器向中央异步处理器注册</h2>
+<p>以下是 ResourceManager 中注册各种事件处理器的代码。</p>
+<div class="hlcode"><pre><span class="c1">// Register event handler for NodesListManager</span>
+<span class="n">nodesListManager</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NodesListManager</span><span class="o">(</span><span class="n">rmContext</span><span class="o">);</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">NodesListManagerEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">nodesListManager</span><span class="o">);</span>
+<span class="n">addService</span><span class="o">(</span><span class="n">nodesListManager</span><span class="o">);</span>
+<span class="n">rmContext</span><span class="o">.</span><span class="na">setNodesListManager</span><span class="o">(</span><span class="n">nodesListManager</span><span class="o">);</span>
+
+<span class="c1">// Initialize the scheduler</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">createScheduler</span><span class="o">();</span>
+<span class="n">scheduler</span><span class="o">.</span><span class="na">setRMContext</span><span class="o">(</span><span class="n">rmContext</span><span class="o">);</span>
+<span class="n">addIfService</span><span class="o">(</span><span class="n">scheduler</span><span class="o">);</span>
+<span class="n">rmContext</span><span class="o">.</span><span class="na">setScheduler</span><span class="o">(</span><span class="n">scheduler</span><span class="o">);</span>
+
+<span class="n">schedulerDispatcher</span> <span class="o">=</span> <span class="n">createSchedulerEventDispatcher</span><span class="o">();</span>
+<span class="n">addIfService</span><span class="o">(</span><span class="n">schedulerDispatcher</span><span class="o">);</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">SchedulerEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">schedulerDispatcher</span><span class="o">);</span>
+
+<span class="c1">// Register event handler for RmAppEvents</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">RMAppEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+    <span class="k">new</span> <span class="nf">ApplicationEventDispatcher</span><span class="o">(</span><span class="n">rmContext</span><span class="o">));</span>
+
+<span class="c1">// Register event handler for RmAppAttemptEvents</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">RMAppAttemptEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+    <span class="k">new</span> <span class="nf">ApplicationAttemptEventDispatcher</span><span class="o">(</span><span class="n">rmContext</span><span class="o">));</span>
+
+<span class="c1">// Register event handler for RmNodes</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span>
+    <span class="n">RMNodeEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">NodeEventDispatcher</span><span class="o">(</span><span class="n">rmContext</span><span class="o">));</span>
+<span class="o">......</span>
+<span class="n">rmAppManager</span> <span class="o">=</span> <span class="n">createRMAppManager</span><span class="o">();</span>
+<span class="c1">// Register event handler for RMAppManagerEvents</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">RMAppManagerEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">rmAppManager</span><span class="o">);</span>
+
+<span class="n">applicationMasterLauncher</span> <span class="o">=</span> <span class="n">createAMLauncher</span><span class="o">();</span>
+<span class="n">rmDispatcher</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">AMLauncherEventType</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+    <span class="n">applicationMasterLauncher</span><span class="o">);</span>
+<span class="n">addService</span><span class="o">(</span><span class="n">applicationMasterLauncher</span><span class="o">);</span>
+</pre></div>
+
+
+<h2 id="_2">中央异步处理器处理模型</h2>
 <p><code>AsyncDispatcher</code> 的设计也是采用生产者-消费者模型，这里的消费者是内部的 <code>eventHandlingThread</code> 单线程，生产者是内部的 <code>GenericEventHandler</code>， 也就是上文所说的事件放入的入口，当然这里并不是真实的生产者，只是生产者的代理入口。下图是 <code>AsyncDispatcher</code> 的生产消费模型。</p>
 <div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnAsyncDispatcher.jpg" style="width:700px;height:500px;">
 <caption><center> YarnAsyncDispatcher </center></caption></div>
 
-<h2 id="_1">服务停止</h2>
+<p>需要注意的是，这里的 EventHandler 其实不一定是一个真实的处理器，他可能只是对某种类型处理器的包装处理器，比如我们有很多的 RMAppImpl 处理器对象，从 <code>AsyncDispatcher</code> 的 <code>register</code> 接口来看，它只维护某种事件类型和对应事件处理器对象，但是我们知道 RMAppEventType 其实对应了很多个 RMAppImpl 对象的，这样怎么能把对应 RMAppImpl 的事件转发给它处理，显然，可以设计一个包装处理器，它接受 RMAppEeventType事件，但是处理的时候会根据 Event 中的 RMAppID 再次分发给对应的 RMAppImpl 来处理即可。在 Yarn ResourceManager 类中， RMApp，RMAppAttempt，RMNode， ResourceScheduler 都是被包装的，分别是 ApplicationEventDispatcher, ApplicationAttemptEventDispatcher, NodeEventDispatcher， SchedulerEventDispatcher。</p>
+<p>这里比较有意思的是， AsyncDispatcher 中的 EventHandler 还可以是一个 AsyncDispatcher， 比如SchedulerEventDispatcher 其实也实现了一个 Dispatcher 的模型。这种结构是可以递归嵌套的，这种代码最好不要嵌套过多，否则影响可读性。</p>
+<div class="hlcode"><pre>  <span class="nd">@Private</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">SchedulerEventDispatcher</span> <span class="kd">extends</span> <span class="n">AbstractService</span>
+      <span class="kd">implements</span> <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">SchedulerEvent</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ResourceScheduler</span> <span class="n">scheduler</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">BlockingQueue</span><span class="o">&lt;</span><span class="n">SchedulerEvent</span><span class="o">&gt;</span> <span class="n">eventQueue</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">LinkedBlockingQueue</span><span class="o">&lt;</span><span class="n">SchedulerEvent</span><span class="o">&gt;();</span>
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">int</span> <span class="n">lastEventQueueSizeLogged</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Thread</span> <span class="n">eventProcessor</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">boolean</span> <span class="n">stopped</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">shouldExitOnError</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">SchedulerEventDispatcher</span><span class="o">(</span><span class="n">ResourceScheduler</span> <span class="n">scheduler</span><span class="o">)</span> <span class="o">{</span>
+      <span class="kd">super</span><span class="o">(</span><span class="n">SchedulerEventDispatcher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">;</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">eventProcessor</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">EventProcessor</span><span class="o">());</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">eventProcessor</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">&quot;ResourceManager Event Processor&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">serviceInit</span><span class="o">(</span><span class="n">Configuration</span> <span class="n">conf</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">shouldExitOnError</span> <span class="o">=</span>
+          <span class="n">conf</span><span class="o">.</span><span class="na">getBoolean</span><span class="o">(</span><span class="n">Dispatcher</span><span class="o">.</span><span class="na">DISPATCHER_EXIT_ON_ERROR_KEY</span><span class="o">,</span>
+            <span class="n">Dispatcher</span><span class="o">.</span><span class="na">DEFAULT_DISPATCHER_EXIT_ON_ERROR</span><span class="o">);</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">serviceInit</span><span class="o">(</span><span class="n">conf</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">serviceStart</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">eventProcessor</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">serviceStart</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">EventProcessor</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="n">SchedulerEvent</span> <span class="n">event</span><span class="o">;</span>
+
+        <span class="k">while</span> <span class="o">(!</span><span class="n">stopped</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">isInterrupted</span><span class="o">())</span> <span class="o">{</span>
+          <span class="k">try</span> <span class="o">{</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">take</span><span class="o">();</span>
+          <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Returning, interrupted : &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">);</span>
+            <span class="k">return</span><span class="o">;</span> <span class="c1">// TODO: Kill RM.</span>
+          <span class="o">}</span>
+
+          <span class="k">try</span> <span class="o">{</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+          <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// An error occurred, but we are shutting down anyway.</span>
+            <span class="c1">// If it was an InterruptedException, the very act of </span>
+            <span class="c1">// shutdown could have caused it and is probably harmless.</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">stopped</span><span class="o">)</span> <span class="o">{</span>
+              <span class="n">LOG</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&quot;Exception during shutdown: &quot;</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+              <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">fatal</span><span class="o">(</span><span class="s">&quot;Error in handling event type &quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">()</span>
+                <span class="o">+</span> <span class="s">&quot; to the scheduler&quot;</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">shouldExitOnError</span>
+                <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ShutdownHookManager</span><span class="o">.</span><span class="na">get</span><span class="o">().</span><span class="na">isShutdownInProgress</span><span class="o">())</span> <span class="o">{</span>
+              <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Exiting, bbye..&quot;</span><span class="o">);</span>
+              <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">1</span><span class="o">);</span>
+            <span class="o">}</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">serviceStop</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">stopped</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">eventProcessor</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">eventProcessor</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">YarnRuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">serviceStop</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">SchedulerEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">qSize</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">qSize</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">qSize</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">lastEventQueueSizeLogged</span> <span class="o">!=</span> <span class="n">qSize</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">lastEventQueueSizeLogged</span> <span class="o">=</span> <span class="n">qSize</span><span class="o">;</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Size of scheduler event-queue is &quot;</span> <span class="o">+</span> <span class="n">qSize</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="kt">int</span> <span class="n">remCapacity</span> <span class="o">=</span> <span class="n">eventQueue</span><span class="o">.</span><span class="na">remainingCapacity</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">remCapacity</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Very low remaining capacity on scheduler event queue: &quot;</span>
+              <span class="o">+</span> <span class="n">remCapacity</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">eventQueue</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Interrupted. Trying to exit gracefully.&quot;</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handleTransitionToStandBy</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">rmContext</span><span class="o">.</span><span class="na">isHAEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="c1">// Transition to standby and reinit active services</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Transitioning RM to Standby mode&quot;</span><span class="o">);</span>
+        <span class="n">transitionToStandby</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="n">adminService</span><span class="o">.</span><span class="na">resetLeaderElection</span><span class="o">();</span>
+        <span class="k">return</span><span class="o">;</span>
+      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">fatal</span><span class="o">(</span><span class="s">&quot;Failed to transition RM to Standby mode.&quot;</span><span class="o">);</span>
+        <span class="n">ExitUtil</span><span class="o">.</span><span class="na">terminate</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Private</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ApplicationEventDispatcher</span> <span class="kd">implements</span>
+      <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">RMAppEvent</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">ApplicationEventDispatcher</span><span class="o">(</span><span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span> <span class="o">=</span> <span class="n">rmContext</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">RMAppEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">ApplicationId</span> <span class="n">appID</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="na">getApplicationId</span><span class="o">();</span>
+      <span class="n">RMApp</span> <span class="n">rmApp</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span><span class="o">.</span><span class="na">getRMApps</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="n">appID</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">rmApp</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">rmApp</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Error in handling event type &quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">()</span>
+              <span class="o">+</span> <span class="s">&quot; for application &quot;</span> <span class="o">+</span> <span class="n">appID</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Private</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ApplicationAttemptEventDispatcher</span> <span class="kd">implements</span>
+      <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">RMAppAttemptEvent</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">ApplicationAttemptEventDispatcher</span><span class="o">(</span><span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span> <span class="o">=</span> <span class="n">rmContext</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">RMAppAttemptEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">ApplicationAttemptId</span> <span class="n">appAttemptID</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="na">getApplicationAttemptId</span><span class="o">();</span>
+      <span class="n">ApplicationId</span> <span class="n">appAttemptId</span> <span class="o">=</span> <span class="n">appAttemptID</span><span class="o">.</span><span class="na">getApplicationId</span><span class="o">();</span>
+      <span class="n">RMApp</span> <span class="n">rmApp</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span><span class="o">.</span><span class="na">getRMApps</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="n">appAttemptId</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">rmApp</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">RMAppAttempt</span> <span class="n">rmAppAttempt</span> <span class="o">=</span> <span class="n">rmApp</span><span class="o">.</span><span class="na">getRMAppAttempt</span><span class="o">(</span><span class="n">appAttemptID</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">rmAppAttempt</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">try</span> <span class="o">{</span>
+            <span class="n">rmAppAttempt</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+          <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Error in handling event type &quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">()</span>
+                <span class="o">+</span> <span class="s">&quot; for applicationAttempt &quot;</span> <span class="o">+</span> <span class="n">appAttemptId</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Private</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">NodeEventDispatcher</span> <span class="kd">implements</span>
+      <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">RMNodeEvent</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">NodeEventDispatcher</span><span class="o">(</span><span class="n">RMContext</span> <span class="n">rmContext</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span> <span class="o">=</span> <span class="n">rmContext</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">RMNodeEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">NodeId</span> <span class="n">nodeId</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="na">getNodeId</span><span class="o">();</span>
+      <span class="n">RMNode</span> <span class="n">node</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">rmContext</span><span class="o">.</span><span class="na">getRMNodes</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="n">nodeId</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="o">((</span><span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">RMNodeEvent</span><span class="o">&gt;)</span> <span class="n">node</span><span class="o">).</span><span class="na">handle</span><span class="o">(</span><span class="n">event</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">LOG</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Error in handling event type &quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">()</span>
+              <span class="o">+</span> <span class="s">&quot; for node &quot;</span> <span class="o">+</span> <span class="n">nodeId</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</pre></div>
+
+
+<h2 id="_3">中央异步处理器服务停止</h2>
 <p><code>AsyncDispatcher</code> 在 Yarn 中也属于服务，服务关闭的时候，需要考虑是否清理正在排队的任务或者资源，<code>drainEventsOnStop</code> 是用来设置在服务停止的时候，是否将队列中的事件处理完毕再关闭。 如果设置为 true，那么就需要阻塞还在继续发生的事件进入队列 <code>blockNewEvents</code>，同时使用同步信号 <code>waitForDrained</code> 等待队列中剩余的事件被处理完成。这里需要注意的一点是，队列中的事件处理不一定能够顺利完成，这是不确定的，万一一直处理不完，则一直无法停止服务了，甚至导致无法退出服务进程。因此需要设置超时时间 <code>DISPATCHER_DRAIN_EVENTS_TIMEOUT</code>，如果等待事件过长，还是强制退出服务。</p>
 <div class="hlcode"><pre><span class="kd">class</span> <span class="nc">GenericEventHandler</span> <span class="kd">implements</span> <span class="n">EventHandler</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">(</span><span class="n">Event</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
@@ -407,7 +649,7 @@
 </pre></div>
 
 
-<p>InternalStateMachine 调用了 StateMchineFactory 的 doTransition 方法，因为只有工厂才存有 状态机表。</p>
+<p>InternalStateMachine 调用了 StateMchineFactory 的 doTransition 方法，因为只有工厂才存有 状态机表，原因在于某个类的状态机表是该类所有对象共享的代码，工厂在状态机类中的用法也是一个静态成员，并在状态机类加载的时候初始化，然后所有的状态机对象共享该状态机类的方法和状态机表。对于状态机而言，其实他的图结构在编译的时候就定了，但是每个状态机对象其实是处于图中不同的状态，每个状态机对象都关联一个操作对象，并记录当前状态。</p>
 <div class="hlcode"><pre><span class="kd">private</span> <span class="kd">class</span> <span class="nc">InternalStateMachine</span>
         <span class="kd">implements</span> <span class="n">StateMachine</span><span class="o">&lt;</span><span class="n">STATE</span><span class="o">,</span> <span class="n">EVENTTYPE</span><span class="o">,</span> <span class="n">EVENT</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="kd">final</span> <span class="n">OPERAND</span> <span class="n">operand</span><span class="o">;</span>
