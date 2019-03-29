@@ -50,14 +50,259 @@ public enum RMAppEventType {
  
  1. 需要注册事件类型类和该类型类对应的处理器。
  2. 产生事件后，通过 `AsyncDispatcher.getEventHandler()` 方法拿到一个 `GenericEventHandler` 实例，调用该实例的 `handle` 方法，即可将事件放入 `AsyncDispatcher` 进行分发处理。`AsyncDispatcher.getEventHandler().handle(Event);` 这是事件放入的地方。
- 
+## 事件处理器向中央异步处理器注册
+以下是 ResourceManager 中注册各种事件处理器的代码。
+```java
+// Register event handler for NodesListManager
+nodesListManager = new NodesListManager(rmContext);
+rmDispatcher.register(NodesListManagerEventType.class, nodesListManager);
+addService(nodesListManager);
+rmContext.setNodesListManager(nodesListManager);
+
+// Initialize the scheduler
+scheduler = createScheduler();
+scheduler.setRMContext(rmContext);
+addIfService(scheduler);
+rmContext.setScheduler(scheduler);
+
+schedulerDispatcher = createSchedulerEventDispatcher();
+addIfService(schedulerDispatcher);
+rmDispatcher.register(SchedulerEventType.class, schedulerDispatcher);
+
+// Register event handler for RmAppEvents
+rmDispatcher.register(RMAppEventType.class,
+    new ApplicationEventDispatcher(rmContext));
+
+// Register event handler for RmAppAttemptEvents
+rmDispatcher.register(RMAppAttemptEventType.class,
+    new ApplicationAttemptEventDispatcher(rmContext));
+
+// Register event handler for RmNodes
+rmDispatcher.register(
+    RMNodeEventType.class, new NodeEventDispatcher(rmContext));
+......
+rmAppManager = createRMAppManager();
+// Register event handler for RMAppManagerEvents
+rmDispatcher.register(RMAppManagerEventType.class, rmAppManager);
+
+applicationMasterLauncher = createAMLauncher();
+rmDispatcher.register(AMLauncherEventType.class,
+    applicationMasterLauncher);
+addService(applicationMasterLauncher);
+
+```
+
+## 中央异步处理器处理模型
 `AsyncDispatcher` 的设计也是采用生产者-消费者模型，这里的消费者是内部的 `eventHandlingThread` 单线程，生产者是内部的 `GenericEventHandler`， 也就是上文所说的事件放入的入口，当然这里并不是真实的生产者，只是生产者的代理入口。下图是 `AsyncDispatcher` 的生产消费模型。
 
 <div align="center"><img src="/static/images/DistributedSystem/yarn-fsm-and-ed/YarnAsyncDispatcher.jpg" style="width:700px;height:500px;">
 <caption><center> YarnAsyncDispatcher </center></caption></div>
+
+需要注意的是，这里的 EventHandler 其实不一定是一个真实的处理器，他可能只是对某种类型处理器的包装处理器，比如我们有很多的 RMAppImpl 处理器对象，从 `AsyncDispatcher` 的 `register` 接口来看，它只维护某种事件类型和对应事件处理器对象，但是我们知道 RMAppEventType 其实对应了很多个 RMAppImpl 对象的，这样怎么能把对应 RMAppImpl 的事件转发给它处理，显然，可以设计一个包装处理器，它接受 RMAppEeventType事件，但是处理的时候会根据 Event 中的 RMAppID 再次分发给对应的 RMAppImpl 来处理即可。在 Yarn ResourceManager 类中， RMApp，RMAppAttempt，RMNode， ResourceScheduler 都是被包装的，分别是 ApplicationEventDispatcher, ApplicationAttemptEventDispatcher, NodeEventDispatcher， SchedulerEventDispatcher。
+
+这里比较有意思的是， AsyncDispatcher 中的 EventHandler 还可以是一个 AsyncDispatcher， 比如SchedulerEventDispatcher 其实也实现了一个 Dispatcher 的模型。这种结构是可以递归嵌套的，这种代码最好不要嵌套过多，否则影响可读性。
+
+```java
+
+  @Private
+  public static class SchedulerEventDispatcher extends AbstractService
+      implements EventHandler<SchedulerEvent> {
+
+    private final ResourceScheduler scheduler;
+    private final BlockingQueue<SchedulerEvent> eventQueue =
+      new LinkedBlockingQueue<SchedulerEvent>();
+    private volatile int lastEventQueueSizeLogged = 0;
+    private final Thread eventProcessor;
+    private volatile boolean stopped = false;
+    private boolean shouldExitOnError = false;
+
+    public SchedulerEventDispatcher(ResourceScheduler scheduler) {
+      super(SchedulerEventDispatcher.class.getName());
+      this.scheduler = scheduler;
+      this.eventProcessor = new Thread(new EventProcessor());
+      this.eventProcessor.setName("ResourceManager Event Processor");
+    }
+
+    @Override
+    protected void serviceInit(Configuration conf) throws Exception {
+      this.shouldExitOnError =
+          conf.getBoolean(Dispatcher.DISPATCHER_EXIT_ON_ERROR_KEY,
+            Dispatcher.DEFAULT_DISPATCHER_EXIT_ON_ERROR);
+      super.serviceInit(conf);
+    }
+
+    @Override
+    protected void serviceStart() throws Exception {
+      this.eventProcessor.start();
+      super.serviceStart();
+    }
+
+    private final class EventProcessor implements Runnable {
+      @Override
+      public void run() {
+
+        SchedulerEvent event;
+
+        while (!stopped && !Thread.currentThread().isInterrupted()) {
+          try {
+            event = eventQueue.take();
+          } catch (InterruptedException e) {
+            LOG.error("Returning, interrupted : " + e);
+            return; // TODO: Kill RM.
+          }
+
+          try {
+            scheduler.handle(event);
+          } catch (Throwable t) {
+            // An error occurred, but we are shutting down anyway.
+            // If it was an InterruptedException, the very act of 
+            // shutdown could have caused it and is probably harmless.
+            if (stopped) {
+              LOG.warn("Exception during shutdown: ", t);
+              break;
+            }
+            LOG.fatal("Error in handling event type " + event.getType()
+                + " to the scheduler", t);
+            if (shouldExitOnError
+                && !ShutdownHookManager.get().isShutdownInProgress()) {
+              LOG.info("Exiting, bbye..");
+              System.exit(-1);
+            }
+          }
+        }
+      }
+    }
+
+    @Override
+    protected void serviceStop() throws Exception {
+      this.stopped = true;
+      this.eventProcessor.interrupt();
+      try {
+        this.eventProcessor.join();
+      } catch (InterruptedException e) {
+        throw new YarnRuntimeException(e);
+      }
+      super.serviceStop();
+    }
+
+    @Override
+    public void handle(SchedulerEvent event) {
+      try {
+        int qSize = eventQueue.size();
+        if (qSize != 0 && qSize % 1000 == 0
+            && lastEventQueueSizeLogged != qSize) {
+          lastEventQueueSizeLogged = qSize;
+          LOG.info("Size of scheduler event-queue is " + qSize);
+        }
+        int remCapacity = eventQueue.remainingCapacity();
+        if (remCapacity < 1000) {
+          LOG.info("Very low remaining capacity on scheduler event queue: "
+              + remCapacity);
+        }
+        this.eventQueue.put(event);
+      } catch (InterruptedException e) {
+        LOG.info("Interrupted. Trying to exit gracefully.");
+      }
+    }
+  }
+
+  public void handleTransitionToStandBy() {
+    if (rmContext.isHAEnabled()) {
+      try {
+        // Transition to standby and reinit active services
+        LOG.info("Transitioning RM to Standby mode");
+        transitionToStandby(true);
+        adminService.resetLeaderElection();
+        return;
+      } catch (Exception e) {
+        LOG.fatal("Failed to transition RM to Standby mode.");
+        ExitUtil.terminate(1, e);
+      }
+    }
+  }
+
+  @Private
+  public static final class ApplicationEventDispatcher implements
+      EventHandler<RMAppEvent> {
+
+    private final RMContext rmContext;
+
+    public ApplicationEventDispatcher(RMContext rmContext) {
+      this.rmContext = rmContext;
+    }
+
+    @Override
+    public void handle(RMAppEvent event) {
+      ApplicationId appID = event.getApplicationId();
+      RMApp rmApp = this.rmContext.getRMApps().get(appID);
+      if (rmApp != null) {
+        try {
+          rmApp.handle(event);
+        } catch (Throwable t) {
+          LOG.error("Error in handling event type " + event.getType()
+              + " for application " + appID, t);
+        }
+      }
+    }
+  }
+
+  @Private
+  public static final class ApplicationAttemptEventDispatcher implements
+      EventHandler<RMAppAttemptEvent> {
+
+    private final RMContext rmContext;
+
+    public ApplicationAttemptEventDispatcher(RMContext rmContext) {
+      this.rmContext = rmContext;
+    }
+
+    @Override
+    public void handle(RMAppAttemptEvent event) {
+      ApplicationAttemptId appAttemptID = event.getApplicationAttemptId();
+      ApplicationId appAttemptId = appAttemptID.getApplicationId();
+      RMApp rmApp = this.rmContext.getRMApps().get(appAttemptId);
+      if (rmApp != null) {
+        RMAppAttempt rmAppAttempt = rmApp.getRMAppAttempt(appAttemptID);
+        if (rmAppAttempt != null) {
+          try {
+            rmAppAttempt.handle(event);
+          } catch (Throwable t) {
+            LOG.error("Error in handling event type " + event.getType()
+                + " for applicationAttempt " + appAttemptId, t);
+          }
+        }
+      }
+    }
+  }
+
+  @Private
+  public static final class NodeEventDispatcher implements
+      EventHandler<RMNodeEvent> {
+
+    private final RMContext rmContext;
+
+    public NodeEventDispatcher(RMContext rmContext) {
+      this.rmContext = rmContext;
+    }
+
+    @Override
+    public void handle(RMNodeEvent event) {
+      NodeId nodeId = event.getNodeId();
+      RMNode node = this.rmContext.getRMNodes().get(nodeId);
+      if (node != null) {
+        try {
+          ((EventHandler<RMNodeEvent>) node).handle(event);
+        } catch (Throwable t) {
+          LOG.error("Error in handling event type " + event.getType()
+              + " for node " + nodeId, t);
+        }
+      }
+    }
+  }
+```
  
 
-## 服务停止
+## 中央异步处理器服务停止
 `AsyncDispatcher` 在 Yarn 中也属于服务，服务关闭的时候，需要考虑是否清理正在排队的任务或者资源，`drainEventsOnStop` 是用来设置在服务停止的时候，是否将队列中的事件处理完毕再关闭。 如果设置为 true，那么就需要阻塞还在继续发生的事件进入队列 `blockNewEvents`，同时使用同步信号 `waitForDrained` 等待队列中剩余的事件被处理完成。这里需要注意的一点是，队列中的事件处理不一定能够顺利完成，这是不确定的，万一一直处理不完，则一直无法停止服务了，甚至导致无法退出服务进程。因此需要设置超时时间 `DISPATCHER_DRAIN_EVENTS_TIMEOUT`，如果等待事件过长，还是强制退出服务。
 
 ```java
@@ -386,9 +631,9 @@ public void handle(RMAppEvent event) {
       this.writeLock.unlock();
     }
 }
-``` 
+```
 
-InternalStateMachine 调用了 StateMchineFactory 的 doTransition 方法，因为只有工厂才存有 状态机表。
+InternalStateMachine 调用了 StateMchineFactory 的 doTransition 方法，因为只有工厂才存有 状态机表，原因在于某个类的状态机表是该类所有对象共享的代码，工厂在状态机类中的用法也是一个静态成员，并在状态机类加载的时候初始化，然后所有的状态机对象共享该状态机类的方法和状态机表。对于状态机而言，其实他的图结构在编译的时候就定了，但是每个状态机对象其实是处于图中不同的状态，每个状态机对象都关联一个操作对象，并记录当前状态。
 
 ```java
 private class InternalStateMachine
