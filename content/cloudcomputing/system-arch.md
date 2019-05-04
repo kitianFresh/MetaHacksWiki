@@ -15,7 +15,8 @@ date: 2019-04-30 13:50
 SMP 服务器的主要特征是共享，系统中所有资源 (CPU 、内存、 I/O 等 ) 都是共享的。也正是由于这种特征，导致了 SMP 服务器的主要问题，那就是它的扩展能力非常有限。对于 SMP 服务器而言，每一个共享的环节都可能造成 SMP 服务器扩展时的瓶颈，而最受限制的则是内存。由于每个 CPU 必须通过相同的内存总线访问相同的内存资源，因此随着 CPU 数量的增加，内存访问冲突将迅速增加，最终会造成 CPU 资源的浪费，使 CPU 性能的有效性大大降低。实验证明， SMP 服务器 CPU 利用率最好的情况是 2 至 4 个 CPU 。
 
 ## MPP
-多机器共同组成的一个大服务器，更加类似于MapReduce。
+多机器共同组成的一个大服务器，更加类似于MapReduce，实际上这种结构就是MapReduce。只不过起了个名字叫MPP
+
 和 NUMA 不同， MPP 提供了另外一种进行系统扩展的方式，它由多个 SMP 服务器通过一定的节点互联网络进行连接，协同工作，完成相同的任务，从用户的角度来看是一个服务器系统。其基本特征是由多个 SMP 服务器 ( 每个 SMP 服务器称节点 ) 通过节点互联网络连接而成，每个节点只访问自己的本地资源 ( 内存、存储等 ) ，是一种完全无共享 (Share Nothing) 结构，因而扩展能力最好，理论上其扩展无限制，目前的技术可实现 512 个节点互联，数千个 CPU 。目前业界对节点互联网络暂无标准，如 NCR 的 Bynet ， IBM 的 SPSwitch ，它们都采用了不同的内部实现机制。但节点互联网仅供 MPP 服务器内部使用，对用户而言是透明的。
 
 <img src="/static/images/CloudComputing/system-arch/mpp.png" style="width:800px;height:300px;">
@@ -26,12 +27,13 @@ SMP 服务器的主要特征是共享，系统中所有资源 (CPU 、内存、 
 
 MPP (Massively Parallel Processing)，大规模并行处理系统，这样的系统是由许多松耦合的处理单元组成的，要注意的是这里指的是处理单元而不是处理器。每个单元内的CPU都有自己私有的资源，如总线，内存，硬盘等。在每个单元内都有操作系统和管理数据库的实例复本。这种结构最大的特点在于不共享资源
 ## NUMA
+numa 是单个机器的体系结构，而mpp是多机器的。
 <img src="/static/images/CloudComputing/system-arch/numa1.png" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **SMP** </u></font> </center></caption>
 
 ### UMA
 目前的PC可能还是UMA
-<img src="/static/images/CloudComputing/system-arch/uma.png" style="width:800px;height:300px;">
+<img src="/static/images/CloudComputing/system-arch/uma.jpg" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **SMP** </u></font> </center></caption>
 
 
@@ -39,7 +41,7 @@ MPP (Massively Parallel Processing)，大规模并行处理系统，这样的系
 
 目前很多服务器都是NUMA架构
 
-<img src="/static/images/CloudComputing/system-arch/numa.png" style="width:800px;height:300px;">
+<img src="/static/images/CloudComputing/system-arch/numa.jpg" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **SMP** </u></font> </center></caption>
 
 `numactl --hardware` 超过两个Node就是NUMA架构。也可通过 `ls /sys/devices/system/node/`
