@@ -1,0 +1,193 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>system-arch - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#cloudcomputing">cloudcomputing</a>&nbsp;»&nbsp;system-arch</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">system-arch</div>
+<div id="content">
+  <h1 id="_1">服务器体系结构</h1>
+<p>从系统架构来看，目前的商用服务器大体可以分为三类，即对称多处理器结构 (SMP ： Symmetric Multi-Processor) ，非一致存储访问结构 (NUMA ： Non-Uniform Memory Access) ，以及海量并行处理结构 (MPP ： Massive Parallel Processing) 。其中，SMP已经是过去式了，本科计算机组成原理都会以SMP来讲解体系结构，随着云时代的到来，服务器已经步入NUMA时代，知识需要更新一下。</p>
+<h2 id="smp">SMP</h2>
+<p>所谓对称多处理器结构，是指服务器中多个 CPU 对称工作，无主次或从属关系。各 CPU 共享相同的物理内存，每个 CPU 访问内存中的任何地址所需时间是相同的，因此 SMP 也被称为一致存储器访问结构 (UMA ： Uniform Memory Access) 。对 SMP 服务器进行扩展的方式包括增加内存、使用更快的 CPU 、增加 CPU 、扩充 I/O( 槽口数与总线数 ) 以及添加更多的外部设备 ( 通常是磁盘存储 ) 。<br />
+<img src="/static/images/CloudComputing/system-arch/smp.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption></p>
+<p>SMP 服务器的主要特征是共享，系统中所有资源 (CPU 、内存、 I/O 等 ) 都是共享的。也正是由于这种特征，导致了 SMP 服务器的主要问题，那就是它的扩展能力非常有限。对于 SMP 服务器而言，每一个共享的环节都可能造成 SMP 服务器扩展时的瓶颈，而最受限制的则是内存。由于每个 CPU 必须通过相同的内存总线访问相同的内存资源，因此随着 CPU 数量的增加，内存访问冲突将迅速增加，最终会造成 CPU 资源的浪费，使 CPU 性能的有效性大大降低。实验证明， SMP 服务器 CPU 利用率最好的情况是 2 至 4 个 CPU 。</p>
+<h2 id="mpp">MPP</h2>
+<p>多机器共同组成的一个大服务器，更加类似于MapReduce。<br />
+和 NUMA 不同， MPP 提供了另外一种进行系统扩展的方式，它由多个 SMP 服务器通过一定的节点互联网络进行连接，协同工作，完成相同的任务，从用户的角度来看是一个服务器系统。其基本特征是由多个 SMP 服务器 ( 每个 SMP 服务器称节点 ) 通过节点互联网络连接而成，每个节点只访问自己的本地资源 ( 内存、存储等 ) ，是一种完全无共享 (Share Nothing) 结构，因而扩展能力最好，理论上其扩展无限制，目前的技术可实现 512 个节点互联，数千个 CPU 。目前业界对节点互联网络暂无标准，如 NCR 的 Bynet ， IBM 的 SPSwitch ，它们都采用了不同的内部实现机制。但节点互联网仅供 MPP 服务器内部使用，对用户而言是透明的。</p>
+<p><img src="/static/images/CloudComputing/system-arch/mpp.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption><br />
+　　在 MPP 系统中，每个 SMP 节点也可以运行自己的操作系统、数据库等。但和 NUMA 不同的是，它不存在异地内存访问的问题。换言之，每个节点内的 CPU 不能访问另一个节点的内存。节点之间的信息交互是通过节点互联网络实现的，这个过程一般称为数据重分配 (Data Redistribution) 。</p>
+<p>但是 MPP 服务器需要一种复杂的机制来调度和平衡各个节点的负载和并行处理过程。目前一些基于 MPP 技术的服务器往往通过系统级软件 ( 如数据库 ) 来屏蔽这种复杂性。举例来说， NCR 的 Teradata 就是基于 MPP 技术的一个关系数据库软件，基于此数据库来开发应用时，不管后台服务器由多少个节点组成，开发人员所面对的都是同一个数据库系统，而不需要考虑如何调度其中某几个节点的负载。</p>
+<p>MPP (Massively Parallel Processing)，大规模并行处理系统，这样的系统是由许多松耦合的处理单元组成的，要注意的是这里指的是处理单元而不是处理器。每个单元内的CPU都有自己私有的资源，如总线，内存，硬盘等。在每个单元内都有操作系统和管理数据库的实例复本。这种结构最大的特点在于不共享资源</p>
+<h2 id="numa">NUMA</h2>
+<p><img src="/static/images/CloudComputing/system-arch/numa1.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption></p>
+<h3 id="uma">UMA</h3>
+<p>目前的PC可能还是UMA<br />
+<img src="/static/images/CloudComputing/system-arch/uma.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption></p>
+<h3 id="uma_1">UMA</h3>
+<p>目前很多服务器都是NUMA架构</p>
+<p><img src="/static/images/CloudComputing/system-arch/numa.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption></p>
+<p><code>numactl --hardware</code> 超过两个Node就是NUMA架构。也可通过 <code>ls /sys/devices/system/node/</code></p>
+<div class="hlcode"><pre><span class="n">available</span><span class="o">:</span> <span class="mi">2</span> <span class="n">nodes</span> <span class="o">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="o">)</span>
+<span class="n">node</span> <span class="mi">0</span> <span class="n">cpus</span><span class="o">:</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">8</span> <span class="mi">9</span> <span class="mi">10</span> <span class="mi">11</span> <span class="mi">24</span> <span class="mi">25</span> <span class="mi">26</span> <span class="mi">27</span> <span class="mi">28</span> <span class="mi">29</span> <span class="mi">30</span> <span class="mi">31</span> <span class="mi">32</span> <span class="mi">33</span> <span class="mi">34</span> <span class="mi">35</span>
+<span class="n">node</span> <span class="mi">0</span> <span class="n">size</span><span class="o">:</span> <span class="mi">97901</span> <span class="n">MB</span>
+<span class="n">node</span> <span class="mi">0</span> <span class="n">free</span><span class="o">:</span> <span class="mi">41016</span> <span class="n">MB</span>
+<span class="n">node</span> <span class="mi">1</span> <span class="n">cpus</span><span class="o">:</span> <span class="mi">12</span> <span class="mi">13</span> <span class="mi">14</span> <span class="mi">15</span> <span class="mi">16</span> <span class="mi">17</span> <span class="mi">18</span> <span class="mi">19</span> <span class="mi">20</span> <span class="mi">21</span> <span class="mi">22</span> <span class="mi">23</span> <span class="mi">36</span> <span class="mi">37</span> <span class="mi">38</span> <span class="mi">39</span> <span class="mi">40</span> <span class="mi">41</span> <span class="mi">42</span> <span class="mi">43</span> <span class="mi">44</span> <span class="mi">45</span> <span class="mi">46</span> <span class="mi">47</span>
+<span class="n">node</span> <span class="mi">1</span> <span class="n">size</span><span class="o">:</span> <span class="mi">98304</span> <span class="n">MB</span>
+<span class="n">node</span> <span class="mi">1</span> <span class="n">free</span><span class="o">:</span> <span class="mi">31863</span> <span class="n">MB</span>
+<span class="n">node</span> <span class="n">distances</span><span class="o">:</span>
+<span class="n">node</span>   <span class="mi">0</span>   <span class="mi">1</span>
+  <span class="mi">0</span><span class="o">:</span>  <span class="mi">10</span>  <span class="mi">21</span>
+  <span class="mi">1</span><span class="o">:</span>  <span class="mi">21</span>  <span class="mi">10</span>
+</pre></div>
+
+
+<p><code>lscpu</code>，</p>
+<div class="hlcode"><pre><span class="n">Architecture</span><span class="o">:</span>          <span class="n">x86_64</span>
+<span class="n">CPU</span> <span class="n">op</span><span class="o">-</span><span class="n">mode</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>        <span class="mi">32</span><span class="o">-</span><span class="n">bit</span><span class="o">,</span> <span class="mi">64</span><span class="o">-</span><span class="n">bit</span>
+<span class="n">Byte</span> <span class="n">Order</span><span class="o">:</span>            <span class="n">Little</span> <span class="n">Endian</span>
+<span class="n">CPU</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>                <span class="mi">48</span>
+<span class="n">On</span><span class="o">-</span><span class="n">line</span> <span class="n">CPU</span><span class="o">(</span><span class="n">s</span><span class="o">)</span> <span class="n">list</span><span class="o">:</span>   <span class="mi">0</span><span class="o">-</span><span class="mi">47</span>
+<span class="n">Thread</span><span class="o">(</span><span class="n">s</span><span class="o">)</span> <span class="n">per</span> <span class="n">core</span><span class="o">:</span>    <span class="mi">2</span>
+<span class="n">Core</span><span class="o">(</span><span class="n">s</span><span class="o">)</span> <span class="n">per</span> <span class="n">socket</span><span class="o">:</span>    <span class="mi">12</span>
+<span class="n">Socket</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>             <span class="mi">2</span>
+<span class="n">NUMA</span> <span class="n">node</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>          <span class="mi">2</span>
+<span class="n">Vendor</span> <span class="n">ID</span><span class="o">:</span>             <span class="n">GenuineIntel</span>
+<span class="n">CPU</span> <span class="n">family</span><span class="o">:</span>            <span class="mi">6</span>
+<span class="n">Model</span><span class="o">:</span>                 <span class="mi">79</span>
+<span class="n">Model</span> <span class="n">name</span><span class="o">:</span>            <span class="n">Intel</span><span class="o">(</span><span class="n">R</span><span class="o">)</span> <span class="n">Xeon</span><span class="o">(</span><span class="n">R</span><span class="o">)</span> <span class="n">CPU</span> <span class="n">E5</span><span class="o">-</span><span class="mi">2650</span> <span class="n">v4</span> <span class="err">@</span> <span class="mf">2.20</span><span class="n">GHz</span>
+<span class="n">Stepping</span><span class="o">:</span>              <span class="mi">1</span>
+<span class="n">CPU</span> <span class="n">MHz</span><span class="o">:</span>               <span class="mf">2499.921</span>
+<span class="n">CPU</span> <span class="n">max</span> <span class="n">MHz</span><span class="o">:</span>           <span class="mf">2900.0000</span>
+<span class="n">CPU</span> <span class="n">min</span> <span class="n">MHz</span><span class="o">:</span>           <span class="mf">1200.0000</span>
+<span class="n">BogoMIPS</span><span class="o">:</span>              <span class="mf">4389.99</span>
+<span class="n">Virtualization</span><span class="o">:</span>        <span class="n">VT</span><span class="o">-</span><span class="n">x</span>
+<span class="n">L1d</span> <span class="n">cache</span><span class="o">:</span>             <span class="mi">32</span><span class="n">K</span>              <span class="err">#数据缓存</span>
+<span class="n">L1i</span> <span class="n">cache</span><span class="o">:</span>             <span class="mi">32</span><span class="n">K</span>          <span class="err">#指令缓存</span> <span class="err">数据和指令分开缓存，属于冯诺依曼</span><span class="o">+</span><span class="err">哈佛体系结构</span>
+<span class="n">L2</span> <span class="n">cache</span><span class="o">:</span>              <span class="mi">256</span><span class="n">K</span>
+<span class="n">L3</span> <span class="n">cache</span><span class="o">:</span>              <span class="mi">30720</span><span class="n">K</span>
+<span class="n">NUMA</span> <span class="n">node0</span> <span class="n">CPU</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>     <span class="mi">0</span><span class="o">-</span><span class="mi">11</span><span class="o">,</span><span class="mi">24</span><span class="o">-</span><span class="mi">35</span>
+<span class="n">NUMA</span> <span class="n">node1</span> <span class="n">CPU</span><span class="o">(</span><span class="n">s</span><span class="o">):</span>     <span class="mi">12</span><span class="o">-</span><span class="mi">23</span><span class="o">,</span><span class="mi">36</span><span class="o">-</span><span class="mi">47</span>
+</pre></div>
+
+
+<ul>
+<li>Socket就是主板上的CPU插槽;</li>
+<li>Core就是socket里独立的一组程序执行的硬件单元，比如寄存器，计算单元等;</li>
+<li>Thread：就是超线程hyperthread的概念，逻辑的执行单元，独立的执行上下文，但是共享core内的寄存器和计算单元</li>
+<li></li>
+</ul>
+<p>NUMA体系结构中多了Node的概念，这个概念其实是用来解决core的分组的问题，具体参见下图来理解（图中的OS CPU可以理解thread，那么core就没有在图中画出），从图中可以看出每个Socket里有两个node，共有4个socket，每个socket 2个node，每个node中有8个thread，总共4（Socket）× 2（Node）× 8 （4core × 2 Thread） = 64个thread</p>
+<p><img src="/static/images/CloudComputing/system-arch/numa-node-group.png" style="width:800px;height:300px;"><br />
+<caption><center><u> <font color="purple"> <strong>SMP</strong> </u></font> </center></caption></p>
+<p><a href="http://fibrevillage.com/sysadmin/534-numactl-installation-and-examples">numactl installation and examples</a></p>
+<p><a href="https://software.intel.com/en-us/articles/optimizing-applications-for-numa">Optimizing Applications for NUMA</a></p>
+<p><a href="http://cenalulu.github.io/linux/numa/">NUMA架构的CPU -- 你真的用好了么？</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/linux/l-numa/index.html">Linux 的 NUMA 技术</a></p>
+<h2 id="k8s-numa-manager">k8s numa manager</h2>
+<p><a href="https://github.com/kubernetes/community/blob/4793277c981e7c7a5d9cbf1b2ab1003fc68384d3/contributors/design-proposals/node/numa-manager.md#new-component-numa-manager">NUMA Manager Proposal</a></p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-04-30 13:50 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'system-arch',
+  title: 'system-arch',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
