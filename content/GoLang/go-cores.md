@@ -27,6 +27,9 @@ date: 2018-04-22 18:06
  - 没有函数修饰
  - 没有线程局部存储
 
+# Go Core Syntax
+-[深度解密Go语言之关于 interface 的10个问题](https://gocn.vip/article/1717)
+
 # Go Concurrency
 ## Communication by Channel without Locks
 一个channel有发送和接受两个主要操作，都是通信行为。一个发送语句将一个值从一个goroutine通过channel发送到另一个执行接收操作的goroutine。

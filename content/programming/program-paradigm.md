@@ -17,7 +17,7 @@ IOC(Iversion-of-Control) 控制反转，Martin Fowler 关于IOC的理解。
 
 但是这种方式耦合度过高。比如是A依赖某个B接口，特别是在框架中运行的代码，如果你不断的添加新的实现接口B的类，那每一次你可能得重新编译整个框架和你的代码，而不是仅仅编译你自己的代码，这在这个框架横行的时代是不可能的。也就是说，我们希望B不是在编译时被注入的，而是在运行时注入的。那这个时候，你只能把这种任务交给框架或者说DI容器来处理了。下图是 DI 包含的各种类型。
 
-<img src="/static/images/AComputingThinking/program-paradigm/di-types.JPG" style="width:800px;height:300px;">
+<img src="/static/images/Programming/program-paradigm/di-types.JPG" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **DI** </u></font> </center></caption>
 
 
@@ -36,7 +36,7 @@ AOP(Aspect-oriented programming), 面向切面编程，这个概念是应该是�
 
 上面可能无法理解，但是如果学习过Python的装饰器的话，就容易理解了，其实Python装饰器就是切面编程的一种具体实现。在需要用到装饰器的切面，插入即可。例如，Web应用中，会写多个WebHandler类来处理不同的业务逻辑，你可以把这些类看成纵向的，然后他们在处理某个请求的开始，有一个共同的部分，请求验证。但是有些请求又不一定需要验证，那么，就可以在该切面插入验证逻辑代码。这也是切面的名称由来吧。在Python里面这个功能相当简单，只需要加入验证装饰器接口。
 
-<img src="/static/images/AComputingThinking/program-paradigm/aop-example.png" style="width:800px;height:300px;">
+<img src="/static/images/Programming/program-paradigm/aop-example.png" style="width:800px;height:300px;">
 <caption><center><u> <font color="purple"> **AOP-EXMAPLE** </u></font> </center></caption>
 
 本质上来说，和[Python里面的装饰器](http://blog.hacksmeta.com/2017/04/24/python-decorator-1/#more)类似，都是为了复用代码，而且是动态的插入代码来执行，可以说Python装饰器是AOP思想的一种具体实现方式之一。

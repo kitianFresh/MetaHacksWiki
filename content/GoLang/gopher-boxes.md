@@ -42,3 +42,8 @@ Jupyter 目前支持多种语言的内核，使得我们可以像学习Python这
  - [Golang libraries for data science](https://www.mjhall.org/golang-data-science-libraries/)
  - [Understanding Tensorflow using Go](https://pgaleone.eu/tensorflow/go/2017/05/29/understanding-tensorflow-using-go/)
 
+
+# Go ORM
+
+## 参考
+-[Golang, ORMs, and why I am still not using one.](http://www.hydrogen18.com/blog/golang-orms-and-why-im-still-not-using-one.html)
