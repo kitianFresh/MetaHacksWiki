@@ -53,3 +53,20 @@ Channel还支持close操作，用于关闭channel，随后对基于该channel的
 
 # Go core concepts diff
  - [Go core diffs](https://www.godesignpatterns.com/)
+
+
+# Go pro & con
+- [Golang Pros and Cons for DevOps (Part 1 of 6): Goroutines, Panics, and Errors](https://www.bluematador.com/blog/golang-pros-cons-for-devops-part-1-goroutines-panics-errors)
+- [GO IS AMAZING, SO HERE'S WHAT I DON'T LIKE ABOUT IT](https://www.evilsocket.net/2018/03/14/Go-is-amazing-so-here-s-what-i-don-t-like-about-it/)
+
+
+# c and go
+- [C-for-Go, a Full-Featured Bindings Generator Allowing Use of Any C/C++ Library Within Golang](https://www.sphereinc.com/c-for-go-a-full-featured-bindings-generator-allowing-use-of-any-cc-library-within-golang/)
+- [Calling C++ Code From Go With SWIG](http://zacg.github.io/blog/2013/06/06/calling-c-plus-plus-code-from-go-with-swig/)
+- [C and Go – Dealing with void* parameters in cgo](https://jamesadam.me/2016/03/26/c-and-go-dealing-with-void-parameters-in-cgo/)
+
+# 死锁
+- [通过golang goroutine stack分析死锁问题](http://xiaorui.cc/2018/04/16/%E9%80%9A%E8%BF%87golang-goroutine-stack%E5%88%86%E6%9E%90%E6%AD%BB%E9%94%81%E9%97%AE%E9%A2%98/)
+
+- [Go Database/SQL](https://mindbowser.com/golang-go-database-sql/)
+- [What is SQL injection and how do I avoid it in Go?](https://www.calhoun.io/what-is-sql-injection-and-how-do-i-avoid-it-in-go/)

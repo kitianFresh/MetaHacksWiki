@@ -9,7 +9,7 @@ Yarn 整个框架代码都建立在状态机和事件驱动的模型之上，
 
 ## Finite State Machine
 
-![Finite-State Machines: Theory and Implementation](https://gamedevelopment.tutsplus.com/tutorials/finite-state-machines-theory-and-implementation--gamedev-11867)
+- [Finite-State Machines: Theory and Implementation](https://gamedevelopment.tutsplus.com/tutorials/finite-state-machines-theory-and-implementation--gamedev-11867)
 
 ## Event-Driven System
 

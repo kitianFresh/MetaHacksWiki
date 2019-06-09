@@ -40,6 +40,8 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourNewPass';
 insert into mysql.user(Host,User,Password) values("localhost","cron",password("cron"));
 flush privileges;
 ```
+以上方法过时了。。。采用
+`CREATE USER 'cron'@'localhost' IDENTIFIED BY 'cron';`
 授权
 ```sql
 create database cron;
@@ -47,6 +49,17 @@ grant all privileges on cron.* to cron@localhost identified by 'cron';
 # grant select,update on cron.xxx, cron.yyy to cron@localhost identified by 'cron(password)';
 flush privileges;
 ```
+以上方法不对，去掉后面的 identified by 
+
+json invalid character ':' after top-level value
+json 字符串紧密相连，不能出现其他多余空格
+
+ERROR 3140 (22032) at line 20: Invalid JSON text: The document root must not be followed by other values. at position 8 in value for column clusters.master.
+```sql
+'{"master":{"apiserver":{"leader":"","logdir":"","nodes":[]},"controllermanager":{"leader":"gh-inf-hulkqa-kubecontroller-test01.corp.sankuai.com","logdir":"","nodes":[]},"etcd":{"leader":"","logdir":"","nodes":[]},"scheduler":{"leader":"gh-inf-hulkqa-kubescheduler-test01.corp.sankuai.com","logdir":"","nodes":[]}}}'
+```
+第二，json字符串在mysql插入的时候，比如是'{}'在最外层
+
 
 # MySQL 表定义范例
 用于爬取 [icd10data](http://www.icd10data.com/ICD10CM/Codes) 中的数据，mysql 数据库模式如下：

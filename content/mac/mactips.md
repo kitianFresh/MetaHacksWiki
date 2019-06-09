@@ -108,6 +108,10 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourNewPass';
 [iTerm2-Color-Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes) 里面有很多款不同的主题，按照教程配置主题即可。背景色透明直接在 iTerm2-->Preferences-->Profiles-->Window-->Transparency中自行调节。
 最后，还需要将下面的脚本粘贴到 `~/.bash_profile` 配置文件中，并执行 `source ~/.bash_profile` 使其生效即可。主要是配置`ls` 命令的显示。
 
+主题[draculatheme](https://draculatheme.com/iterm/)不错。
+
+
+
 command+alt+t 即可唤出 ITerm2 终端。
 ```bash
 export CLICOLOR=1
@@ -152,6 +156,7 @@ Remove dead screens with 'screen -wipe'.
 
 
 ## 配置 tmux
+`brew install tmux`
 
 Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意思。 
 
@@ -163,6 +168,27 @@ Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意
 
 另外， tmux new -s session\_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session\_name 恢复某个会话。
 
+- [tmux-主题](https://github.com/gpakosz/.tmux)
+
+
+## oh my zsh
+`sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"`
+
+- [A Zsh prompt for Astronauts]()
+
+卸载
+uninstall_oh_my_zsh
+
+如果想要更换终端登录的时候使用的shell，不使用oh my zsh, 而是bash，可以使用`chsh -s /bin/bash qi`
+```bash
+# chsh
+
+  Change user's login shell.
+
+- Change shell:
+
+  chsh -s path/to/shell_binary username
+```
 
 ## MAC 安装 lightgbm 出现问题
 可能是mac gcc 的原因，最好在编译的时候指定编译器, `-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/g++-8`
