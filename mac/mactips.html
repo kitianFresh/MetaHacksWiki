@@ -75,6 +75,7 @@
 <li><a href="#iterm2">iTerm2</a></li>
 <li><a href="#screen">screen 使用简介</a></li>
 <li><a href="#tmux">配置 tmux</a></li>
+<li><a href="#oh-my-zsh">oh my zsh</a></li>
 <li><a href="#mac-lightgbm">MAC 安装 lightgbm 出现问题</a></li>
 </ul>
 </li>
@@ -177,6 +178,7 @@ In order to connect to MySQL using command line client, do the following from OS
 <p><a href="https://www.iterm2.com/">iTerm2</a> 直接到官网下载并安装即可. 这里说一下配置iTerm2主题颜色以及背景透明。让你的shell色彩斑斓，提高文字区分度。<br />
 <a href="https://github.com/mbadolato/iTerm2-Color-Schemes">iTerm2-Color-Schemes</a> 里面有很多款不同的主题，按照教程配置主题即可。背景色透明直接在 iTerm2--&gt;Preferences--&gt;Profiles--&gt;Window--&gt;Transparency中自行调节。<br />
 最后，还需要将下面的脚本粘贴到 <code>~/.bash_profile</code> 配置文件中，并执行 <code>source ~/.bash_profile</code> 使其生效即可。主要是配置<code>ls</code> 命令的显示。</p>
+<p>主题<a href="https://draculatheme.com/iterm/">draculatheme</a>不错。</p>
 <p>command+alt+t 即可唤出 ITerm2 终端。</p>
 <div class="hlcode"><pre><span class="nb">export </span><span class="nv">CLICOLOR</span><span class="o">=</span>1
 <span class="nb">export </span><span class="nv">LSCOLORS</span><span class="o">=</span>gxfxcxdxbxegedabagacad
@@ -238,11 +240,33 @@ In order to connect to MySQL using command line client, do the following from OS
 <li>Run <code>script /dev/null</code> to own the shell (more info over at Server Fault); then try screen again.</li>
 </ol>
 <h2 id="tmux">配置 tmux</h2>
+<p><code>brew install tmux</code></p>
 <p>Tmux 是 Terminal multiplexer 的缩写， 其实就是 终端可以复用的意思。 </p>
 <p>场景就是，第一种是在本地电脑，你打开了好几个terminal， 每一个terminal由当前的工作环境， 然后这个时候没电了或者你电脑关机了，那么这些terminal的工作状态就没有了。如果使用tmux记录下来，那么这些terminal下次还可以继续使用，并且恢复到关闭时的状态。</p>
 <p>第二种就是 ssh 登陆到远程主机， 然后ssh 基本上很容易断开，一般使用 nohup &amp; 在后台运行命令， 但是如果使用 tmux， 就可以记录下来，关闭了也没关系，还可以再次恢复。</p>
 <p>执行 tmux -CC 之后会开启一个 session， tmux -CC 默认会以数字编号命名一个回话session， 并开启一个新的iterm窗口，在这个窗口即回话下面， 使用 command+T 可以创建多个窗口（注意不是command + D, 也不是 command + N）， 原来 tmux -CC 创建的窗口会阻塞，可以通过 esc 退出， 然后再通过 tmux -CC attach 恢复， 但是 tmux attach 恢复出来是窗口叠加在一起的， 加 CC 参才会原样恢复。</p>
 <p>另外， tmux new -s session_name, 可以给一个session起名字， 以后可以使用 tmux attach -t session_name 恢复某个会话。</p>
+<ul>
+<li><a href="https://github.com/gpakosz/.tmux">tmux-主题</a></li>
+</ul>
+<h2 id="oh-my-zsh">oh my zsh</h2>
+<p><code>sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"</code></p>
+<ul>
+<li><a href="">A Zsh prompt for Astronauts</a></li>
+</ul>
+<p>卸载<br />
+uninstall_oh_my_zsh</p>
+<p>如果想要更换终端登录的时候使用的shell，不使用oh my zsh, 而是bash，可以使用<code>chsh -s /bin/bash qi</code></p>
+<div class="hlcode"><pre><span class="c"># chsh</span>
+
+  Change user<span class="err">&#39;</span>s login shell.
+
+- Change shell:
+
+  chsh -s path/to/shell_binary username
+</pre></div>
+
+
 <h2 id="mac-lightgbm">MAC 安装 lightgbm 出现问题</h2>
 <p>可能是mac gcc 的原因，最好在编译的时候指定编译器, <code>-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/8.1.0/bin/g++-8</code></p>
 <div class="hlcode"><pre>brew install cmake  

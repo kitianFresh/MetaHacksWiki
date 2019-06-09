@@ -113,7 +113,9 @@
 </pre></div>
 
 
-<p>授权</p>
+<p>以上方法过时了。。。采用<br />
+<code>CREATE USER 'cron'@'localhost' IDENTIFIED BY 'cron';</code><br />
+授权</p>
 <div class="hlcode"><pre><span class="k">create</span> <span class="k">database</span> <span class="n">cron</span><span class="p">;</span>
 <span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron&#39;</span><span class="p">;</span>
 <span class="o">#</span> <span class="k">grant</span> <span class="k">select</span><span class="p">,</span><span class="k">update</span> <span class="k">on</span> <span class="n">cron</span><span class="p">.</span><span class="n">xxx</span><span class="p">,</span> <span class="n">cron</span><span class="p">.</span><span class="n">yyy</span> <span class="k">to</span> <span class="n">cron</span><span class="o">@</span><span class="n">localhost</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;cron(password)&#39;</span><span class="p">;</span>
@@ -121,6 +123,15 @@
 </pre></div>
 
 
+<p>以上方法不对，去掉后面的 identified by </p>
+<p>json invalid character ':' after top-level value<br />
+json 字符串紧密相连，不能出现其他多余空格</p>
+<p>ERROR 3140 (22032) at line 20: Invalid JSON text: The document root must not be followed by other values. at position 8 in value for column clusters.master.</p>
+<div class="hlcode"><pre><span class="s1">&#39;{&quot;master&quot;:{&quot;apiserver&quot;:{&quot;leader&quot;:&quot;&quot;,&quot;logdir&quot;:&quot;&quot;,&quot;nodes&quot;:[]},&quot;controllermanager&quot;:{&quot;leader&quot;:&quot;gh-inf-hulkqa-kubecontroller-test01.corp.sankuai.com&quot;,&quot;logdir&quot;:&quot;&quot;,&quot;nodes&quot;:[]},&quot;etcd&quot;:{&quot;leader&quot;:&quot;&quot;,&quot;logdir&quot;:&quot;&quot;,&quot;nodes&quot;:[]},&quot;scheduler&quot;:{&quot;leader&quot;:&quot;gh-inf-hulkqa-kubescheduler-test01.corp.sankuai.com&quot;,&quot;logdir&quot;:&quot;&quot;,&quot;nodes&quot;:[]}}}&#39;</span>
+</pre></div>
+
+
+<p>第二，json字符串在mysql插入的时候，比如是'{}'在最外层</p>
 <h1 id="mysql_1">MySQL 表定义范例</h1>
 <p>用于爬取 <a href="http://www.icd10data.com/ICD10CM/Codes">icd10data</a> 中的数据，mysql 数据库模式如下：</p>
 <div class="hlcode"><pre><span class="k">drop</span> <span class="k">database</span> <span class="n">if</span> <span class="k">exists</span> <span class="o">`</span><span class="n">icdInfo</span><span class="o">`</span><span class="p">;</span>

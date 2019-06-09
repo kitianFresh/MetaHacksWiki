@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>k8s-list-watch - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#cloudcomputing">cloudcomputing</a>&nbsp;»&nbsp;k8s-list-watch</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">k8s-list-watch</div>
+<div id="content">
+  <p>k8s 组件通讯整个基于 List-Watch 的异步消息机制，这个机制主要得益于 etcd 和 http 长连接。保证了数据的一致性，实时性，和稳定性。我比较欣赏的地方就是，k8s 不引入哪些什么消息中间件，就可以实现一套比较稳定的异步消息系统，完全自己撸代码的特点，当然这也得益于 etcd 这个重要组件。这样，你的系统才更加干净，如果是 openstack 就非常复杂，光上手都没法上手起来，OpenStack或许在公有云还有它的一席之地，但我觉得未来属于 k8s。</p>
+<p>下图可以看到，唯一和 etcd 打交道的组件就是 apiserver，其他都是通过 list-watch 机制和 apiserver 交互，controllermanager/scheduler 都会及时收到watch资源的变化，从而及时响应，比如控制和调度。</p>
+<p>这个设计和 yarn 完全不同，yarn 的组件通讯非常原始，采用的是 心跳包， 数据的变化（删除、更新、添加）全部和心跳数据耦合在一起传递的。比如调度器调度一个 task，其实不是调度器主动监听到的变化，而是 NodeManager 发来心跳包给 ResourceManager，而后通知调度器，心跳决定了这个消息的延迟。这主要是两者面向的场景不同，yarn 采用这种机制并不会影响调度器的性能，因为在大数据场景下，运行的都是离线任务，重点关注的是尽快执行完，而不是尽快调度完，他不需要很快及时的调度完成。更详细的原因，见我在另一篇<a href="http://wiki.hacksmeta.com/distributedsystem/mapred-v1-scheduler.html">mapred-v1-scheduler</a>上的记录.</p>
+<blockquote>
+<p>是节点向 <code>JobTracker</code> 申请 <code>Task</code>，而不是任务被提交后就可以立即由调度器进行调度分配，Hadoop 采用这种模式，我认为主要是因为第一，离线任务都属于耗时任务，任务提交后排队延迟和调度时间相对于任务本身执行时间忽略不计, 不关注调度时间，关注的是任务本身执行时间和任务之间的协同。而像公有云虚拟机调度，是希望调度能够立即响应出分配策略的，因此采用了主控制器主动分配给某个Host节点，而不是由Host节点主动通过心跳包拉取可分配的任务(创建虚拟机，相对来说创建虚拟机是比较快的，基本在几分钟左右，容器则更快，几十秒即可); 第二， <code>JobTracker</code> 和 <code>TaskTracker</code> 之间是通过 RPC 协议通讯的，这里 <code>JobTracker</code> 对于 <code>TaskTracker</code> 来说，扮演的其实是服务器的角色。<code>JobTracker</code> 不会去主动调用 <code>TaskTracker</code>。</p>
+</blockquote>
+<p>对于 k8s，调度的是容器pod，目前应用场景大部分都是需要快速扩缩容的，必须调度快。目前 k8s 的批调度器比如 <code>kube-batch</code> 以及 机器学习控制 <code>kube-flow</code>, 大数据 <code>spark on kubernetes</code> 都在开发中，我认为将来肯定是统一的平台来运行不同类型的工作负载。</p>
+<p>两者都是基于事件驱动的设计，但是 yarn 耦合了状态机的设计模式，yarn的代码还是比较复杂的，尤其是里面复杂的状态机代码，看懂了它里面状态机的设计，你才有可能去看它里面其他的代码逻辑，k8s社区并不对资源对象做状态机设计。</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-05-26 17:22 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'k8s-list-watch',
+  title: 'k8s-list-watch',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

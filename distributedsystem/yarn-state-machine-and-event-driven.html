@@ -63,7 +63,9 @@
   <h1 id="event-driven-state-machine">Event-Driven State Machine</h1>
 <p>Yarn 整个框架代码都建立在状态机和事件驱动的模型之上，</p>
 <h2 id="finite-state-machine">Finite State Machine</h2>
-<p><img alt="Finite-State Machines: Theory and Implementation" src="https://gamedevelopment.tutsplus.com/tutorials/finite-state-machines-theory-and-implementation--gamedev-11867" /></p>
+<ul>
+<li><a href="https://gamedevelopment.tutsplus.com/tutorials/finite-state-machines-theory-and-implementation--gamedev-11867">Finite-State Machines: Theory and Implementation</a></li>
+</ul>
 <h2 id="event-driven-system">Event-Driven System</h2>
 <p>处理请Ⅾ 会作为事件进入系统， 由中央异步调度器（ AsyncDispatcher） 负责传递给相应事件调度器（ Event Handler）。 该事件调度器可能将该事件转发另外一个事件调度器， 也可能交给一个带有有限状态机的事件处理器，其处理结果也以事件的形式输出给中央异步调度器。 而新的事件会再次被中央异步调度器转发给下一个事件调度器，直到处理完成。</p>
 <h1 id="yarn-event-driven">Yarn Event-Driven</h1>
