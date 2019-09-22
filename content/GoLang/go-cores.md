@@ -50,6 +50,7 @@ Channel还支持close操作，用于关闭channel，随后对基于该channel的
  - [Why you can have millions of Goroutines but only thousands of Java Threads](https://rcoh.me/posts/why-you-can-have-a-million-go-routines-but-only-1000-java-threads/)
  - [GoLang vs Python: deep dive into the concurrency](https://made2591.github.io/posts/go-py-benchmark)
  - [Multi-Core Parallel Programming in Go](http://www.ualr.edu/pxtang/papers/acc10.pdf)
+ - [Visualizing Concurrency in Go](https://divan.dev/posts/go_concurrency_visualize/)
 
 # Go core concepts diff
  - [Go core diffs](https://www.godesignpatterns.com/)
@@ -70,3 +71,8 @@ Channel还支持close操作，用于关闭channel，随后对基于该channel的
 
 - [Go Database/SQL](https://mindbowser.com/golang-go-database-sql/)
 - [What is SQL injection and how do I avoid it in Go?](https://www.calhoun.io/what-is-sql-injection-and-how-do-i-avoid-it-in-go/)
+
+# Go Scheduler
+- [Scheduling In Go : Part I - OS Scheduler](https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html)
+- [Scheduling In Go : Part II - Go Scheduler](https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html)
+- [Scheduling In Go : Part III - Concurrency](https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html)

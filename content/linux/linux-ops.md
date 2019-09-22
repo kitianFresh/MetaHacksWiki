@@ -281,3 +281,8 @@ json: -d '{"key1":"value1", "key2":"value2"}' or -d @data.json
 
 
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded"  -d "user_id=2&rest_id=2&score=5&comments=shit" http://localhost:9090/Yelper/reviews
+
+
+
+# ldd
+ldd /usr/local/bin/fio
