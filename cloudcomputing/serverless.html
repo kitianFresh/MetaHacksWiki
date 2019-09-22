@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>serverless - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#cloudcomputing">cloudcomputing</a>&nbsp;»&nbsp;serverless</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">serverless</div>
+<div id="content">
+  <h1 id="serverless">什么是 Serverless</h1>
+<p>和软件领域很多新趋势一样，Serverless 目前还没有一个清晰的定义。对于初学者而言，可以认为它包含两个不同但是又有重合的领域：<br />
+1. Serverless 首先用来描述那些 完全集成第三方云上托管的服务 来完成服务端代码逻辑和管理状态 的应用。这些应用通常被称为 “富客户端” 应用，比如 单页WebAPP，移动App，他们都是通过直接调用庞大的云上生态体系服务来完成开发，像数据库（比如Parse，Firebase），认证服务（比如Auth0, AWS Cognito）等等。这些类型的服务再过去一直被描述为 “(Mobile) Backend as a Service”, 在文章后续部分我会使用 BaaS 来指代它。<br />
+2. Serverless 也可以指代这样一类应用，它们仍然由应用开发者编写服务端逻辑，但不同于传统架构运行并且托管在服务器（物理机虚拟机）上，而是运行在无状态的容器中，这些容器实例通过事件触发而短暂运行（比如仅仅是一次函数调用，运行完毕以后就会销毁），并且通常完全由第三方管理，使用者无需关系这些容器的生命周期以及资源情况。这就是所谓的 “Function as a Service” 或者说 “FaaS”</p>
+<p>在这篇文章中，我们主要聚焦于 FaaS。 不仅仅是因为Serverless更新并且有更多宣传和炒作，更是因为它对于我们思考技术架构有巨大差异。</p>
+<h2 id="_1">一组小例子</h2>
+<h3 id="ui">UI 驱动的应用</h3>
+<h3 id="_2">消息驱动的应用</h3>
+<h2 id="function-as-a-service">解构 “Function as a Service”</h2>
+<h3 id="state">状态（State）</h3>
+<h3 id="execution-duration">执行时间（Execution duration）</h3>
+<h3 id="_3">启动延迟和冷启动</h3>
+<h3 id="_4">工具</h3>
+<h3 id="_5">开源</h3>
+<h2 id="serverless_1">什么不是 Serverless</h2>
+<h3 id="serverless-paas">Serverless 和 PaaS</h3>
+<h3 id="serverless_2">Serverless 和 容器</h3>
+<h3 id="serverless-noops">Serverless 和 NoOps（无运维）</h3>
+<h3 id="serverless-stored-procedures-as-a-service">Serverless 和 存储过程即服务（Stored Procedures as a Service）</h3>
+<h1 id="_6">优点</h1>
+<h1 id="_7">缺点</h1>
+<h1 id="_8">总结</h1>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-09-01 16:20 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'serverless',
+  title: 'serverless',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>

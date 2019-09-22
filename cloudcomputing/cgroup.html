@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="Stylesheet" type="text/css" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/normalize.css">
+        <link rel="stylesheet" href="/static/plugin/tipuesearch/css/tipuesearch.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>cgroup - MetaHacks Wiki</title>
+        <meta name="keywords" content="wiki, simiki, computer, cognitive,"/>
+        <meta name="description" content="my personal wiki"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width" />
+
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+            }
+        });
+        </script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+        <!--script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script!-->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114706319-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-114706319-1');
+        </script>
+        
+        <!-- Baidu Analytics -->
+        <script>
+            var _hmt = _hmt || [];
+            (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?6e445c332d0cb95f356894a8d3b9f545";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+            })();
+        </script>
+
+
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#cloudcomputing">cloudcomputing</a>&nbsp;»&nbsp;cgroup</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">cgroup</div>
+<div id="content">
+  <ul>
+<li><a href="https://gist.github.com/brendangregg/1abcfeef9155ac526197f6f0abdd86bf">brendangregg/dockerpsns.sh</a></li>
+</ul>
+<div class="hlcode"><pre><span class="c">#!/bin/bash</span>
+<span class="c">#</span>
+<span class="c"># dockerpsns - proof of concept for a &quot;docker ps --namespaces&quot;.</span>
+<span class="c">#</span>
+<span class="c"># USAGE: ./dockerpsns.sh</span>
+<span class="c">#</span>
+<span class="c"># This lists containers, their init PIDs, and namespace IDs. If container</span>
+<span class="c"># namespaces equal the host namespace, they are colored red (this can be</span>
+<span class="c"># disabled by setting color=0 below).</span>
+<span class="c">#</span>
+<span class="c"># Copyright 2017 Netflix, Inc.</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;)</span>
+<span class="c">#</span>
+<span class="c"># 10-Apr-2017   Brendan Gregg   Created this.</span>
+
+<span class="nv">namespaces</span><span class="o">=</span><span class="s2">&quot;cgroup ipc mnt net pid user uts&quot;</span>
+<span class="nv">color</span><span class="o">=</span>1
+<span class="nb">declare</span> -A hostns
+
+<span class="nb">printf</span> <span class="s2">&quot;%-14s %-20s %6s %-16s&quot;</span> <span class="s2">&quot;CONTAINER&quot;</span> <span class="s2">&quot;NAME&quot;</span> <span class="s2">&quot;PID&quot;</span> <span class="s2">&quot;PATH&quot;</span>
+<span class="k">for </span>n in <span class="nv">$namespaces</span>; <span class="k">do</span>
+<span class="k">    </span><span class="nb">printf</span> <span class="s2">&quot; %-10s&quot;</span> <span class="k">$(</span><span class="nb">echo</span> <span class="nv">$n</span> | tr a-z A-Z<span class="k">)</span>
+<span class="k">done</span>
+<span class="nb">echo</span>
+
+<span class="c"># print host details</span>
+<span class="nv">pid</span><span class="o">=</span>1
+<span class="nb">read </span>name &lt; /proc/<span class="nv">$pid</span>/comm
+<span class="nb">printf</span> <span class="s2">&quot;%-14s %-20.20s %6d %-16.16s&quot;</span> <span class="s2">&quot;host&quot;</span> <span class="k">$(</span>hostname<span class="k">)</span> <span class="nv">$pid</span> <span class="nv">$name</span>
+<span class="k">for </span>n in <span class="nv">$namespaces</span>; <span class="k">do</span>
+<span class="k">    </span><span class="nv">id</span><span class="o">=</span><span class="k">$(</span>stat --format<span class="o">=</span><span class="s2">&quot;%N&quot;</span> /proc/<span class="nv">$pid</span>/ns/<span class="nv">$n</span><span class="k">)</span>
+    <span class="nv">id</span><span class="o">=</span><span class="k">${</span><span class="nv">id</span><span class="p">#*[</span><span class="k">}</span>
+    <span class="nv">id</span><span class="o">=</span><span class="k">${</span><span class="nv">id</span><span class="p">%]*</span><span class="k">}</span>
+    hostns<span class="o">[</span><span class="nv">$n</span><span class="o">]=</span><span class="nv">$id</span>
+    <span class="nb">printf</span> <span class="s2">&quot; %-10s&quot;</span> <span class="s2">&quot;$id&quot;</span>
+<span class="k">done</span>
+<span class="nb">echo</span>
+
+<span class="c"># print containers</span>
+<span class="k">for </span>UUID in <span class="k">$(</span>docker ps -q<span class="k">)</span>; <span class="k">do</span>
+    <span class="c"># docker info:</span>
+    <span class="nv">pid</span><span class="o">=</span><span class="k">$(</span>docker inspect -f <span class="s1">&#39;{{.State.Pid}}&#39;</span> <span class="nv">$UUID</span><span class="k">)</span>
+    <span class="nv">name</span><span class="o">=</span><span class="k">$(</span>docker inspect -f <span class="s1">&#39;{{.Name}}&#39;</span> <span class="nv">$UUID</span><span class="k">)</span>
+    <span class="nv">path</span><span class="o">=</span><span class="k">$(</span>docker inspect -f <span class="s1">&#39;{{.Path}}&#39;</span> <span class="nv">$UUID</span><span class="k">)</span>
+    <span class="nv">name</span><span class="o">=</span><span class="k">${</span><span class="nv">name</span><span class="p">#/</span><span class="k">}</span>
+    <span class="nb">printf</span> <span class="s2">&quot;%-14s %-20.20s %6d %-16.16s&quot;</span> <span class="nv">$UUID</span> <span class="nv">$name</span> <span class="nv">$pid</span> <span class="nv">$path</span>
+
+    <span class="c"># namespace info:</span>
+    <span class="k">for </span>n in <span class="nv">$namespaces</span>; <span class="k">do</span>
+<span class="k">        </span><span class="nv">id</span><span class="o">=</span><span class="k">$(</span>stat --format<span class="o">=</span><span class="s2">&quot;%N&quot;</span> /proc/<span class="nv">$pid</span>/ns/<span class="nv">$n</span><span class="k">)</span>
+        <span class="nv">id</span><span class="o">=</span><span class="k">${</span><span class="nv">id</span><span class="p">#*[</span><span class="k">}</span>
+        <span class="nv">id</span><span class="o">=</span><span class="k">${</span><span class="nv">id</span><span class="p">%]*</span><span class="k">}</span>
+        <span class="nv">docolor</span><span class="o">=</span>0
+        <span class="k">if</span> <span class="o">((</span> color <span class="o">))</span>; <span class="k">then</span>
+            <span class="o">[[</span> <span class="s2">&quot;${hostns[$n]}&quot;</span> <span class="o">==</span> <span class="s2">&quot;$id&quot;</span> <span class="o">]]</span> <span class="o">&amp;&amp;</span> <span class="nv">docolor</span><span class="o">=</span>1
+        <span class="k">fi</span>
+        <span class="o">((</span> docolor <span class="o">))</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> -e <span class="s2">&quot;\e[31;1m\c&quot;</span>
+        <span class="nb">printf</span> <span class="s2">&quot; %-10s&quot;</span> <span class="s2">&quot;$id&quot;</span>
+        <span class="o">((</span> docolor <span class="o">))</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> -e <span class="s2">&quot;\e[0m\c&quot;</span>
+    <span class="k">done</span>
+<span class="k">    </span><span class="nb">echo</span>
+
+<span class="k">done</span>
+</pre></div>
+
+
+<h1 id="systemd">systemd</h1>
+<p>systemd 用于并行化启动服务，来加快服务启动；linux 1 号进程经历了很多<br />
+ -<a href="https://coolshell.cn/articles/17998.html">LINUX PID 1 和 SYSTEMD</a></p>
+<p>可以通过多种方式使用cgroups<br />
+1. 直接使用一些工具，cgcreate, cgexec, cgclassify<br />
+2. 使用 rules engine daemon，自动移动某些用户/组/命令 到cgroup(/etc/cgrules.conf和/usr/lib/systemd/system/cgconfig.service)<br />
+3. 通过某些虚拟化工具，比如 linux containers</p>
+<p>上面这些本质都是通过cgroup提供的文件系统结构来操作cgroup</p>
+<p>另外，systemd 本身采用了cgroups 来组织进程结构</p>
+<h1 id="cgroup">cgroup</h1>
+<ul>
+<li><a href="https://www.cnblogs.com/sparkdev/p/9523194.html">Cgroups 与 Systemd</a></li>
+<li><a href="https://www.cnblogs.com/sparkdev/p/8448237.html">从 init 系统说起</a></li>
+<li><a href="http://tiewei.github.io/devops/howto-use-cgroup/">howto-use-cgroup</a></li>
+<li><a href="https://lwn.net/Articles/606925/">Control groups, part 6: A look under the hood</a></li>
+</ul>
+<p>com.sankuai.bikebj.staging.kubemaser</p>
+<p>各位RD大佬，辛苦帮忙进行二次确认，这些服务是否有状态，无状态服务后续能够进行容器化的自动迁移，如果必须是有状态服务，就可以不确认，但是有很多服务可以改造成无状态服务的，可以进行确认，但确认的时候注意标明改造完成时间，谢谢大家配合，截止日期周三<br />
+@所有人</p>
+</div>
+<div id="content-footer">
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多</p>
+<table>
+  <tr><td><img src="/static/images/My/WeChatPay.jpeg" style="width:200px;height:200px;"></td>
+  <td><img src="/static/images/My/AliPay.jpeg" style="width:200px;height:200px;"></td></tr>
+</table>created in <span class="create-date date"> 2019-08-22 17:47 </span></div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+const gitment = new Gitment({
+  id: 'cgroup',
+  title: 'cgroup',
+  owner: 'kitianFresh',
+  repo: 'MetaHacksWiki',
+  oauth: {
+    client_id: '759b6fcf793dbef4e7a0',
+    client_secret: '3c8fcf8b0a76c4acfc07b01a97e4f55f4c6ecbbd',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments')
+// or
+// gitment.render(document.getElementById('comments'))
+// or
+// document.body.appendChild(gitment.render())
+</script>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 田奇.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+                Fork me in <a href="https://github.com/kitianFresh/MetaHacksWiki/tree/master" target="_blank"> github </a>.
+            </span>
+        </div>
+        
+
+        <script src="/tipuesearch_content.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch_set.js"></script>
+        <script src="/static/plugin/tipuesearch/tipuesearch.min.js"></script>
+    </body>
+</html>
